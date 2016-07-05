@@ -105,3 +105,4 @@ class DgraphClientTestCases(unittest.TestCase):
         self.assertTrue(isinstance(response.l.parsing, basestring), 'Parsing latency is not available')
         self.assertTrue(isinstance(response.l.pb, basestring), 'Protocol buffers latency is not available')
         self.assertTrue(isinstance(response.l.processing, basestring), 'Processing latency is not available')
+

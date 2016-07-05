@@ -37,3 +37,4 @@ class DgraphClient(object):
         request = graphresponse_pb2.Request(query=q)
         response = self.stub.Query(request, timeout)
         return response
+
