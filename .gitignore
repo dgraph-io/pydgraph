@@ -1,0 +1,6 @@
+*.pyc
+.idea
+build/*
+dist/*
+pydgraph.egg-info/*
+.eggs
