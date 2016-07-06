@@ -17,7 +17,7 @@ __author__ = 'Mohit Ranka <mohitranka@gmail.com>'
 __maintainer__ = 'Mohit Ranka <mohitranka@gmail.com>'
 
 import unittest
-from client import DgraphClient
+from pydgraph.client import DgraphClient
 
 
 class DgraphClientTestCases(unittest.TestCase):
