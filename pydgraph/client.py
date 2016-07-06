@@ -22,7 +22,7 @@ import graphresponse_pb2
 
 __author__ = 'Mohit Ranka <mohitranka@gmail.com>'
 __maintainer__ = 'Mohit Ranka <mohitranka@gmail.com>'
-__version__ = '0.3'
+__version__ = '0.3.1'
 __status__ = 'development'
 
 

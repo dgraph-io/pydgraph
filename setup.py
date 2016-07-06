@@ -12,14 +12,18 @@
 # WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
 # See the License for the specific language governing permissions and
 # limitations under the License.
-
+import sys
 try:
     from setuptools import setup
 except ImportError:
     from distutils.core import setup
 
+if sys.version_info >= (2, 7, 9):
+    import ssl
+    ssl._create_default_https_context = ssl._create_unverified_context
+
 setup(name="pydgraph",
-      version=0.3,
+      version="0.3.1",
       description="Dgraph driver for Python",
       license="Apache License, Version 2.0",
       author="Mohit Ranka",
@@ -38,4 +42,5 @@ setup(name="pydgraph",
       packages=["pydgraph"],
       install_requires=open('requirements.txt').readlines(),
       test_suite='tests',
+      data_files=[('.', ['requirements.txt', 'LICENSE'])]
       )
