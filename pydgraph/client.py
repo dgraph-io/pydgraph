@@ -18,11 +18,12 @@ This module contains the main user-facing methods for interacting with the
 Dgraph server over gRPC.
 """
 from grpc.beta import implementations
-import graphresponse_pb2
+from pydgraph.utils import graphresponse_pb2
+from pydgraph.utils.meta import VERSION
 
 __author__ = 'Mohit Ranka <mohitranka@gmail.com>'
 __maintainer__ = 'Mohit Ranka <mohitranka@gmail.com>'
-__version__ = '0.3.2'
+__version__ = VERSION
 __status__ = 'development'
 
 

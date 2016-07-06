@@ -7,7 +7,7 @@ from google.protobuf import descriptor as _descriptor
 from google.protobuf import message as _message
 from google.protobuf import reflection as _reflection
 from google.protobuf import symbol_database as _symbol_database
-from google.protobuf import descriptor_pb2
+
 # @@protoc_insertion_point(imports)
 
 _sym_db = _symbol_database.Default()
@@ -281,9 +281,6 @@ Response = _reflection.GeneratedProtocolMessageType('Response', (_message.Messag
   ))
 _sym_db.RegisterMessage(Response)
 
-
-import abc
-import six
 from grpc.beta import implementations as beta_implementations
 from grpc.beta import interfaces as beta_interfaces
 from grpc.framework.common import cardinality
@@ -300,7 +297,6 @@ class BetaDgraphStub(object):
 
 def beta_create_Dgraph_server(servicer, pool=None, pool_size=None, default_timeout=None, maximum_timeout=None):
   import graphresponse_pb2
-  import graphresponse_pb2
   request_deserializers = {
     ('graph.Dgraph', 'Query'): graphresponse_pb2.Request.FromString,
   }
@@ -314,7 +310,6 @@ def beta_create_Dgraph_server(servicer, pool=None, pool_size=None, default_timeo
   return beta_implementations.server(method_implementations, options=server_options)
 
 def beta_create_Dgraph_stub(channel, host=None, metadata_transformer=None, pool=None, pool_size=None):
-  import graphresponse_pb2
   import graphresponse_pb2
   request_serializers = {
     ('graph.Dgraph', 'Query'): graphresponse_pb2.Request.SerializeToString,
