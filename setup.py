@@ -23,7 +23,7 @@ if sys.version_info >= (2, 7, 9):
     ssl._create_default_https_context = ssl._create_unverified_context
 
 setup(name="pydgraph",
-      version="0.3.1",
+      version="0.3.2",
       description="Dgraph driver for Python",
       license="Apache License, Version 2.0",
       author="Mohit Ranka",
@@ -42,5 +42,4 @@ setup(name="pydgraph",
       packages=["pydgraph"],
       install_requires=open('requirements.txt').readlines(),
       test_suite='tests',
-      data_files=[('.', ['requirements.txt', 'LICENSE'])]
       )
