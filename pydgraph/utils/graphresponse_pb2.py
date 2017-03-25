@@ -12,9 +12,6 @@ from google.protobuf import symbol_database as _symbol_database
 
 _sym_db = _symbol_database.Default()
 
-
-
-
 DESCRIPTOR = _descriptor.FileDescriptor(
   name='graphresponse.proto',
   package='graph',
@@ -22,9 +19,6 @@ DESCRIPTOR = _descriptor.FileDescriptor(
   serialized_pb=_b('\n\x13graphresponse.proto\x12\x05graph\"\x18\n\x07Request\x12\r\n\x05query\x18\x01 \x01(\t\":\n\x07Latency\x12\x0f\n\x07parsing\x18\x01 \x01(\t\x12\x12\n\nprocessing\x18\x02 \x01(\t\x12\n\n\x02pb\x18\x03 \x01(\t\"%\n\x08Property\x12\x0c\n\x04prop\x18\x01 \x01(\t\x12\x0b\n\x03val\x18\x02 \x01(\x0c\"w\n\x04Node\x12\x0b\n\x03uid\x18\x01 \x01(\x04\x12\x0b\n\x03xid\x18\x02 \x01(\t\x12\x11\n\tattribute\x18\x03 \x01(\t\x12#\n\nproperties\x18\x04 \x03(\x0b\x32\x0f.graph.Property\x12\x1d\n\x08\x63hildren\x18\x05 \x03(\x0b\x32\x0b.graph.Node\"=\n\x08Response\x12\x16\n\x01n\x18\x01 \x01(\x0b\x32\x0b.graph.Node\x12\x19\n\x01l\x18\x02 \x01(\x0b\x32\x0e.graph.Latency24\n\x06\x44graph\x12*\n\x05Query\x12\x0e.graph.Request\x1a\x0f.graph.Response\"\x00\x62\x06proto3')
 )
 _sym_db.RegisterFileDescriptor(DESCRIPTOR)
-
-
-
 
 _REQUEST = _descriptor.Descriptor(
   name='Request',
@@ -55,7 +49,6 @@ _REQUEST = _descriptor.Descriptor(
   serialized_start=30,
   serialized_end=54,
 )
-
 
 _LATENCY = _descriptor.Descriptor(
   name='Latency',
@@ -101,7 +94,6 @@ _LATENCY = _descriptor.Descriptor(
   serialized_end=114,
 )
 
-
 _PROPERTY = _descriptor.Descriptor(
   name='Property',
   full_name='graph.Property',
@@ -138,7 +130,6 @@ _PROPERTY = _descriptor.Descriptor(
   serialized_start=116,
   serialized_end=153,
 )
-
 
 _NODE = _descriptor.Descriptor(
   name='Node',
@@ -197,7 +188,6 @@ _NODE = _descriptor.Descriptor(
   serialized_start=155,
   serialized_end=274,
 )
-
 
 _RESPONSE = _descriptor.Descriptor(
   name='Response',
@@ -281,45 +271,62 @@ Response = _reflection.GeneratedProtocolMessageType('Response', (_message.Messag
   ))
 _sym_db.RegisterMessage(Response)
 
-from grpc.beta import implementations as beta_implementations
-from grpc.beta import interfaces as beta_interfaces
-from grpc.framework.common import cardinality
-from grpc.framework.interfaces.face import utilities as face_utilities
-
+import grpc
 class BetaDgraphServicer(object):
   def Query(self, request, context):
-    context.code(beta_interfaces.StatusCode.UNIMPLEMENTED)
+    context.set_code(grpc.StatusCode.UNIMPLEMENTED)
+    context.set_details('Method not implemented!')
+    raise NotImplementedError('Method not implemented!')
 
 class BetaDgraphStub(object):
-  def Query(self, request, timeout):
-    raise NotImplementedError()
-  Query.future = None
+  def __init__(self, channel):
+      self.Query = channel.unary_unary(
+        '/graphp.Dgraph/Run',
+        request_serializer=Request.SerializeToString,
+        response_deserializer=Response.FromString,
+      )
 
-def beta_create_Dgraph_server(servicer, pool=None, pool_size=None, default_timeout=None, maximum_timeout=None):
-  import graphresponse_pb2
-  request_deserializers = {
-    ('graph.Dgraph', 'Query'): graphresponse_pb2.Request.FromString,
+def add_DgraphServicer_to_server(servicer, server):
+  rpc_method_handlers = {
+      'Query': grpc.unary_unary_rpc_method_handler(
+          servicer.Query,
+          request_deserializer=Request.FromString,
+          response_serializer=Response.SerializeToString,
+      ),
   }
-  response_serializers = {
-    ('graph.Dgraph', 'Query'): graphresponse_pb2.Response.SerializeToString,
-  }
-  method_implementations = {
-    ('graph.Dgraph', 'Query'): face_utilities.unary_unary_inline(servicer.Query),
-  }
-  server_options = beta_implementations.server_options(request_deserializers=request_deserializers, response_serializers=response_serializers, thread_pool=pool, thread_pool_size=pool_size, default_timeout=default_timeout, maximum_timeout=maximum_timeout)
-  return beta_implementations.server(method_implementations, options=server_options)
+  generic_handler = grpc.method_handlers_generic_handler(
+      'graphp.Dgraph', rpc_method_handlers)
+  server.add_generic_rpc_handlers((generic_handler,))
 
-def beta_create_Dgraph_stub(channel, host=None, metadata_transformer=None, pool=None, pool_size=None):
-  import graphresponse_pb2
-  request_serializers = {
-    ('graph.Dgraph', 'Query'): graphresponse_pb2.Request.SerializeToString,
-  }
-  response_deserializers = {
-    ('graph.Dgraph', 'Query'): graphresponse_pb2.Response.FromString,
-  }
-  cardinalities = {
-    'Query': cardinality.Cardinality.UNARY_UNARY,
-  }
-  stub_options = beta_implementations.stub_options(host=host, metadata_transformer=metadata_transformer, request_serializers=request_serializers, response_deserializers=response_deserializers, thread_pool=pool, thread_pool_size=pool_size)
-  return beta_implementations.dynamic_stub(channel, 'graph.Dgraph', cardinalities, options=stub_options)
-# @@protoc_insertion_point(module_scope)
+#Depreciated
+# from grpc.framework.common import cardinality
+# from grpc.framework.interfaces.face import utilities as face_utilities
+# from grpc.beta import implementations as beta_implementations
+# from grpc.beta import interfaces as beta_interfaces
+# def beta_create_Dgraph_server(servicer, pool=None, pool_size=None, default_timeout=None, maximum_timeout=None):
+#   request_deserializers = {
+#     ('graph.Dgraph', 'Query'): Request.FromString,
+#   }
+#   response_serializers = {
+#     ('graph.Dgraph', 'Query'): Response.SerializeToString,
+#   }
+#   method_implementations = {
+#     ('graph.Dgraph', 'Query'): face_utilities.unary_unary_inline(servicer.Query),
+#   }
+#   server_options = beta_implementations.server_options(request_deserializers=request_deserializers, response_serializers=response_serializers, thread_pool=pool, thread_pool_size=pool_size, default_timeout=default_timeout, maximum_timeout=maximum_timeout)
+#   return beta_implementations.server(method_implementations, options=server_options)
+
+# def beta_create_Dgraph_stub(channel, host=None, metadata_transformer=None, pool=None, pool_size=None):
+#   request_serializers = {
+#     ('graph.Dgraph', 'Query'): Request.SerializeToString,
+#   }
+#   response_deserializers = {
+#     ('graph.Dgraph', 'Query'): Response.FromString,
+#   }
+#   cardinalities = {
+#     'Query': cardinality.Cardinality.UNARY_UNARY,
+#   }
+#   stub_options = beta_implementations.stub_options(host=host, metadata_transformer=metadata_transformer, request_serializers=request_serializers, response_deserializers=response_deserializers, thread_pool=pool, thread_pool_size=pool_size)
+#   return beta_implementations.dynamic_stub(channel, 'graph.Dgraph', cardinalities, options=stub_options)
+# # @@protoc_insertion_point(module_scope)
+
