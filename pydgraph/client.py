@@ -17,6 +17,7 @@
 This module contains the main user-facing methods for interacting with the
 Dgraph server over gRPC.
 """
+import grpc
 from grpc.beta import implementations
 from pydgraph.utils import graphresponse_pb2
 from pydgraph.utils.meta import VERSION
@@ -30,10 +31,11 @@ __status__ = 'development'
 
 class DgraphClient(object):
     def __init__(self, host, port):
-        self.channel = implementations.insecure_channel(host, port)
-        self.stub = graphresponse_pb2.beta_create_Dgraph_stub(self.channel)
+        self.channel = grpc.insecure_channel("{host}:{port}".format(host=host, port=port))
+        self.stub = graphresponse_pb2.BetaDgraphStub(self.channel)
 
     def query(self, q, timeout=None):
         request = graphresponse_pb2.Request(query=q)
         response = self.stub.Query(request, timeout)
         return response
+
