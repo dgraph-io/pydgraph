@@ -19,7 +19,7 @@ Dgraph server over gRPC.
 """
 import grpc
 from grpc.beta import implementations
-from pydgraph.utils import graphresponse_pb2
+from pydgraph.utils import loader
 from pydgraph.utils.meta import VERSION
 
 __author__ = 'Mohit Ranka <mohitranka@gmail.com>'
@@ -28,14 +28,16 @@ __version__ = VERSION
 __status__ = 'development'
 
 
-
 class DgraphClient(object):
     def __init__(self, host, port):
         self.channel = grpc.insecure_channel("{host}:{port}".format(host=host, port=port))
-        self.stub = graphresponse_pb2.BetaDgraphStub(self.channel)
+        self.stub = loader.BetaDgraphStub(self.channel)
 
     def query(self, q, timeout=None):
-        request = graphresponse_pb2.Request(query=q)
+        request = loader.Request(query=q)
         response = self.stub.Query(request, timeout)
         return response
 
+    async def aQuery(self, q, timeout=None):
+        request = loader.Request(query=q)
+        return await self.stub.aQuery(request, timeout)
