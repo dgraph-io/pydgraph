@@ -119,12 +119,14 @@ class DgraphTxn(object):
         self._mutated = True
         return assigned
 
-    async def aMutate(self, setobj, deleteobj, *args, **kwargs):
+    async def aMutateObj(self, setobj=None, delobj=None, *args, **kwargs):
         if self._finished: raise Exception('Transaction is complete')
-        mutation = api.Mutation(set_json=json.dumps(setobj).encode('utf8'),
-                                delete_json=json.dumps(deleteobj).encode('utf8'),
-                                start_ts=self.start_ts,
-                                commit_now=False)
+        mutation = api.Mutation(start_ts=self.start_ts, commit_now=False)
+        if setobj:
+            mutation.set_json=json.dumps(setobj).encode('utf8')
+        if delobj:
+            mutation.del_json=json.dumps(delobj).encode('utf8'),
+
         assigned = await self.client.stub.Mutate.future(mutation, *args, **kwargs)
         self.merge_context(assinged.context)
         self._mutated = True
