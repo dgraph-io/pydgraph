@@ -33,9 +33,13 @@ __status__ = 'development'
 class DgraphClient(object):
     def __init__(self, host, port):
         self.channel = grpc.insecure_channel("{host}:{port}".format(host=host, port=port))
-        self.stub = api_grpc.DgraphStub(self.channel)
+        self._stub = api_grpc.DgraphStub(self.channel)
         self.start_ts = 0
         self.lin_read = api.LinRead()
+
+    @property
+    def stub(self):
+        return self._stub
 
     def merge_context(self, context):
         """Merges txn_context into client's state."""
