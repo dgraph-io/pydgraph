@@ -46,6 +46,10 @@ class DgraphClient(object):
         self.start_ts = context.start_ts
         util.merge_lin_reads(self.lin_read, context.lin_read)
 
+    def Check(self, timeout=None):
+        check = api.Check()
+        return self.stub.CheckVersion(check, timeout)
+
     def Query(self, q, timeout=None):
         request = api.Request(query=q, start_ts=self.start_ts, lin_read=self.lin_read)
         response = self.stub.Query(request, timeout)
