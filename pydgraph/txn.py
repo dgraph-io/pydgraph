@@ -8,6 +8,8 @@ import json
 from pydgraph import util
 from pydgraph.proto import api_pb2 as api
 
+__author__ = 'Shailesh Kochhar <shailesh.kochhar@gmail.com>'
+
 
 class DgraphTxn(object):
     """Class representing a single transaction. A transaction will maintain
@@ -90,9 +92,21 @@ class DgraphTxn(object):
         self._mutated = True
         return assigned
 
-    def MutateNQuad(self, setnquads=None, delnquads=None, *args, **kwargs):
-        """MutateNQuads extends Mutate to allow mutations to be specified as
-        N-Quad strings."""
+    def Mutate(self, setnquads=None, delnquads=None, *args, **kwargs):
+        """Mutate extends MutateObj to allow mutations to be specified as
+        N-Quad strings.
+
+        Mutations also support a commit_now method which commits the transaction
+        along with the mutation. This mode is presently unsupported.
+
+        Params
+        ======
+          * setnquads: a string containing nquads to set
+          * delnquads: a string containing nquads to delete
+
+        N-Quad format is
+            <subj> <pred> <obj> .
+        """
         if self._finished: raise Exception('Transaction is complete')
         mutation = api.Mutation(start_ts=self.start_ts, commit_now=False)
         if setnquads:

@@ -2,6 +2,9 @@
 Module containing utilities for dgraph RPC messages
 """
 
+__author__ = 'Shailesh Kochhar <shailesh.kochhar@gmail.com>'
+
+
 def merge_lin_reads(current, update_lin_read):
     """Merges LinRead protobufs by adding all keys in the ids field from the
     updated_lin_read to the current one. If the key already exists, the one
