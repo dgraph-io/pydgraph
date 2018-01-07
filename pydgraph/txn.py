@@ -62,7 +62,7 @@ class DgraphTxn(object):
         self.merge_context(response.txn)
         return response
 
-    def Mutate(self, setobj=None, delobj=None, *args, **kwargs):
+    def MutateObj(self, setobj=None, delobj=None, *args, **kwargs):
         """Mutate allows modification of the data stored in the DGraph instance.
 
         A mutation can be described either using JSON or via RDF quads. This
