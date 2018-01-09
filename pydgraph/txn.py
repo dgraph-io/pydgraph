@@ -44,21 +44,24 @@ class DgraphTxn(object):
         if self.start_ts == 0:
             self.start_ts = txn_context.start_ts
         elif self.start_ts != txn_context.start_ts:
-            raise Exception('StartTs mismatch in txn vs updated context')
+            raise Exception('StartTs mismatch in txn(%s) vs updated context(%s)' %
+                            (self.start_ts, txn_context.start_ts))
 
-        # TODO(kochhar): should this be made configurable?
-        self.client.merge_context(txn_context)
+        # TODO(kochhar): disabling this as it makes client be part of the txn
+        # self.client.merge_context(txn_context)
         util.merge_lin_reads(self.lin_read, txn_context.lin_read)
 
         self.keys.extend(txn_context.keys)
 
     def Query(self, q, *args, **kwargs):
+        if self._finished: raise Exception('Transaction is complete')
         request = api.Request(query=q, start_ts=self.start_ts, lin_read=self.lin_read)
         response = self.client.stub.Query(request, *args, **kwargs)
         self.merge_context(response.txn)
         return response
 
     async def aQuery(self, q, *args, **kwargs):
+        if self._finished: raise Exception('Transaction is complete')
         request = api.Request(query=q, start_ts=self.start_ts, lin_read=self.lin_read)
         response = await self.client.stub.Query.future(request, *args, **kwargs)
         self.merge_context(response.txn)
@@ -145,7 +148,6 @@ class DgraphTxn(object):
                                      keys=self.keys,
                                      lin_read=self.lin_read)
         resp_txn_context = self.client.stub.CommitOrAbort(txn_context, *args, **kwargs)
-        self.merge_context(resp_txn_context)
         return resp_txn_context
 
     def Abort(self, *args, **kwargs):
@@ -162,5 +164,4 @@ class DgraphTxn(object):
                                      lin_read=self.lin_read,
                                      aborted=True)
         resp_txn_context = self.client.stub.CommitOrAbort(txn_context, *args, **kwargs)
-        self.merge_context(resp_txn_context)
         return resp_txn_context
