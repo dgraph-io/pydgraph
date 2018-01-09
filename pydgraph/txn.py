@@ -52,21 +52,48 @@ class DgraphTxn(object):
 
         self.keys.extend(txn_context.keys)
 
-    def Query(self, q, *args, **kwargs):
+    def query(self, q, *args, **kwargs):
         if self._finished: raise Exception('Transaction is complete')
         request = api.Request(query=q, start_ts=self.start_ts, lin_read=self.lin_read)
         response = self.client.stub.Query(request, *args, **kwargs)
         self.merge_context(response.txn)
         return response
 
-    async def aQuery(self, q, *args, **kwargs):
+    async def aquery(self, q, *args, **kwargs):
         if self._finished: raise Exception('Transaction is complete')
         request = api.Request(query=q, start_ts=self.start_ts, lin_read=self.lin_read)
         response = await self.client.stub.Query.future(request, *args, **kwargs)
         self.merge_context(response.txn)
         return response
 
-    def MutateObj(self, setobj=None, delobj=None, *args, **kwargs):
+    def mutate(self, setnquads=None, delnquads=None, *args, **kwargs):
+        """Mutate extends MutateObj to allow mutations to be specified as
+        N-Quad strings.
+
+        Mutations also support a commit_now method which commits the transaction
+        along with the mutation. This mode is presently unsupported.
+
+        Params
+        ======
+          * setnquads: a string containing nquads to set
+          * delnquads: a string containing nquads to delete
+
+        N-Quad format is
+            <subj> <pred> <obj> .
+        """
+        if self._finished: raise Exception('Transaction is complete')
+        mutation = api.Mutation(start_ts=self.start_ts, commit_now=False)
+        if setnquads:
+            mutation.set_nquads=setnquads.encode('utf8')
+        if delnquads:
+            mutation.del_nquads=delnquads.encode('utf8')
+
+        assigned = self.client.stub.Mutate(mutation, *args, **kwargs)
+        self.merge_context(assigned.context)
+        self._mutated = True
+        return assigned
+
+    def mutate_obj(self, setobj=None, delobj=None, *args, **kwargs):
         """Mutate allows modification of the data stored in the DGraph instance.
 
         A mutation can be described either using JSON or via RDF quads. This
@@ -94,34 +121,7 @@ class DgraphTxn(object):
         self._mutated = True
         return assigned
 
-    def Mutate(self, setnquads=None, delnquads=None, *args, **kwargs):
-        """Mutate extends MutateObj to allow mutations to be specified as
-        N-Quad strings.
-
-        Mutations also support a commit_now method which commits the transaction
-        along with the mutation. This mode is presently unsupported.
-
-        Params
-        ======
-          * setnquads: a string containing nquads to set
-          * delnquads: a string containing nquads to delete
-
-        N-Quad format is
-            <subj> <pred> <obj> .
-        """
-        if self._finished: raise Exception('Transaction is complete')
-        mutation = api.Mutation(start_ts=self.start_ts, commit_now=False)
-        if setnquads:
-            mutation.set_nquads=setnquads.encode('utf8')
-        if delnquads:
-            mutation.del_nquads=delnquads.encode('utf8')
-
-        assigned = self.client.stub.Mutate(mutation, *args, **kwargs)
-        self.merge_context(assigned.context)
-        self._mutated = True
-        return assigned
-
-    async def aMutateObj(self, setobj=None, delobj=None, *args, **kwargs):
+    async def amutate_obj(self, setobj=None, delobj=None, *args, **kwargs):
         if self._finished: raise Exception('Transaction is complete')
         mutation = api.Mutation(start_ts=self.start_ts, commit_now=False)
         if setobj:
@@ -134,7 +134,7 @@ class DgraphTxn(object):
         self._mutated = True
         return assigned
 
-    def Commit(self, *args, **kwargs):
+    def commit(self, *args, **kwargs):
         """Commits any mutations performed in the transaction. Once the
         transaction is committed its lifespan is complete and no further
         mutations or commits can be made."""
@@ -149,7 +149,7 @@ class DgraphTxn(object):
         resp_txn_context = self.client.stub.CommitOrAbort(txn_context, *args, **kwargs)
         return resp_txn_context
 
-    def Abort(self, *args, **kwargs):
+    def abort(self, *args, **kwargs):
         """Aborts any mutations performed in the transaction. Once the
         transaction is aborted its lifespan is complete and no further
         mutations or commits can be made."""

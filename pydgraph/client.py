@@ -54,36 +54,36 @@ class DgraphClient(object):
         self._start_ts = context.start_ts
         util.merge_lin_reads(self.lin_read, context.lin_read)
 
-    def Check(self, timeout=None):
+    def check(self, timeout=None):
         return self.stub.CheckVersion(api.Check(), timeout)
 
-    def Query(self, q, timeout=None):
+    def query(self, q, timeout=None):
         request = api.Request(query=q, start_ts=self.start_ts, lin_read=self.lin_read)
         response = self.stub.Query(request, timeout)
         self._merge_context(response.txn)
         return response
 
-    async def aQuery(self, q, timeout=None):
+    async def aquery(self, q, timeout=None):
         request = api.Request(query=q, start_ts=self.start_ts, lin_read=self.lin_read)
         response = await self.stub.Query.future(request, timeout)
         self._merge_context(response.txn)
         return response
 
-    def Alter(self, schema, timeout=None):
+    def alter(self, schema, timeout=None):
         """Alter schema at the other end of the connection."""
         operation = api.Operation(schema=schema)
         return self.stub.Alter(operation, timeout)
 
-    async def aAlter(self, schema, timeout=None):
+    async def aalter(self, schema, timeout=None):
         operation = api.Operation(schema=schema)
         return await self.stub.Alter.future(operation, timeout)
 
-    def DropAttr(self, drop_attr, timeout=None):
+    def drop_attr(self, drop_attr, timeout=None):
         """Drop an attribute from the dgraph server."""
         operation = api.Operation(drop_attr=drop_attr)
         return self.stub.Alter(operation)
 
-    def DropAll(self, timeout=None):
+    def drop_all(self, timeout=None):
         """Drop all schema from the dgraph server."""
         operation = api.Operation(drop_all=True)
         return self.stub.Alter(operation)
