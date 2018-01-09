@@ -40,7 +40,6 @@ class DgraphTxn(object):
         ## This will be true if the server does not return a txn context after
         ## a query or a mutation
         if not txn_context: return
-
         if self.start_ts == 0:
             self.start_ts = txn_context.start_ts
         elif self.start_ts != txn_context.start_ts:
