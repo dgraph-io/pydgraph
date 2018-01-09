@@ -41,7 +41,7 @@ setup(name="pydgraph",
           "Programming Language :: Python :: 3.3",
           "Programming Language :: Python :: 3.4",
       ],
-      packages=["pydgraph", "pydgraph.utils", "pydgraph.utils.proto"],
+      packages=["pydgraph", "pydgraph.proto"],
       install_requires=open('requirements.txt').readlines(),
       test_suite='tests',
-      )
+)
