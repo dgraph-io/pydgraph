@@ -37,7 +37,7 @@ class DgraphClientIntegrationTestCase(unittest.TestCase):
     def setUp(self):
         """Sets up the client and verifies the version is compatible."""
         self.client = client.DgraphClient(self.TEST_HOSTNAME, self.TEST_PORT)
-        version = self.client.Check()
+        version = self.client.check()
         # version.tag string format is v<MAJOR>.<MINOR>.<PATCH>
         # version_tup = [MAJOR, MINOR, PATCH]
         version_tup = version.tag[1:].split('.')
@@ -64,8 +64,8 @@ class AcctUpsertIntegrationTestCase(DgraphClientIntegrationTestCase):
         ]
         logging.info(len(self.accounts))
 
-        _ = self.client.DropAll()
-        _ = self.client.Alter(schema="""
+        _ = self.client.drop_all()
+        _ = self.client.alter(schema="""
             first:  string   @index(term) .
             last:   string   @index(hash) .
             age:    int      @index(int)  .
@@ -104,7 +104,7 @@ class AcctUpsertIntegrationTestCase(DgraphClientIntegrationTestCase):
             }}
         }}'''.format(' '.join(firsts))
         logging.debug(q)
-        result = json.loads(self.client.Query(q=q).json)
+        result = json.loads(self.client.query(q=q).json)
         account_set = set()
         for acct in result['all']:
             self.assertTrue(acct['first'] is not None)
@@ -133,7 +133,7 @@ def upsert_account(hostname, port, account, success_ctr, retry_ctr):
 
         try:
             txn = c.txn()
-            result = json.loads(txn.Query(q=q).json)
+            result = json.loads(txn.query(q=q).json)
             assert len(result['acct']) <= 1, ('Lookup of account %s found '
                                               'multiple accounts' % account)
 
@@ -144,7 +144,7 @@ def upsert_account(hostname, port, account, success_ctr, retry_ctr):
                     _:acct <last> "{last}" .
                     _:acct <age>  "{age}"^^<xs:int> .
                 '''.format(**account)
-                created = txn.Mutate(setnquads=nquads)
+                created = txn.mutate(setnquads=nquads)
                 uid = created.uids.get('acct')
                 assert uid is not None and uid != '', 'Account with uid None/""'
             else:
@@ -156,8 +156,8 @@ def upsert_account(hostname, port, account, success_ctr, retry_ctr):
             updatequads = '''
                 <{0}> <when> "{1:d}"^^<xs:int> .
             '''.format(uid, int(time.time()))
-            updated = txn.Mutate(setnquads=updatequads)
-            txn.Commit()
+            updated = txn.mutate(setnquads=updatequads)
+            txn.commit()
             with success_ctr.get_lock():
                 success_ctr.value += 1
             # txn successful, break the loop
