@@ -23,8 +23,6 @@ import time
 import unittest
 from pydgraph import client
 
-logging.basicConfig(level=logging.DEBUG)
-
 
 class DgraphClientIntegrationTestCase(unittest.TestCase):
     """Base class for other integration test cases. Provides a client object
@@ -170,4 +168,5 @@ def upsert_account(hostname, port, account, success_ctr, retry_ctr):
 
 
 if __name__ == '__main__':
+    logging.basicConfig(level=logging.DEBUG)
     unittest.main()
