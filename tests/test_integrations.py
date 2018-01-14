@@ -48,8 +48,9 @@ class DgraphClientIntegrationTestCase(unittest.TestCase):
                         'Server version %s must be > 0.9' % version.tag)
 
 
-class AcctUpsertIntegrationTestCase(DgraphClientIntegrationTestCase):
+class AcountUpsertIntegrationTestCase(DgraphClientIntegrationTestCase):
     """Account upsert integration test."""
+
     def setUp(self):
         """Drops existing schema and loads new schema for the test."""
         super(AcctUpsertIntegrationTestCase, self).setUp()
@@ -72,12 +73,12 @@ class AcctUpsertIntegrationTestCase(DgraphClientIntegrationTestCase):
             when:   int                   .
             """)
 
-    def test_acctUpsertIntegration(self):
+    def test_acount_upsert(self):
         """Account upsert integration. Will run upserts concurrently."""
-        self.doUpserts(self.accounts, self.concurrency)
-        self.assertChanges(self.firsts, self.accounts)
+        self.do_upserts(self.accounts, self.concurrency)
+        self.assert_changes(self.firsts, self.accounts)
 
-    def doUpserts(self, account_list, concurrency):
+    def do_upserts(self, account_list, concurrency):
         """Will run the upsert command for the accouts in `account_list`. Execution
         happens in concurrent processes."""
         success_ctr = multiprocessing.Value('i', 0, lock=True)
@@ -93,7 +94,7 @@ class AcctUpsertIntegrationTestCase(DgraphClientIntegrationTestCase):
                     for acct in account_list for _ in range(concurrency)]
         [res.get() for res in results]
 
-    def assertChanges(self, firsts, accounts):
+    def assert_changes(self, firsts, accounts):
         """Will check to see changes have been made."""
         q = '''
         {{
@@ -167,8 +168,6 @@ def upsert_account(hostname, port, account, success_ctr, retry_ctr):
                 retry_ctr.value += 1
             # txn failed, retry the loop
 
-def foo(x):
-    return x+5
 
 if __name__ == '__main__':
     unittest.main()
