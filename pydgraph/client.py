@@ -60,7 +60,7 @@ class DgraphClient(object):
     async def aquery(self, q, timeout=None):
         request = api.Request(query=q, lin_read=self.lin_read)
         response = await self.stub.Query.future(request, timeout)
-        self._merge_context(response.txn)
+        self.merge_context(response.txn)
         return response
 
     def alter(self, schema, timeout=None):
