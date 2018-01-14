@@ -15,7 +15,7 @@ import time
 import unittest
 
 from pydgraph import client
-import test_integrations as integ
+import test_acct_upsert as integ
 
 USERS = 100
 CONCURRENCY = 10
@@ -94,7 +94,7 @@ def run_total(c, account_uids):
     """.format(uids='", "'.join(account_uids))
     resp = c.query(q=q)
     total = json.loads(resp.json)['total']
-    logging.debug("Response: %s", total)
+    logging.info("Response: %s", total)
     assert total[0]['bal'] == 10000
 
 
@@ -121,7 +121,7 @@ def run_xfers(hostname, port, xfer_count, account_ids, success_ctr, retry_ctr):
                 success_ctr.value += 1
 
             if not success_ctr.value % 100:
-                log.debug('Runs %d. Aborts: %d', success_ctr.value, retry_ctr.value)
+                log.info('Runs %d. Aborts: %d', success_ctr.value, retry_ctr.value)
             if success_ctr.value >= xfer_count:
                 break
         except grpc._channel._Rendezvous as e:
