@@ -34,7 +34,6 @@ class DgraphClient(object):
     def __init__(self, host, port):
         self.channel = grpc.insecure_channel("{host}:{port}".format(host=host, port=port))
         self._stub = api_grpc.DgraphStub(self.channel)
-        self._start_ts = 0
         self._lin_read = api.LinRead()
 
     @property
@@ -42,29 +41,24 @@ class DgraphClient(object):
         return self._stub
 
     @property
-    def start_ts(self):
-        return self._start_ts
-
-    @property
     def lin_read(self):
         return self._lin_read
 
-    def _merge_context(self, context):
+    def merge_context(self, context):
         """Merges txn_context into client's state."""
-        self._start_ts = context.start_ts
         util.merge_lin_reads(self.lin_read, context.lin_read)
 
     def check(self, timeout=None):
         return self.stub.CheckVersion(api.Check(), timeout)
 
     def query(self, q, timeout=None):
-        request = api.Request(query=q, start_ts=self.start_ts, lin_read=self.lin_read)
+        request = api.Request(query=q, lin_read=self.lin_read)
         response = self.stub.Query(request, timeout)
-        self._merge_context(response.txn)
+        self.merge_context(response.txn)
         return response
 
     async def aquery(self, q, timeout=None):
-        request = api.Request(query=q, start_ts=self.start_ts, lin_read=self.lin_read)
+        request = api.Request(query=q, lin_read=self.lin_read)
         response = await self.stub.Query.future(request, timeout)
         self._merge_context(response.txn)
         return response
