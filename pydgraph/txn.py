@@ -27,7 +27,7 @@ class DgraphTxn(object):
     """
     def __init__(self, client):
         self.client = client
-        self.start_ts = client.start_ts
+        self.start_ts = 0
         self.lin_read = api.LinRead()
         self.lin_read.MergeFrom(client.lin_read)
         self.keys = []
@@ -40,16 +40,15 @@ class DgraphTxn(object):
         ## This will be true if the server does not return a txn context after
         ## a query or a mutation
         if not txn_context: return
+
         if self.start_ts == 0:
             self.start_ts = txn_context.start_ts
         elif self.start_ts != txn_context.start_ts:
             raise Exception('StartTs mismatch in txn(%s) vs updated context(%s)' %
                             (self.start_ts, txn_context.start_ts))
 
-        # TODO(kochhar): disabling this as it makes client be part of the txn
-        # self.client.merge_context(txn_context)
+        self.client.merge_context(txn_context)
         util.merge_lin_reads(self.lin_read, txn_context.lin_read)
-
         self.keys.extend(txn_context.keys)
 
     def query(self, q, *args, **kwargs):
