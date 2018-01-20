@@ -51,7 +51,7 @@ class AcountUpsertIntegrationTestCase(DgraphClientIntegrationTestCase):
 
     def setUp(self):
         """Drops existing schema and loads new schema for the test."""
-        super(AcctUpsertIntegrationTestCase, self).setUp()
+        super(AcountUpsertIntegrationTestCase, self).setUp()
         self.concurrency = 5
 
         self.firsts = ['Paul', 'Eric', 'Jack', 'John', 'Martin']
