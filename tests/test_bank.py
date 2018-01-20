@@ -24,6 +24,7 @@ XFER_COUNT = 1000
 
 class TestBankXfer(integ.DgraphClientIntegrationTestCase):
     """Bank transfer integration test."""
+
     def setUp(self):
         """Drops existing schema and sets up schema for new test."""
         super(TestBankXfer, self).setUp()
