@@ -82,6 +82,8 @@ class DgraphTxn(object):
         """
         if self._finished: raise Exception('Transaction is complete')
         mutation = api.Mutation(start_ts=self.start_ts, commit_now=False)
+        if kwargs.pop('ignore_index_conflict', None):
+            mutation.ignore_index_conflict = True
         if setnquads:
             mutation.set_nquads=setnquads.encode('utf8')
         if delnquads:
@@ -110,6 +112,8 @@ class DgraphTxn(object):
         """
         if self._finished: raise Exception('Transaction is complete')
         mutation = api.Mutation(start_ts=self.start_ts, commit_now=False)
+        if kwargs.pop('ignore_index_conflict', None):
+            mutation.ignore_index_conflict = True
         if setobj:
             mutation.set_json=json.dumps(setobj).encode('utf8')
         if delobj:
@@ -123,6 +127,8 @@ class DgraphTxn(object):
     async def amutate_obj(self, setobj=None, delobj=None, *args, **kwargs):
         if self._finished: raise Exception('Transaction is complete')
         mutation = api.Mutation(start_ts=self.start_ts, commit_now=False)
+        if kwargs.pop('ignore_index_conflict', None):
+            mutation.ignore_index_conflict = True
         if setobj:
             mutation.set_json=json.dumps(setobj).encode('utf8')
         if delobj:
