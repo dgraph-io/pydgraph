@@ -22,7 +22,7 @@ if sys.version_info >= (2, 7, 9):
     import ssl
     ssl._create_default_https_context = ssl._create_unverified_context
 
-from pydgraph.utils.meta import VERSION
+from pydgraph.meta import VERSION
 
 setup(name="pydgraph",
       version=VERSION,
@@ -41,7 +41,7 @@ setup(name="pydgraph",
           "Programming Language :: Python :: 3.3",
           "Programming Language :: Python :: 3.4",
       ],
-      packages=["pydgraph", "pydgraph.utils", "pydgraph.utils.proto"],
+      packages=["pydgraph", "pydgraph.proto"],
       install_requires=open('requirements.txt').readlines(),
       test_suite='tests',
-      )
+)
