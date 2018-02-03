@@ -41,6 +41,22 @@ class TestEssentials(integ.DgraphClientIntegrationTestCase):
         self.assertEqual(created, json.loads(reread.json).get('node')[0]['uid'])
 
 
+    def testMultipleMutationsInTxn(self):
+        """Test what happens when running multiple mutations in a txn."""
+        txn = self.client.txn()
+
+        for i in range(100):
+            m = txn.mutate('''_:node <seq> "{seq:d}" .'''.format(seq=i))
+
+        self.assertEqual(100, len(txn.keys),
+                         "Expected txn to have only 100 modified keys.")
+        key_counter = {}
+        for key in txn.keys:
+            key_counter[key] = key_counter.setdefault(key, 0) + 1
+        recurring_keys = [(k, c) for (k, c) in key_counter.items() if c > 1]
+        self.assertEqual(0, len(recurring_keys),
+                         "Expected txn not to have recurring keys")
+
 
 if __name__ == '__main__':
     logging.basicConfig(level=logging.INFO)

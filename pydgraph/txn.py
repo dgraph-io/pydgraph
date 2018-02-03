@@ -49,7 +49,7 @@ class DgraphTxn(object):
 
         self.client.merge_context(txn_context)
         util.merge_lin_reads(self.lin_read, txn_context.lin_read)
-        self.keys.extend(txn_context.keys)
+        self.keys = txn_context.keys[:]
 
     def query(self, q, *args, **kwargs):
         if self._finished: raise Exception('Transaction is complete')
