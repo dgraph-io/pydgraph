@@ -1,4 +1,3 @@
-#
 # Copyright 2016 DGraph Labs, Inc.
 #
 # Licensed under the Apache License, Version 2.0 (the "License");
@@ -12,6 +11,7 @@
 # WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
 # See the License for the specific language governing permissions and
 # limitations under the License.
+
 import sys
 try:
     from setuptools import setup
@@ -24,24 +24,26 @@ if sys.version_info >= (2, 7, 9):
 
 from pydgraph.meta import VERSION
 
-setup(name="pydgraph",
+setup(name='pydgraph',
       version=VERSION,
-      description="Dgraph driver for Python",
-      license="Apache License, Version 2.0",
-      author="Mohit Ranka",
-      author_email="mohitranka@gmail.com",
-      url="https://github.com/dgraph-io/pydgraph",
+      description='Official Dgraph client implementation for Python',
+      license='Apache License, Version 2.0',
+      author='Mohit Ranka',
+      author_email='mohitranka@gmail.com',
+      url='https://github.com/dgraph-io/pydgraph',
       classifiers=[
-          "Intended Audience :: Developers",
-          "License :: OSI Approved :: Apache Software License",
-          "Operating System :: OS Independent",
-          "Topic :: Database",
-          "Topic :: Software Development",
-          "Programming Language :: Python :: 2.7",
-          "Programming Language :: Python :: 3.3",
-          "Programming Language :: Python :: 3.4",
+          'Intended Audience :: Developers',
+          'License :: OSI Approved :: Apache Software License',
+          'Operating System :: OS Independent',
+          'Topic :: Database',
+          'Topic :: Software Development',
+          'Programming Language :: Python :: 2.7',
+          'Programming Language :: Python :: 3.3',
+          'Programming Language :: Python :: 3.4',
+          'Programming Language :: Python :: 3.5',
+          'Programming Language :: Python :: 3.6',
       ],
-      packages=["pydgraph", "pydgraph.proto"],
+      packages=['pydgraph', 'pydgraph.proto'],
       install_requires=open('requirements.txt').readlines(),
       test_suite='tests',
 )

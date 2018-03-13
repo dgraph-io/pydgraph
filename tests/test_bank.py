@@ -15,7 +15,7 @@ import time
 import unittest
 
 from pydgraph import client
-import test_acct_upsert as integ
+from . import test_acct_upsert as integ
 
 USERS = 100
 CONCURRENCY = 10

@@ -1,4 +1,3 @@
-#
 # Copyright 2016 DGraph Labs, Inc.
 #
 # Licensed under the Apache License, Version 2.0 (the "License");

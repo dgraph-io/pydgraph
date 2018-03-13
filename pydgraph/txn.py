@@ -2,6 +2,7 @@
 This module contains the methods for using transactions when using
 a dgraph server over gRPC.
 """
+
 import grpc
 import json
 

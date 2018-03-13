@@ -19,7 +19,7 @@ import logging
 import unittest
 from pydgraph import client
 
-import test_acct_upsert as integ
+from . import test_acct_upsert as integ
 
 class TestEssentials(integ.DgraphClientIntegrationTestCase):
     """Tests the essentials of the client."""
