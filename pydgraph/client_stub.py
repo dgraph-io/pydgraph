@@ -37,29 +37,29 @@ class DgraphClientStub(object):
     def alter(self, op, timeout=None, metadata=None, credentials=None):
         return self.stub.Alter(op, timeout=timeout, metadata=metadata, credentials=credentials)
 
-    def alter_future(self, op, timeout=None, metadata=None, credentials=None):
+    def async_alter(self, op, timeout=None, metadata=None, credentials=None):
         return self.stub.Alter.future(op, timeout=timeout, metadata=metadata, credentials=credentials)
 
     def query(self, req, timeout=None, metadata=None, credentials=None):
         return self.stub.Query(req, timeout=timeout, metadata=metadata, credentials=credentials)
     
-    def query_future(self, req, timeout=None, metadata=None, credentials=None):
+    def async_query(self, req, timeout=None, metadata=None, credentials=None):
         return self.stub.Query.future(req, timeout=timeout, metadata=metadata, credentials=credentials)
     
     def mutate(self, mu, timeout=None, metadata=None, credentials=None):
         return self.stub.Mutate(mu, timeout=timeout, metadata=metadata, credentials=credentials)
     
-    def mutate_future(self, mu, timeout=None, metadata=None, credentials=None):
+    def async_mutate(self, mu, timeout=None, metadata=None, credentials=None):
         return self.stub.Mutate.future(mu, timeout=timeout, metadata=metadata, credentials=credentials)
     
     def commit_or_abort(self, ctx, timeout=None, metadata=None, credentials=None):
         return self.stub.CommitOrAbort(ctx, timeout=timeout, metadata=metadata, credentials=credentials)
     
-    def commit_or_abort_future(self, ctx, timeout=None, metadata=None, credentials=None):
+    def async_commit_or_abort(self, ctx, timeout=None, metadata=None, credentials=None):
         return self.stub.CommitOrAbort.future(ctx, timeout=timeout, metadata=metadata, credentials=credentials)
     
-    def checkVersion(self, check, timeout=None, metadata=None, credentials=None):
+    def check_version(self, check, timeout=None, metadata=None, credentials=None):
         return self.stub.CheckVersion(check, timeout=timeout, metadata=metadata, credentials=credentials)
     
-    def check_version_future(self, check, timeout=None, metadata=None, credentials=None):
+    def async_check_version(self, check, timeout=None, metadata=None, credentials=None):
         return self.stub.CheckVersion.future(check, timeout=timeout, metadata=metadata, credentials=credentials)
