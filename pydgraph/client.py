@@ -11,12 +11,12 @@
 # WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
 # See the License for the specific language governing permissions and
 # limitations under the License.
-"""
-This module contains the main user-facing methods for interacting with the
+"""This module contains the main user-facing methods for interacting with the
 Dgraph server over gRPC.
 """
 
 import grpc
+import random
 from pydgraph import txn
 from pydgraph import util
 from pydgraph.meta import VERSION
@@ -30,56 +30,28 @@ __status__ = 'development'
 
 
 class DgraphClient(object):
-    def __init__(self, host, port):
-        self.channel = grpc.insecure_channel("{host}:{port}".format(host=host, port=port))
-        self._stub = api_grpc.DgraphStub(self.channel)
+    def __init__(self, *clients):
+        if len(clients) == 0:
+            raise ValueError('no clients provided in DgraphClient constructor')
+
+        self._clients = [*clients]
         self._lin_read = api.LinRead()
-
-    @property
-    def stub(self):
-        return self._stub
-
-    @property
-    def lin_read(self):
-        return self._lin_read
-
-    def merge_context(self, context):
-        """Merges txn_context into client's state."""
-        util.merge_lin_reads(self.lin_read, context.lin_read)
-
-    def check(self, timeout=None):
-        return self.stub.CheckVersion(api.Check(), timeout)
-
-    def query(self, q, timeout=None):
-        request = api.Request(query=q, lin_read=self.lin_read)
-        response = self.stub.Query(request, timeout)
-        self.merge_context(response.txn)
-        return response
-
-    async def aquery(self, q, timeout=None):
-        request = api.Request(query=q, lin_read=self.lin_read)
-        response = await self.stub.Query.future(request, timeout)
-        self.merge_context(response.txn)
-        return response
 
     def alter(self, schema, timeout=None):
         """Alter schema at the other end of the connection."""
         operation = api.Operation(schema=schema)
-        return self.stub.Alter(operation, timeout)
+        return self.any_client().alter(operation, timeout=timeout)
 
     async def aalter(self, schema, timeout=None):
         operation = api.Operation(schema=schema)
-        return await self.stub.Alter.future(operation, timeout)
-
-    def drop_attr(self, drop_attr, timeout=None):
-        """Drop an attribute from the dgraph server."""
-        operation = api.Operation(drop_attr=drop_attr)
-        return self.stub.Alter(operation)
-
-    def drop_all(self, timeout=None):
-        """Drop all schema from the dgraph server."""
-        operation = api.Operation(drop_all=True)
-        return self.stub.Alter(operation)
+        return await self.any_client().alter_future(operation, timeout=timeout)
 
     def txn(self):
         return txn.DgraphTxn(self)
+
+    def merge_context(self, context):
+        """Merges txn_context into client's state."""
+        util.merge_lin_reads(self._lin_read, context.lin_read)
+
+    def any_client(self):
+        return random.choice(self._clients)
