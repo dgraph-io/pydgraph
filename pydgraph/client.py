@@ -11,17 +11,13 @@
 # WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
 # See the License for the specific language governing permissions and
 # limitations under the License.
-"""This module contains the main user-facing methods for interacting with the
-Dgraph server over gRPC.
-"""
 
 import grpc
 import random
-from pydgraph import txn
-from pydgraph import util
+
+from pydgraph import txn, util
 from pydgraph.meta import VERSION
-from pydgraph.proto import api_pb2 as api
-from pydgraph.proto import api_pb2_grpc as api_grpc
+from pydgraph.proto import api_pb2 as api, api_pb2_grpc as api_grpc
 
 __author__ = 'Mohit Ranka <mohitranka@gmail.com>'
 __maintainer__ = 'Mohit Ranka <mohitranka@gmail.com>'
@@ -30,6 +26,12 @@ __status__ = 'development'
 
 
 class DgraphClient(object):
+    """Creates a new Client for interacting with the Dgraph store.
+    
+    The client can be backed by multiple connections (to the same server, or
+    multiple servers in a cluster).
+    """
+
     def __init__(self, *clients):
         if len(clients) == 0:
             raise ValueError('no clients provided in DgraphClient constructor')
@@ -37,20 +39,16 @@ class DgraphClient(object):
         self._clients = [*clients]
         self._lin_read = api.LinRead()
 
-    def alter(self, schema, timeout=None):
-        """Alter schema at the other end of the connection."""
-        operation = api.Operation(schema=schema)
-        return self.any_client().alter(operation, timeout=timeout)
+    def alter(self, op, timeout=None, metadata=None, credentials=None):
+        return self.any_client().alter(op, timeout=timeout, metadata=metadata, credentials=credentials)
 
-    async def aalter(self, schema, timeout=None):
-        operation = api.Operation(schema=schema)
-        return await self.any_client().alter_future(operation, timeout=timeout)
+    async def async_alter_future(self, op, timeout=None, metadata=None, credentials=None):
+        return self.any_client().async_alter(op, timeout=timeout, metadata=metadata, credentials=credentials)
 
     def txn(self):
         return txn.DgraphTxn(self)
 
     def merge_context(self, context):
-        """Merges txn_context into client's state."""
         util.merge_lin_reads(self._lin_read, context.lin_read)
 
     def any_client(self):
