@@ -80,6 +80,7 @@ class Txn(object):
             try:
                 self.discard(timeout=timeout, metadata=metadata, credentials=credentials)
             except:
+                # Ignore error - user should see the original error.
                 pass
 
             self._common_except_mutate(e, timeout=timeout, metadata=metadata, credentials=credentials)
@@ -95,6 +96,7 @@ class Txn(object):
             try:
                 await self.async_discard(timeout=timeout, metadata=metadata, credentials=credentials)
             except:
+                # Ignore error - user should see the original error.
                 pass
 
             self._common_except_mutate(e, timeout=timeout, metadata=metadata, credentials=credentials)
@@ -150,7 +152,7 @@ class Txn(object):
             status_code = e.code()
             if status_code == grpc.StatusCode.ABORTED:
                 raise Exception('Transaction has been aborted. Please retry')
-        
+
         raise e
 
     def discard(self, timeout=None, metadata=None, credentials=None):
