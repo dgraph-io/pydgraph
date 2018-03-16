@@ -36,7 +36,7 @@ class DgraphClient(object):
         if len(clients) == 0:
             raise ValueError('No clients provided in DgraphClient constructor')
 
-        self._clients = [*clients]
+        self._clients = clients[:]
         self._lin_read = api.LinRead()
 
     def alter(self, op, timeout=None, metadata=None, credentials=None):
