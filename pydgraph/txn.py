@@ -150,7 +150,7 @@ class DgraphTxn(object):
             mutation.del_json=json.dumps(delobj).encode('utf8'),
 
         assigned = await self.client.stub.Mutate.future(mutation, *args, **kwargs)
-        self.merge_context(assinged.context)
+        self.merge_context(assigned.context)
         self._mutated = True
         return assigned
 
