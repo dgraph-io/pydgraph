@@ -43,7 +43,7 @@ class DgraphClient(object):
         return self.any_client().alter(op, timeout=timeout, metadata=metadata, credentials=credentials)
 
     async def async_alter(self, op, timeout=None, metadata=None, credentials=None):
-        return self.any_client().async_alter(op, timeout=timeout, metadata=metadata, credentials=credentials)
+        return await self.any_client().async_alter(op, timeout=timeout, metadata=metadata, credentials=credentials)
 
     def txn(self):
         return txn.Txn(self)
