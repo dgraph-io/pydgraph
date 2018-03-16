@@ -1,18 +1,33 @@
-"""
-Module containing utilities for dgraph RPC messages
-"""
+# Copyright 2018 DGraph Labs, Inc.
+#
+# Licensed under the Apache License, Version 2.0 (the "License");
+# you may not use this file except in compliance with the License.
+# You may obtain a copy of the License at
+#
+#    http://www.apache.org/licenses/LICENSE-2.0
+#
+# Unless required by applicable law or agreed to in writing, software
+# distributed under the License is distributed on an "AS IS" BASIS,
+# WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+# See the License for the specific language governing permissions and
+# limitations under the License.
+
+from pydgraph.meta import VERSION
 
 __author__ = 'Shailesh Kochhar <shailesh.kochhar@gmail.com>'
+__maintainer__ = 'Garvit Pahal <garvit@dgraph.io>'
+__version__ = VERSION
+__status__ = 'development'
 
 
-def merge_lin_reads(current, update_lin_read):
-    """Merges LinRead protobufs by adding all keys in the ids field from the
-    updated_lin_read to the current one. If the key already exists, the one
-    with the larger value is preserved."""
+def merge_lin_reads(target, src):
+    if src is None:
+        return target
+
     # cache for the loop
-    curr_lin_read_ids = current.ids
-    curr_lin_read_ids_get = curr_lin_read_ids.get
+    target_ids = target.ids
+    target_ids_get = target_ids.get
 
-    for (key, update_value) in update_lin_read.ids.items():
-        if curr_lin_read_ids_get(key, 0) <= update_value:
-            curr_lin_read_ids[key] = update_value
+    for (key, src_value) in src.ids.items():
+        if target_ids_get(key, 0) <= src_value:
+            target_ids[key] = src_value

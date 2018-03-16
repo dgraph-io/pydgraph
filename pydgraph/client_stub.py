@@ -13,11 +13,11 @@
 # limitations under the License.
 
 import grpc
+
 from pydgraph import txn
 from pydgraph import util
 from pydgraph.meta import VERSION
-from pydgraph.proto import api_pb2 as api
-from pydgraph.proto import api_pb2_grpc as api_grpc
+from pydgraph.proto import api_pb2 as api, api_pb2_grpc as api_grpc
 
 __author__ = 'Garvit Pahal <garvit@dgraph.io>'
 __maintainer__ = 'Garvit Pahal <garvit@dgraph.io>'
