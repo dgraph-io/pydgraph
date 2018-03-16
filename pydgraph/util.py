@@ -37,7 +37,4 @@ def merge_lin_reads(target, src):
     return target
 
 def is_string(s):
-    if sys.version_info[0] < 3:
-        return isinstance(s, basestring)
-    else:
-        return isinstance(s, str)
+    return isinstance(s, str)

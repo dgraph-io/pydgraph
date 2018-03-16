@@ -78,9 +78,6 @@ class TestIsString(unittest.TestCase):
         self.assertFalse(util.is_string(object()))
         self.assertFalse(util.is_string({}))
 
-        if sys.version_info[0] < 3:
-            self.assertTrue(util.is_string(unicode('a')))
-
 def suite():
     suite = unittest.TestSuite()
     suite.addTest(TestMergeLinReads())
