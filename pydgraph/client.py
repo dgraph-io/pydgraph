@@ -48,6 +48,14 @@ class DgraphClient(object):
     def txn(self):
         return txn.DgraphTxn(self)
 
+    def get_lin_read(self):
+        lr = api.LinRead()
+        ids = lr.ids
+        for (key, value) in ids.items():
+            ids[key] = value
+        
+        return lr
+
     def merge_context(self, context):
         util.merge_lin_reads(self._lin_read, context.lin_read)
 
