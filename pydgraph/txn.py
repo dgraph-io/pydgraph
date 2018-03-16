@@ -25,162 +25,170 @@ __version__ = VERSION
 __status__ = 'development'
 
 
-class DgraphTxn(object):
-    """Class representing a single transaction. A transaction will maintain
-    three items of state for each transaction.
-
-    Attributes
-    ==========
-
-    * lin_read: a linearizable read pointer, maintained independently of the
-                parent client
-    * start_ts: a starting timestamp, this uniquely identifies a transaction
-                and doesn't change over its lifetime.
-    * keys: the set of keys modified by the transaction to aid in conflict
-            detection
+class Txn(object):
+    """Txn is a single atomic transaction.
+    
+    A transaction lifecycle is as follows:
+    
+    1. Created using Client.newTxn.
+    
+    2. Various query and qutate calls made.
+    
+    3. commit or discard used. If any mutations have been made, It's important
+    that at least one of these methods is called to clean up resources. discard
+    is a no-op if dommit has already been called, so it's safe to call discard
+    after calling commit.
     """
 
     def __init__(self, client):
-        self.client = client
-        self.start_ts = 0
-        self.lin_read = api.LinRead()
-        self.lin_read.MergeFrom(client.lin_read)
-        self.keys = []
+        self._dc = client
+        self._ctx = api.TxnContext()
+        self._ctx.lin_read = self._dc.get_lin_read()
 
-        self._mutated = False
         self._finished = False
+        self._mutated = False
 
-    def merge_context(self, txn_context):
-        """Merges context from a txn context into the current txn state."""
-        ## This will be true if the server does not return a txn context after
-        ## a query or a mutation
-        if not txn_context: return
+    def query(self, q, vars=None, timeout=None, metadata=None, credentials=None):
+        req = self._common_query(q, vars=vars)
+        res = self._dc.any_client().query(req, timeout=timeout, metadata=metadata, credentials=credentials)
+        self.merge_context(res.txn)
+        return res
+    
+    async def async_query(self, q, vars=None, timeout=None, metadata=None, credentials=None):
+        req = self._common_query(q, vars=vars)
+        res = await self._dc.any_client().async_query(req, timeout=timeout, metadata=metadata, credentials=credentials)
+        self.merge_context(res.txn)
+        return res
+    
+    def _common_query(self, q, vars=None):
+        if self._finished:
+            raise Exception('Transaction has already been committed or discarded')
+        
+        req = api.Request(query=q, start_ts=self._ctx.start_ts, lin_read=self._ctx.lin_read)
+        if vars is not None:
+            for key, value in vars.items():
+                if util.is_string(key) and util.is_string(value):
+                    req.vars[key] = value
+        
+        return req
 
-        if self.start_ts == 0:
-            self.start_ts = txn_context.start_ts
-        elif self.start_ts != txn_context.start_ts:
-            raise Exception('StartTs mismatch in txn(%s) vs updated context(%s)' %
-                            (self.start_ts, txn_context.start_ts))
+    def mutate(self, mu, timeout=None, metadata=None, credentials=None):
+        mu = self._common_mutate(mu)
+        try:
+            ag = self._dc.any_client().mutate(mu, timeout=timeout, metadata=metadata, credentials=credentials)
+        except Exception as e:
+            try:
+                self.discard(timeout=timeout, metadata=metadata, credentials=credentials)
+            except:
+                pass
 
-        self.client.merge_context(txn_context)
-        util.merge_lin_reads(self.lin_read, txn_context.lin_read)
-        self.keys = txn_context.keys[:]
+            self._common_except_mutate(e, timeout=timeout, metadata=metadata, credentials=credentials)
 
-    def query(self, q, *args, **kwargs):
-        if self._finished: raise Exception('Transaction is complete')
-        request = api.Request(query=q, start_ts=self.start_ts, lin_read=self.lin_read)
-        response = self.client.stub.Query(request, *args, **kwargs)
-        self.merge_context(response.txn)
-        return response
+        self.merge_context(ag.context)
+        return ag
+    
+    async def async_mutate(self, mu, timeout=None, metadata=None, credentials=None):
+        mu = self._common_mutate(mu)
+        try:
+            ag = await self._dc.any_client().async_mutate(mu, timeout=timeout, metadata=metadata, credentials=credentials)
+        except Exception as e:
+            try:
+                await self.async_discard(timeout=timeout, metadata=metadata, credentials=credentials)
+            except:
+                pass
 
-    async def aquery(self, q, *args, **kwargs):
-        if self._finished: raise Exception('Transaction is complete')
-        request = api.Request(query=q, start_ts=self.start_ts, lin_read=self.lin_read)
-        response = await self.client.stub.Query.future(request, *args, **kwargs)
-        self.merge_context(response.txn)
-        return response
+            self._common_except_mutate(e, timeout=timeout, metadata=metadata, credentials=credentials)
 
-    def mutate(self, setnquads=None, delnquads=None, *args, **kwargs):
-        """Mutate extends MutateObj to allow mutations to be specified as
-        N-Quad strings.
-
-        Mutations also support a commit_now method which commits the transaction
-        along with the mutation. This mode is presently unsupported.
-
-        Params
-        ======
-          * setnquads: a string containing nquads to set
-          * delnquads: a string containing nquads to delete
-
-        N-Quad format is
-            <subj> <pred> <obj> .
-        """
-        if self._finished: raise Exception('Transaction is complete')
-        mutation = api.Mutation(start_ts=self.start_ts, commit_now=False)
-        if kwargs.pop('ignore_index_conflict', None):
-            mutation.ignore_index_conflict = True
-        if setnquads:
-            mutation.set_nquads=setnquads.encode('utf8')
-        if delnquads:
-            mutation.del_nquads=delnquads.encode('utf8')
-
-        assigned = self.client.stub.Mutate(mutation, *args, **kwargs)
-        self.merge_context(assigned.context)
+        self.merge_context(ag.context)
+        return ag
+    
+    def _common_mutate(self, mu):
+        if self._finished:
+            raise Exception('Transaction has already been committed or discarded')
+        
         self._mutated = True
-        return assigned
+        mu.start_ts = self._ctx.start_ts
+        return mu
+    
+    def _common_except_mutate(self, e, timeout=None, metadata=None, credentials=None):
+        if isinstance(e, grpc.RpcError):
+            e.details()
+            status_code = e.code()
+            if status_code == grpc.StatusCode.ABORTED or status_code == grpc.StatusCode.FAILED_PRECONDITION:
+                raise Exception('Transaction has been aborted. Please retry')
+        
+        raise e
 
-    def mutate_obj(self, setobj=None, delobj=None, *args, **kwargs):
-        """Mutate allows modification of the data stored in the DGraph instance.
+    def commit(self, timeout=None, metadata=None, credentials=None):
+        if not self._common_commit():
+            return
 
-        A mutation can be described either using JSON or via RDF quads. This
-        method presently support mutations described via JSON.
+        try:
+            self._dc.any_client().commit_or_abort(self._ctx, timeout=None, metadata=None, credentials=None)
+        except Exception as e:
+            self._common_except_commit(e)
+    
+    async def async_commit(self, timeout=None, metadata=None, credentials=None):
+        if not self._common_commit():
+            return
 
-        Mutations also support a commit_now method which commits the transaction
-        along with the mutation. This mode is presently unsupported.
-
-        Params
-        ======
-          * setobj: an object with data to set, to be encoded as JSON and
-                converted to utf8 bytes
-          * delobj: an object with data to be deleted, to be encoded as JSON
-                and converted to utf8 bytes.
-        """
-        if self._finished: raise Exception('Transaction is complete')
-        mutation = api.Mutation(start_ts=self.start_ts, commit_now=False)
-        if kwargs.pop('ignore_index_conflict', None):
-            mutation.ignore_index_conflict = True
-        if setobj:
-            mutation.set_json=json.dumps(setobj).encode('utf8')
-        if delobj:
-            mutation.delete_json=json.dumps(delobj).encode('utf8')
-
-        assigned = self.client.stub.Mutate(mutation, *args, **kwargs)
-        self.merge_context(assigned.context)
-        self._mutated = True
-        return assigned
-
-    async def amutate_obj(self, setobj=None, delobj=None, *args, **kwargs):
-        if self._finished: raise Exception('Transaction is complete')
-        mutation = api.Mutation(start_ts=self.start_ts, commit_now=False)
-        if kwargs.pop('ignore_index_conflict', None):
-            mutation.ignore_index_conflict = True
-        if setobj:
-            mutation.set_json=json.dumps(setobj).encode('utf8')
-        if delobj:
-            mutation.del_json=json.dumps(delobj).encode('utf8'),
-
-        assigned = await self.client.stub.Mutate.future(mutation, *args, **kwargs)
-        self.merge_context(assigned.context)
-        self._mutated = True
-        return assigned
-
-    def commit(self, *args, **kwargs):
-        """Commits any mutations performed in the transaction. Once the
-        transaction is committed its lifespan is complete and no further
-        mutations or commits can be made."""
-        if self._finished: raise Exception('Cannot commit a transaction which is complete')
-
+        try:
+            await self._dc.any_client().async_commit_or_abort(self._ctx, timeout=None, metadata=None, credentials=None)
+        except Exception as e:
+            self._common_except_commit(e)
+    
+    def _common_commit(self):
+        if self._finished:
+            raise Exception('Transaction has already been committed or discarded')
+        
         self._finished = True
-        if not self._mutated: return
+        return self._mutated
+    
+    def _common_except_commit(self, e):
+        if isinstance(e, grpc.RpcError):
+            e.details()
+            status_code = e.code()
+            if status_code == grpc.StatusCode.ABORTED:
+                raise Exception('Transaction has been aborted. Please retry')
+        
+        raise e
 
-        txn_context = api.TxnContext(start_ts=self.start_ts,
-                                     keys=self.keys,
-                                     lin_read=self.lin_read)
-        resp_txn_context = self.client.stub.CommitOrAbort(txn_context, *args, **kwargs)
-        return resp_txn_context
+    def discard(self, timeout=None, metadata=None, credentials=None):
+        if not self._common_commit():
+            return
 
-    def abort(self, *args, **kwargs):
-        """Aborts any mutations performed in the transaction. Once the
-        transaction is aborted its lifespan is complete and no further
-        mutations or commits can be made."""
-        if self._finished: raise Exception('Cannot abort a transaction which is complete')
+        self._dc.any_client().commit_or_abort(self._ctx, timeout=None, metadata=None, credentials=None)
+    
+    async def async_discard(self, timeout=None, metadata=None, credentials=None):
+        if not self._common_discard():
+            return
 
+        await self._dc.any_client().async_commit_or_abort(self._ctx, timeout=None, metadata=None, credentials=None)
+    
+    def _common_discard(self):
+        if self._finished:
+            return False
+        
         self._finished = True
-        if not self._mutated: return
+        if not self._mutated:
+            return False
+        
+        self._ctx.aborted = True
+        return True
+    
+    def merge_context(self, src=None):
+        if src is None:
+            # This condition will be true only if the server doesn't return a
+            # txn context after a query or mutation.
+            return
 
-        txn_context = api.TxnContext(start_ts=self.start_ts,
-                                     keys=self.keys,
-                                     lin_read=self.lin_read,
-                                     aborted=True)
-        resp_txn_context = self.client.stub.CommitOrAbort(txn_context, *args, **kwargs)
-        return resp_txn_context
+        util.merge_lin_reads(self._ctx.lin_read, src.lin_read)
+        self._client.merge_lin_reads(src.lin_read)
+
+        if self._ctx.start_ts == 0:
+            self._ctx.start_ts = src.start_ts
+        elif self._ctx.start_ts != src.start_ts:
+            # This condition should never be true.
+            raise Exception('StartTs mismatch')
+
+        self.keys = src.keys[:]

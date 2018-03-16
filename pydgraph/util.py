@@ -12,6 +12,8 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 
+import sys
+
 from pydgraph.meta import VERSION
 
 __author__ = 'Shailesh Kochhar <shailesh.kochhar@gmail.com>'
@@ -28,6 +30,12 @@ def merge_lin_reads(target, src):
     target_ids = target.ids
     target_ids_get = target_ids.get
 
-    for (key, src_value) in src.ids.items():
+    for key, src_value in src.ids.items():
         if target_ids_get(key, 0) <= src_value:
             target_ids[key] = src_value
+
+def is_string(s):
+    if sys.version_info[0] < 3:
+        return isinstance(s, basestring)
+    else:
+        return isinstance(s, str)

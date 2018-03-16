@@ -42,22 +42,22 @@ class DgraphClient(object):
     def alter(self, op, timeout=None, metadata=None, credentials=None):
         return self.any_client().alter(op, timeout=timeout, metadata=metadata, credentials=credentials)
 
-    async def async_alter_future(self, op, timeout=None, metadata=None, credentials=None):
+    async def async_alter(self, op, timeout=None, metadata=None, credentials=None):
         return self.any_client().async_alter(op, timeout=timeout, metadata=metadata, credentials=credentials)
 
     def txn(self):
-        return txn.DgraphTxn(self)
+        return txn.Txn(self)
 
     def get_lin_read(self):
         lr = api.LinRead()
         ids = lr.ids
-        for (key, value) in ids.items():
+        for key, value in ids.items():
             ids[key] = value
         
         return lr
 
-    def merge_context(self, context):
-        util.merge_lin_reads(self._lin_read, context.lin_read)
+    def merge_lin_reads(self, src):
+        util.merge_lin_reads(self._lin_read, src)
 
     def any_client(self):
         return random.choice(self._clients)
