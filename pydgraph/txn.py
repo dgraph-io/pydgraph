@@ -183,7 +183,7 @@ class Txn(object):
             return
 
         util.merge_lin_reads(self._ctx.lin_read, src.lin_read)
-        self._client.merge_lin_reads(src.lin_read)
+        self._dc.merge_lin_reads(src.lin_read)
 
         if self._ctx.start_ts == 0:
             self._ctx.start_ts = src.start_ts
@@ -191,4 +191,4 @@ class Txn(object):
             # This condition should never be true.
             raise Exception('StartTs mismatch')
 
-        self.keys = src.keys[:]
+        self._ctx.keys = src.keys[:]
