@@ -20,7 +20,7 @@ from pydgraph.meta import VERSION
 from pydgraph.proto import api_pb2 as api, api_pb2_grpc as api_grpc
 
 __author__ = 'Mohit Ranka <mohitranka@gmail.com>'
-__maintainer__ = 'Mohit Ranka <mohitranka@gmail.com>'
+__maintainer__ = 'Garvit Pahal <garvit@dgraph.io>'
 __version__ = VERSION
 __status__ = 'development'
 
