@@ -34,7 +34,7 @@ class DgraphClient(object):
 
     def __init__(self, *clients):
         if len(clients) == 0:
-            raise ValueError('no clients provided in DgraphClient constructor')
+            raise ValueError('No clients provided in DgraphClient constructor')
 
         self._clients = [*clients]
         self._lin_read = api.LinRead()
