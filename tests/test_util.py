@@ -16,7 +16,7 @@ __author__ = 'Garvit Pahal <garvit@dgraph.io>'
 __maintainer__ = 'Garvit Pahal <garvit@dgraph.io>'
 
 import unittest
-import grpc
+import sys
 
 from pydgraph import util
 from pydgraph.proto import api_pb2 as api
@@ -29,7 +29,7 @@ class TestMergeLinReads(unittest.TestCase):
         self.assertTrue(helper.are_lin_reads_equal(util.merge_lin_reads(lr1, lr2), expected))
         self.assertTrue(helper.are_lin_reads_equal(lr1, expected))
 
-    def test_simple(self):
+    def test_disjoint(self):
         lr1 = helper.create_lin_read({1: 1})
         lr2 = helper.create_lin_read({2: 2, 3: 3})
         res = helper.create_lin_read({1: 1, 2: 2, 3: 3})
@@ -70,6 +70,16 @@ class TestMergeLinReads(unittest.TestCase):
         lr2 = helper.create_lin_read({1: 1})
         res = helper.create_lin_read({1: 1})
         self.common_test(lr1, lr2, res)
+
+class TestIsString(unittest.TestCase):
+    def test_is_string(self):
+        self.assertTrue(util.is_string(''))
+        self.assertTrue(util.is_string('a'))
+        self.assertFalse(util.is_string(object()))
+        self.assertFalse(util.is_string({}))
+
+        if sys.version_info[0] < 3:
+            self.assertTrue(util.is_string(unicode('a')))
 
 def suite():
     suite = unittest.TestSuite()
