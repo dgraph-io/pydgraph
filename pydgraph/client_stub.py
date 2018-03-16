@@ -37,7 +37,7 @@ class DgraphClientStub(object):
     def alter(self, op, timeout=None, metadata=None, credentials=None):
         return self.stub.Alter(op, timeout=timeout, metadata=metadata, credentials=credentials)
 
-    async def async_alter(self, op, timeout=None, metadata=None, caredentials=None):
+    async def async_alter(self, op, timeout=None, metadata=None, credentials=None):
         return await self.stub.Alter.future(op, timeout=timeout, metadata=metadata, credentials=credentials)
 
     def query(self, req, timeout=None, metadata=None, credentials=None):
