@@ -28,7 +28,7 @@ __status__ = 'development'
 class DgraphClientStub(object):
     def __init__(self, addr="localhost:9080", credentials=None, options=None):
         if credentials is None:
-            self.channel = grpc.insecure_channel(addr)
+            self.channel = grpc.insecure_channel(addr, options)
         else:
             self.channel = grpc.secure_channel(addr,  credentials, options)
         
