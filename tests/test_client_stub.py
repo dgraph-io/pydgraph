@@ -15,45 +15,32 @@
 __author__ = 'Garvit Pahal <garvit@dgraph.io>'
 __maintainer__ = 'Garvit Pahal <garvit@dgraph.io>'
 
-import grpc
+import unittest
 
 from pydgraph.client_stub import DgraphClientStub
-from pydgraph.client import DgraphClient
 from pydgraph.proto import api_pb2 as api
 
-def create_lin_read(ids):
-    lr = api.LinRead()
-    ids = lr.ids
-    for key, value in ids:
-        ids[key] = value
+
+class TestDgraphClientStub(unittest.TestCase):
+    def validate_version_object(self, version):
+        tag = version.tag
+        self.assertIsInstance(tag, str)
+
+    def check_version(self, stub):
+        self.validate_version_object(stub.check_version(api.Check()))
+
+    def test_constructor(self):
+        self.check_version(DgraphClientStub())
     
-    return lr
+    def test_timeout(self):
+        with self.assertRaises(Exception):
+            DgraphClientStub().check_version(api.Check(), timeout=-1)
 
-def are_lin_reads_equal(a, b):
-    aIds = a.ids
-    bIds = b.ids
+def suite():
+    suite = unittest.TestSuite()
+    suite.addTest(TestDgraphClientStub())
+    return suite
 
-    if len(aIds) != len(bIds):
-        return False
-    
-    for key in aIds.items():
-        if key not in bIds:
-            return False
-    
-    return True
-
-SERVER_ADDR = "localhost:9080"
-
-def createClient():
-    return DgraphClient(DgraphClientStub(SERVER_ADDR))
-
-def setSchema(client, schema):
-    return client.alter(api.Operation(schema=schema))
-
-def dropAll(client):
-    return client.alter(api.Operation(drop_all=True))
-
-def setup():
-    client = createClient()
-    dropAll(client)
-    return client
+if __name__ == '__main__':
+    runner = unittest.TextTestRunner()
+    runner.run(suite())
