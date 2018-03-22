@@ -43,7 +43,7 @@ class Txn(object):
     def __init__(self, client):
         self._dc = client
         self._ctx = api.TxnContext()
-        self._ctx.lin_read = self._dc.get_lin_read()
+        self._dc.set_lin_read(self._ctx)
 
         self._finished = False
         self._mutated = False
@@ -72,8 +72,12 @@ class Txn(object):
         
         return req
 
-    def mutate(self, mu, timeout=None, metadata=None, credentials=None):
-        mu = self._common_mutate(mu)
+    def mutate(
+        self, mu=None, set_obj=None, del_obj=None, set_nquads=None, del_nquads=None, ignore_index_conflict=None,
+        timeout=None, metadata=None, credentials=None):
+        mu = self._common_mutate(
+            mu=mu, set_obj=set_obj, del_obj=del_obj, set_nquads=set_nquads, del_nquads=del_nquads,
+            ignore_index_conflict=ignore_index_conflict)
         try:
             ag = self._dc.any_client().mutate(mu, timeout=timeout, metadata=metadata, credentials=credentials)
         except Exception as e:
@@ -88,8 +92,12 @@ class Txn(object):
         self.merge_context(ag.context)
         return ag
     
-    async def async_mutate(self, mu, timeout=None, metadata=None, credentials=None):
-        mu = self._common_mutate(mu)
+    async def async_mutate(
+        self, mu=None, set_obj=None, del_obj=None, set_nquads=None, del_nquads=None, ignore_index_conflict=None,
+        timeout=None, metadata=None, credentials=None):
+        mu = self._common_mutate(
+            mu=mu, set_obj=set_obj, del_obj=del_obj, set_nquads=set_nquads, del_nquads=del_nquads,
+            ignore_index_conflict=ignore_index_conflict)
         try:
             ag = await self._dc.any_client().async_mutate(mu, timeout=timeout, metadata=metadata, credentials=credentials)
         except Exception as e:
@@ -104,7 +112,20 @@ class Txn(object):
         self.merge_context(ag.context)
         return ag
     
-    def _common_mutate(self, mu):
+    def _common_mutate(self, mu=None, set_obj=None, del_obj=None, set_nquads=None, del_nquads=None, ignore_index_conflict=None):
+        if not mu:
+            mu = api.Mutation()
+        if set_obj:
+            mu.set_json = json.dumps(set_obj).encode('utf8')
+        if del_obj:
+            mu.delete_json = json.dumps(del_obj).encode('utf8')
+        if set_nquads:
+            mu.set_nquads = set_nquads.encode('utf8')
+        if del_nquads:
+            mu.del_nquads = del_nquads.encode('utf8')
+        if ignore_index_conflict:
+            mu.ignore_index_conflict = True
+        
         if self._finished:
             raise Exception('Transaction has already been committed or discarded')
         
@@ -117,7 +138,7 @@ class Txn(object):
             e.details()
             status_code = e.code()
             if status_code == grpc.StatusCode.ABORTED or status_code == grpc.StatusCode.FAILED_PRECONDITION:
-                raise Exception('Transaction has been aborted. Please retry')
+                raise AbortedError()
         
         raise e
 
@@ -151,7 +172,7 @@ class Txn(object):
             e.details()
             status_code = e.code()
             if status_code == grpc.StatusCode.ABORTED:
-                raise Exception('Transaction has been aborted. Please retry')
+                raise AbortedError()
 
         raise e
 
@@ -193,4 +214,9 @@ class Txn(object):
             # This condition should never be true.
             raise Exception('StartTs mismatch')
 
-        self._ctx.keys = src.keys[:]
+        self._ctx.keys[:] = src.keys[:]
+
+
+class AbortedError(Exception):
+    def __init__(self):
+        super(AbortedError, self).__init__('Transaction has been aborted. Please retry')
