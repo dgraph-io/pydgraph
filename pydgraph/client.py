@@ -14,6 +14,7 @@
 
 import grpc
 import random
+import json
 
 from pydgraph import txn, util
 from pydgraph.meta import VERSION
