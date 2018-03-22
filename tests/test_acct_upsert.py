@@ -26,28 +26,6 @@ import unittest
 from pydgraph import client
 
 
-class DgraphClientIntegrationTestCase(unittest.TestCase):
-    """Base class for other integration test cases. Provides a client object
-    with a connection to the dgraph server and ensures that the server is
-    0.9 or greater.
-    """
-    TEST_HOSTNAME = 'localhost'
-    TEST_PORT = 9080
-
-    def setUp(self):
-        """Sets up the client and verifies the version is compatible."""
-        self.client = client.DgraphClient(self.TEST_HOSTNAME, self.TEST_PORT)
-        version = self.client.check()
-        # version.tag string format is v<MAJOR>.<MINOR>.<PATCH>
-        # version_tup = [MAJOR, MINOR, PATCH]
-        version_tup = version.tag[1:].split('.')
-
-        version_supported = (int(version_tup[0]) > 0 or
-                             (int(version_tup[0]) == 0 and int(version_tup[1]) >= 9))
-        self.assertTrue(version_supported,
-                        'Server version %s must be > 0.9' % version.tag)
-
-
 class AcountUpsertIntegrationTestCase(DgraphClientIntegrationTestCase):
     """Account upsert integration test."""
 

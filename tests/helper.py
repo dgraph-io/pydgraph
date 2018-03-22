@@ -15,6 +15,7 @@
 __author__ = 'Garvit Pahal <garvit@dgraph.io>'
 __maintainer__ = 'Garvit Pahal <garvit@dgraph.io>'
 
+import unittest
 import grpc
 
 from pydgraph.client_stub import DgraphClientStub
@@ -42,10 +43,10 @@ def are_lin_reads_equal(a, b):
     
     return True
 
-SERVER_ADDR = "localhost:9080"
+SERVER_ADDR = 'localhost:9080'
 
-def createClient():
-    return DgraphClient(DgraphClientStub(SERVER_ADDR))
+def createClient(addr = SERVER_ADDR):
+    return DgraphClient(DgraphClientStub(addr))
 
 def setSchema(client, schema):
     return client.alter(api.Operation(schema=schema))
@@ -57,3 +58,27 @@ def setup():
     client = createClient()
     dropAll(client)
     return client
+
+
+class ClientIntegrationTestCase(unittest.TestCase):
+    """Base class for other integration test cases. Provides a client object
+    with a connection to the dgraph server and ensures that the server is
+    v1.0 or greater.
+    """
+
+    TEST_SERVER_ADDR = SERVER_ADDR
+
+    def setUp(self):
+        """Sets up the client and verifies the version is compatible."""
+
+        self.client = createClient(self.TEST_SERVER_ADDR)
+        version = self.client.any_client().check_version(api.Check());
+
+        # version.tag string format is v<MAJOR>.<MINOR>.<PATCH>
+        # version_tup = [MAJOR, MINOR, PATCH]
+        version_tup = version.tag[1:].split('.')
+
+        version_supported = int(version_tup[0]) > 0
+        self.assertTrue(
+            version_supported,
+            'Dgraph server version must be >= v1.0.0, got %s' % version.tag)

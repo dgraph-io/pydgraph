@@ -11,37 +11,35 @@
 # WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
 # See the License for the specific language governing permissions and
 # limitations under the License.
-"""
-test_txn.py
 
-implements test case for transactions
-"""
-
+import unittest
 import grpc
 import json
 import logging
 import os
 import random
 import time
-import unittest
 
-from pydgraph import client
-from . import test_acct_upsert as integ
+from pydgraph.client import DgraphClient
+from pydgraph.proto import api_pb2 as api
+
+from . import helper
 
 
-class TestClientTxns(integ.DgraphClientIntegrationTestCase):
-    """Transactions test cases."""
+class TestTxn(helper.ClientIntegrationTestCase):
+    """Transaction test cases."""
 
     def setUp(self):
         """Drops all the existing schema and creates schema for tests."""
-        super(TestClientTxns, self).setUp()
+        super(TestTxn, self).setUp()
 
-        _ = self.client.drop_all()
-        _ = self.client.alter(schema="""name: string @index(fulltext) .""")
+        helper.dropAll(self.client)
+        helper.setSchema(self.client, 'name: string @index(fulltext) .')
 
     def test_TxnReadAtStartTs(self):
         """Tests read after write when readTs == startTs"""
         txn = self.client.txn()
+        
         assigned = txn.mutate_obj({"name": "Manish"})
         self.assertEqual(1, len(assigned.uids), "Nothing was assigned")
 
@@ -59,6 +57,7 @@ class TestClientTxns(integ.DgraphClientIntegrationTestCase):
     def test_TxnReadBeforeStartTs(self):
         """Tests read before write when readTs < startTs"""
         txn = self.client.txn()
+        api.Mutation()
         assigned = txn.mutate_obj({"name": "Manish"})
         self.assertEqual(1, len(assigned.uids), "Nothing was assigned")
 
