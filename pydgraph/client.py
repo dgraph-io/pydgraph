@@ -14,7 +14,6 @@
 
 import grpc
 import random
-import json
 
 from pydgraph import txn, util
 from pydgraph.meta import VERSION
@@ -45,17 +44,21 @@ class DgraphClient(object):
 
     async def async_alter(self, op, timeout=None, metadata=None, credentials=None):
         return await self.any_client().async_alter(op, timeout=timeout, metadata=metadata, credentials=credentials)
+    
+    def query(self, q, vars=None, timeout=None, metadata=None, credentials=None):
+        return self.txn().query(q, vars=vars, timeout=timeout, metadata=metadata, credentials=credentials)
+    
+    async def async_query(self, q, vars=None, timeout=None, metadata=None, credentials=None):
+        return self.txn().async_query(q, vars=vars, timeout=timeout, metadata=metadata, credentials=credentials)
 
     def txn(self):
         return txn.Txn(self)
 
-    def get_lin_read(self):
-        lr = api.LinRead()
-        ids = lr.ids
+    def set_lin_read(self, ctx):
+        ctx_lr_ids = ctx.lin_read.ids
+        ids = self._lin_read.ids
         for key, value in ids.items():
-            ids[key] = value
-        
-        return lr
+            ctx_lr_ids[key] = value
 
     def merge_lin_reads(self, src):
         util.merge_lin_reads(self._lin_read, src)

@@ -45,18 +45,18 @@ def are_lin_reads_equal(a, b):
 
 SERVER_ADDR = 'localhost:9080'
 
-def createClient(addr = SERVER_ADDR):
+def create_client(addr = SERVER_ADDR):
     return DgraphClient(DgraphClientStub(addr))
 
-def setSchema(client, schema):
+def set_schema(client, schema):
     return client.alter(api.Operation(schema=schema))
 
-def dropAll(client):
+def drop_all(client):
     return client.alter(api.Operation(drop_all=True))
 
 def setup():
-    client = createClient()
-    dropAll(client)
+    client = create_client()
+    drop_all(client)
     return client
 
 
@@ -71,7 +71,7 @@ class ClientIntegrationTestCase(unittest.TestCase):
     def setUp(self):
         """Sets up the client and verifies the version is compatible."""
 
-        self.client = createClient(self.TEST_SERVER_ADDR)
+        self.client = create_client(self.TEST_SERVER_ADDR)
         version = self.client.any_client().check_version(api.Check());
 
         # version.tag string format is v<MAJOR>.<MINOR>.<PATCH>

@@ -13,95 +13,44 @@
 # limitations under the License.
 
 __author__ = 'Mohit Ranka <mohitranka@gmail.com>'
-__maintainer__ = 'Mohit Ranka <mohitranka@gmail.com>'
+__maintainer__ = 'Garvit Pahal <garvit@dgraph.io>'
 
 import unittest
+import json
+
 from pydgraph.client import DgraphClient
+from pydgraph.proto import api_pb2 as api
 
+from . import helper
 
-class DgraphClientTestCases(unittest.TestCase):
-    TEST_HOSTNAME = 'localhost'
-    TEST_PORT = 8081
-
+class TestQueries(helper.ClientIntegrationTestCase):
     def setUp(self):
-        self.client = DgraphClient(self.TEST_HOSTNAME, self.TEST_PORT)
+        super(TestQueries, self).setUp()
+
+        helper.drop_all(self.client)
+        helper.set_schema(self.client, 'name: string @index(term) .')
 
     def test_mutation_and_query(self):
-        query_string = """
-        mutation
-        {
-            set
-            {
-                <alice> <name> \"Alice\" .
-                <greg> <name> \"Greg\" .
-                <alice> <follows> <greg> .
-            }
-        }
+        txn = self.client.txn()
+        assigned = txn.mutate(api.Mutation(commit_now=True), set_nquads="""
+            <_:alice> <name> \"Alice\" .
+            <_:greg> <name> \"Greg\" .
+            <_:alice> <follows> <_:greg> .
+        """)
 
-        query
-        {
-            me(_xid_: alice)
+        query_string = """{
+            me(func: anyofterms(name, "Alice"))
             {
+                name
                 follows
                 {
-                    name _xid_
+                    name
                 }
             }
         }
         """
         response = self.client.query(query_string)
-        self.assertEqual(response.n.children[0].xid, "greg")
-        self.assertEqual(response.n.children[0].attribute, "follows")
-        self.assertEqual(response.n.children[0].properties[0].prop, "name")
-        self.assertEqual(response.n.children[0].properties[0].val, "Greg")
-        self.assertTrue(isinstance(response.l.parsing, basestring), 'Parsing latency is not available')
-        self.assertTrue(isinstance(response.l.pb, basestring), 'Protocol buffers latency is not available')
-        self.assertTrue(isinstance(response.l.processing, basestring), 'Processing latency is not available')
-
-    def test_mutation_and_query_two_levels(self):
-        query_string = """
-        mutation
-        {
-            set
-            {
-                <bob> <name> \"Bob\" .
-                <josh> <name> \"Josh\" .
-                <rose> <name> \"Rose\" .
-                <bob> <follows> <josh> .
-                <josh> <follows> <rose> .
-            }
-        }
-
-        query
-        {
-            me(_xid_: bob)
-            {
-                name _xid_ follows
-                {
-                    name _xid_ follows
-                    {
-                        name _xid_
-                    }
-                }
-            }
-        }
-        """
-        response = self.client.query(query_string)
-
-        self.assertEqual(len(response.n.children), 1)
-        self.assertEqual(response.n.children[0].xid, "josh")
-        self.assertEqual(response.n.children[0].attribute, "follows")
-        self.assertEqual(response.n.children[0].properties[0].prop, "name")
-        self.assertEqual(response.n.children[0].properties[0].val, "Josh")
-
-        self.assertEqual(len(response.n.children[0].children), 1)
-        self.assertEqual(response.n.children[0].children[0].xid, "rose")
-        self.assertEqual(response.n.children[0].children[0].attribute, "follows")
-        self.assertEqual(response.n.children[0].children[0].properties[0].prop, "name")
-        self.assertEqual(response.n.children[0].children[0].properties[0].val, "Rose")
-
-
-        self.assertTrue(isinstance(response.l.parsing, basestring), 'Parsing latency is not available')
-        self.assertTrue(isinstance(response.l.pb, basestring), 'Protocol buffers latency is not available')
-        self.assertTrue(isinstance(response.l.processing, basestring), 'Processing latency is not available')
-
+        self.assertEqual([{"name": "Alice", "follows": [{"name": "Greg"}]}], json.loads(response.json).get("me"))
+        self.assertTrue(isinstance(response.latency.parsing_ns, int), 'Parsing latency is not available')
+        self.assertTrue(isinstance(response.latency.processing_ns, int), 'Processing latency is not available')
+        self.assertTrue(isinstance(response.latency.encoding_ns, int), 'Encoding latency is not available')

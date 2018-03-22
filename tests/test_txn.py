@@ -21,6 +21,7 @@ import random
 import time
 
 from pydgraph.client import DgraphClient
+from pydgraph.txn import AbortedError
 from pydgraph.proto import api_pb2 as api
 
 from . import helper
@@ -33,14 +34,13 @@ class TestTxn(helper.ClientIntegrationTestCase):
         """Drops all the existing schema and creates schema for tests."""
         super(TestTxn, self).setUp()
 
-        helper.dropAll(self.client)
-        helper.setSchema(self.client, 'name: string @index(fulltext) .')
+        helper.drop_all(self.client)
+        helper.set_schema(self.client, 'name: string @index(fulltext) .')
 
     def test_TxnReadAtStartTs(self):
         """Tests read after write when readTs == startTs"""
         txn = self.client.txn()
-        
-        assigned = txn.mutate_obj({"name": "Manish"})
+        assigned = txn.mutate(set_obj={"name": "Manish"})
         self.assertEqual(1, len(assigned.uids), "Nothing was assigned")
 
         for _, uid in assigned.uids.items():
@@ -57,8 +57,7 @@ class TestTxn(helper.ClientIntegrationTestCase):
     def test_TxnReadBeforeStartTs(self):
         """Tests read before write when readTs < startTs"""
         txn = self.client.txn()
-        api.Mutation()
-        assigned = txn.mutate_obj({"name": "Manish"})
+        assigned = txn.mutate(set_obj={"name": "Manish"})
         self.assertEqual(1, len(assigned.uids), "Nothing was assigned")
 
         for _, uid in assigned.uids.items():
@@ -77,7 +76,7 @@ class TestTxn(helper.ClientIntegrationTestCase):
     def test_TxnReadAfterStartTs(self):
         """Tests read after commiting a write when readTs > startTs"""
         txn = self.client.txn()
-        assigned = txn.mutate_obj({"name": "Manish"})
+        assigned = txn.mutate(set_obj={"name": "Manish"})
         self.assertEqual(1, len(assigned.uids), "Nothing was assigned")
 
         for _, uid in assigned.uids.items():
@@ -97,7 +96,7 @@ class TestTxn(helper.ClientIntegrationTestCase):
         """Test read before and after commiting a transaction when
         readTs1 < startTs and readTs2 > startTs"""
         txn = self.client.txn()
-        assigned = txn.mutate_obj({"name": "Manish"})
+        assigned = txn.mutate(set_obj={"name": "Manish"})
         self.assertEqual(1, len(assigned.uids), "Nothing was assigned")
 
         for _, uid in assigned.uids.items():
@@ -107,7 +106,7 @@ class TestTxn(helper.ClientIntegrationTestCase):
         txn2 = self.client.txn()
         # start a new txn and mutate the object
         txn3 = self.client.txn()
-        assigned = txn3.mutate_obj({"uid": uid, "name": "Manish2"})
+        assigned = txn3.mutate(set_obj={"uid": uid, "name": "Manish2"})
 
         query = """{{
             me(func: uid("{uid:s}")) {{
@@ -128,14 +127,14 @@ class TestTxn(helper.ClientIntegrationTestCase):
     def test_ReadFromNewClient(self):
         """Tests committed reads from a new client with startTs == 0."""
         txn = self.client.txn()
-        assigned = txn.mutate_obj({"name": "Manish"})
+        assigned = txn.mutate(set_obj={"name": "Manish"})
         self.assertEqual(1, len(assigned.uids), "Nothing was assigned")
 
         for _, uid in assigned.uids.items():
             uid = uid
         _ = txn.commit()
 
-        client2 = client.DgraphClient(self.TEST_HOSTNAME, self.TEST_PORT)
+        client2 = helper.create_client(self.TEST_SERVER_ADDR)
         query = """{{
             me(func: uid("{uid:s}")) {{
                 name
@@ -146,7 +145,7 @@ class TestTxn(helper.ClientIntegrationTestCase):
         self.assertTrue(resp2.txn.start_ts > 0)
 
         txn2 = client2.txn()
-        assigned = txn2.mutate_obj({"uid": uid, "name": "Manish2"})
+        assigned = txn2.mutate(set_obj={"uid": uid, "name": "Manish2"})
         self.assertTrue(assigned.context.start_ts > 0)
         txn2.commit()
 
@@ -155,18 +154,18 @@ class TestTxn(helper.ClientIntegrationTestCase):
 
     def test_Conflict(self):
         """Tests committing two transactions which conflict."""
-        _ = self.client.drop_all()
+        helper.drop_all(self.client)
 
         txn = self.client.txn()
-        assigned = txn.mutate_obj({"name": "Manish"})
+        assigned = txn.mutate(set_obj={"name": "Manish"})
         for _, uid in assigned.uids.items():
             uid = uid
 
         txn2 = self.client.txn()
-        assigned2 = txn2.mutate_obj({"uid": uid, "name": "Manish"})
+        assigned2 = txn2.mutate(set_obj={"uid": uid, "name": "Manish"})
 
         txn.commit()
-        self.assertRaises(grpc._channel._Rendezvous, txn2.commit)
+        self.assertRaises(AbortedError, txn2.commit)
 
         txn3 = self.client.txn()
         query = """{{
@@ -181,7 +180,7 @@ class TestTxn(helper.ClientIntegrationTestCase):
         """Tests committing a transaction after a newer transaction has been
         committed."""
         txn = self.client.txn()
-        assigned = txn.mutate_obj({"name": "Manish"})
+        assigned = txn.mutate(set_obj={"name": "Manish"})
         for _, uid in assigned.uids.items():
             uid = uid
 
@@ -194,9 +193,9 @@ class TestTxn(helper.ClientIntegrationTestCase):
         resp = txn2.query(query)
         self.assertEqual([], json.loads(resp.json).get("me"))
 
-        assigned2 = txn2.mutate_obj({"uid": uid, "name": "Jan the man"})
+        assigned2 = txn2.mutate(set_obj={"uid": uid, "name": "Jan the man"})
         txn2.commit()
-        self.assertRaises(grpc._channel._Rendezvous, txn.commit)
+        self.assertRaises(AbortedError, txn.commit)
 
         txn3 = self.client.txn()
         resp = txn3.query(query)
@@ -205,19 +204,19 @@ class TestTxn(helper.ClientIntegrationTestCase):
     def test_MutationAfterCommit(self):
         """Tests a second mutation after failing to commit a first mutation."""
         txn = self.client.txn()
-        assigned = txn.mutate_obj({"name": "Manish"})
+        assigned = txn.mutate(set_obj={"name": "Manish"})
         self.assertEqual(1, len(assigned.uids), "Nothing was assigned")
         for _, uid in assigned.uids.items():
             uid = uid
 
         txn2 = self.client.txn()
-        assigned2 = txn2.mutate_obj({"uid": uid, "name": "Jan the man"})
+        assigned2 = txn2.mutate(set_obj={"uid": uid, "name": "Jan the man"})
 
         txn.commit()
-        self.assertRaises(grpc._channel._Rendezvous, txn2.commit)
+        self.assertRaises(AbortedError, txn2.commit)
 
         txn3 = self.client.txn()
-        assigned3 = txn3.mutate_obj({"uid": uid, "name": "Jan the man"})
+        assigned3 = txn3.mutate(set_obj={"uid": uid, "name": "Jan the man"})
         txn3.commit()
 
         query = """{{
@@ -232,13 +231,13 @@ class TestTxn(helper.ClientIntegrationTestCase):
     def test_ConflictIgnore(self):
         """Tests a mutation with ignore index conflict."""
         txn = self.client.txn()
-        assigned1 = txn.mutate_obj({"name": "Manish"}, ignore_index_conflict=True)
+        assigned1 = txn.mutate(set_obj={"name": "Manish"}, ignore_index_conflict=True)
         self.assertEqual(1, len(assigned1.uids), "Nothing was assigned")
         for _, uid in assigned1.uids.items():
             uid1 = uid
 
         txn2 = self.client.txn()
-        assigned2 = txn2.mutate_obj({"name": "Manish"}, ignore_index_conflict=True)
+        assigned2 = txn2.mutate(set_obj={"name": "Manish"}, ignore_index_conflict=True)
         self.assertEqual(1, len(assigned2.uids), "Nothing was assigned")
         for _, uid in assigned2.uids.items():
             uid2 = uid
@@ -257,11 +256,11 @@ class TestTxn(helper.ClientIntegrationTestCase):
 
     def test_ReadIndexKeySameTxn(self):
         """Tests reading an indexed field within a transaction."""
-        _ = self.client.drop_all()
-        _ = self.client.alter(schema="""name: string @index(exact) .""")
+        helper.drop_all(self.client)
+        helper.set_schema(self.client, 'name: string @index(exact) .')
 
         txn = self.client.txn()
-        assigned = txn.mutate_obj({"name": "Manish"}, ignore_index_conflict=True)
+        assigned = txn.mutate(set_obj={"name": "Manish"}, ignore_index_conflict=True)
         self.assertEqual(1, len(assigned.uids), "Nothing was assigned")
         for _, uid in assigned.uids.items():
             uid = uid
@@ -275,27 +274,27 @@ class TestTxn(helper.ClientIntegrationTestCase):
         self.assertEqual([{"uid": uid}], json.loads(resp.json).get("me"))
 
 
-class TestSPStar(integ.DgraphClientIntegrationTestCase):
-
+class TestSPStar(helper.ClientIntegrationTestCase):
     def setUp(self):
         """Drops everything and sets some schema."""
         super(TestSPStar, self).setUp()
-        _ = self.client.drop_all()
-        _ = self.client.alter(schema="""friend: uid .""")
+
+        helper.drop_all(self.client)
+        helper.set_schema(self.client, 'friend: uid .')
 
     def test_SPStar(self):
         """Tests a Subj Predicate Star query."""
         txn = self.client.txn()
-        assigned = txn.mutate_obj({"name": "Manish", "friend": [{"name": "Jan"}]})
+        assigned = txn.mutate(set_obj={"name": "Manish", "friend": [{"name": "Jan"}]})
         uid1 = assigned.uids["blank-0"]
         self.assertEqual(2, len(assigned.uids), "Expecting 2 uids to be created")
         txn.commit()
 
         txn2 = self.client.txn()
-        assigned2 = txn2.mutate_obj(delobj={"uid": uid1, "friend": None})
+        assigned2 = txn2.mutate(del_obj={"uid": uid1, "friend": None})
         self.assertEqual(0, len(assigned2.uids))
 
-        assigned3 = txn2.mutate_obj({
+        assigned3 = txn2.mutate(set_obj={
             "uid": uid1,
             "name": "Manish",
             "friend": [{"name": "Jan2"}]
@@ -322,7 +321,7 @@ class TestSPStar(integ.DgraphClientIntegrationTestCase):
         """Second test of Subject Predicate Star"""
         txn = self.client.txn()
         # Add edge to Jan
-        assigned = txn.mutate_obj({"name": "Manish", "friend": [{"name": "Jan"}]})
+        assigned = txn.mutate(set_obj={"name": "Manish", "friend": [{"name": "Jan"}]})
         self.assertEqual(2, len(assigned.uids))
         uid1, uid2 = assigned.uids["blank-0"], assigned.uids["blank-1"]
         query = """{{
@@ -339,15 +338,16 @@ class TestSPStar(integ.DgraphClientIntegrationTestCase):
             "uid": uid1,
             "friend": [{"name": "Jan", "uid": uid2}]
         }], json.loads(resp.json).get("me"))
+
         # Delete S P *
-        deleted = txn.mutate_obj(delobj={"uid": uid1, "friend": None})
+        deleted = txn.mutate(del_obj={"uid": uid1, "friend": None})
         self.assertEqual(0, len(deleted.uids))
 
         resp = txn.query(query)
         self.assertEqual([{"uid": uid1}], json.loads(resp.json).get("me"))
 
         # Add an edge to Jan2
-        assigned2 = txn.mutate_obj({
+        assigned2 = txn.mutate(set_obj={
             "uid": uid1,
             "name": "Manish",
             "friend": [{"name": "Jan2"}]
@@ -359,8 +359,9 @@ class TestSPStar(integ.DgraphClientIntegrationTestCase):
             "uid": uid1,
             "friend": [{"name": "Jan2", "uid": uid2}]
         }], json.loads(resp.json).get("me"))
+        
         # Delete S P *
-        deleted2 = txn.mutate_obj(delobj={"uid": uid1, "friend": None})
+        deleted2 = txn.mutate(del_obj={"uid": uid1, "friend": None})
         self.assertEqual(0, len(deleted2.uids))
         resp = txn.query(query)
         self.assertEqual([{"uid": uid1}], json.loads(resp.json).get("me"))
