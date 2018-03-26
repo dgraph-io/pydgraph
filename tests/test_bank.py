@@ -12,6 +12,9 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 
+__author__ = 'Garvit Pahal <garvit@dgraph.io>'
+__maintainer__ = 'Garvit Pahal <garvit@dgraph.io>'
+
 import unittest
 import grpc
 import json
