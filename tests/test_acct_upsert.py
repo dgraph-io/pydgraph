@@ -13,7 +13,7 @@
 # limitations under the License.
 
 __author__ = 'Shailesh Kochhar <shailesh.kochhar@gmail.com>'
-__maintainer__ = 'Shailesh Kochhar <shailesh.kochhar@gmail.com>'
+__maintainer__ = 'Garvit Pahal <garvit@dgraph.io>'
 
 import grpc
 import functools
