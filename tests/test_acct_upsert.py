@@ -23,15 +23,18 @@ import multiprocessing
 import multiprocessing.dummy as mpd
 import time
 import unittest
-from pydgraph import client
+
+from pydgraph.txn import AbortedError
+
+from . import helper
 
 
-class AcountUpsertIntegrationTestCase(DgraphClientIntegrationTestCase):
+class TestAcountUpsert(helper.ClientIntegrationTestCase):
     """Account upsert integration test."""
 
     def setUp(self):
         """Drops existing schema and loads new schema for the test."""
-        super(AcountUpsertIntegrationTestCase, self).setUp()
+        super(TestAcountUpsert, self).setUp()
         self.concurrency = 5
 
         self.firsts = ['Paul', 'Eric', 'Jack', 'John', 'Martin']
@@ -43,13 +46,13 @@ class AcountUpsertIntegrationTestCase(DgraphClientIntegrationTestCase):
         ]
         logging.info(len(self.accounts))
 
-        _ = self.client.drop_all()
-        _ = self.client.alter(schema="""
+        helper.drop_all(self.client)
+        helper.set_schema(self.client, """
             first:  string   @index(term) .
             last:   string   @index(hash) .
             age:    int      @index(int)  .
             when:   int                   .
-            """)
+        """)
 
     def test_acount_upsert(self):
         """Account upsert integration. Will run upserts concurrently."""
@@ -63,8 +66,7 @@ class AcountUpsertIntegrationTestCase(DgraphClientIntegrationTestCase):
         retry_ctr = multiprocessing.Value('i', 0, lock=True)
 
         pool = mpd.Pool(concurrency)
-        updater = lambda acct: upsert_account(hostname=self.TEST_HOSTNAME,
-                                              port=self.TEST_PORT,
+        updater = lambda acct: upsert_account(addr=self.TEST_SERVER_ADDR,
                                               account=acct,
                                               success_ctr=success_ctr,
                                               retry_ctr=retry_ctr)
@@ -95,12 +97,16 @@ class AcountUpsertIntegrationTestCase(DgraphClientIntegrationTestCase):
             self.assertTrue('{first}_{last}_{age}'.format(**acct) in account_set)
 
 
-def upsert_account(hostname, port, account, success_ctr, retry_ctr):
-    c = client.DgraphClient(hostname, port)
+def upsert_account(addr, account, success_ctr, retry_ctr):
+    c = helper.create_client(addr)
     q = '''
     {{
         acct(func:eq(first, "{first}")) @filter(eq(last, "{last}") AND eq(age, {age})) {{
             uid
+            first
+            last
+            age
+            when
         }}
     }}'''.format(**account)
 
@@ -110,20 +116,22 @@ def upsert_account(hostname, port, account, success_ctr, retry_ctr):
             logging.debug('Success: %d Retries: %d', success_ctr.value, retry_ctr.value)
             last_update_time = time.time()
 
+        txn = c.txn()
         try:
-            txn = c.txn()
             result = json.loads(txn.query(q=q).json)
             assert len(result['acct']) <= 1, ('Lookup of account %s found '
                                               'multiple accounts' % account)
 
             if not result['acct']:
+                if account['first'] == 'Paul':
+                    print('creating')
                 # Account does not exist, so create it
                 nquads = '''
                     _:acct <first> "{first}" .
                     _:acct <last> "{last}" .
                     _:acct <age>  "{age}"^^<xs:int> .
                 '''.format(**account)
-                created = txn.mutate(setnquads=nquads)
+                created = txn.mutate(set_nquads=nquads)
                 uid = created.uids.get('acct')
                 assert uid is not None and uid != '', 'Account with uid None/""'
             else:
@@ -135,16 +143,30 @@ def upsert_account(hostname, port, account, success_ctr, retry_ctr):
             updatequads = '''
                 <{0}> <when> "{1:d}"^^<xs:int> .
             '''.format(uid, int(time.time()))
-            updated = txn.mutate(setnquads=updatequads)
+
+            prevresult = json.loads(txn.query(q=q).json)['acct']
+
+            updated = txn.mutate(set_nquads=updatequads)
+
             txn.commit()
+
+            # result = json.loads(c.query(q=q).json)['acct']
+            # if len(result) > 1 and result[0]['first'] == 'Paul':
+            #     print('1:', prevresult)
+            #     print('2:', updatequads)
+            #     print('3:', result)
+            #     print()
+
             with success_ctr.get_lock():
                 success_ctr.value += 1
             # txn successful, break the loop
             return
-        except grpc._channel._Rendezvous as e:
+        except (AbortedError, grpc._channel._Rendezvous):
             with retry_ctr.get_lock():
                 retry_ctr.value += 1
             # txn failed, retry the loop
+        finally:
+            txn.discard()
 
 
 if __name__ == '__main__':
