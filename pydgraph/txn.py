@@ -1,4 +1,4 @@
-# Copyright 2018 DGraph Labs, Inc.
+# Copyright 2018 Dgraph Labs, Inc.
 #
 # Licensed under the Apache License, Version 2.0 (the "License");
 # you may not use this file except in compliance with the License.
@@ -177,7 +177,7 @@ class Txn(object):
         raise e
 
     def discard(self, timeout=None, metadata=None, credentials=None):
-        if not self._common_commit():
+        if not self._common_discard():
             return
 
         self._dc.any_client().commit_or_abort(self._ctx, timeout=None, metadata=None, credentials=None)
