@@ -16,23 +16,19 @@ __author__ = 'Garvit Pahal <garvit@dgraph.io>'
 __maintainer__ = 'Garvit Pahal <garvit@dgraph.io>'
 
 import unittest
-import grpc
 import json
 import logging
 import multiprocessing as mp
 import multiprocessing.dummy as mpd
-import os
 import random
 import time
-
-from pydgraph.client import DgraphClient
-from pydgraph.txn import AbortedError
 
 from . import helper
 
 USERS = 100
 CONCURRENCY = 10
 XFER_COUNT = 1000
+
 
 class TestBank(helper.ClientIntegrationTestCase):
     """Bank transfer integration test."""
@@ -93,6 +89,7 @@ def looper(func, *args, **kwargs):
 
     return _looper
 
+
 def run_total(c, account_uids):
     """Calculates the total ammount in the accounts."""
     q = """{{
@@ -108,6 +105,7 @@ def run_total(c, account_uids):
     total = json.loads(resp.json)['total']
     logging.info('Response: %s', total)
     assert total[0]['bal'] == 10000
+
 
 def run_xfers(addr, xfer_count, account_ids, success_ctr, retry_ctr):
     pname = mpd.current_process().name
@@ -135,12 +133,13 @@ def run_xfers(addr, xfer_count, account_ids, success_ctr, retry_ctr):
                 log.info('Runs %d. Aborts: %d', success_ctr.value, retry_ctr.value)
             if success_ctr.value >= xfer_count:
                 break
-        except (AbortedError, grpc._channel._Rendezvous):
+        except:
             with retry_ctr.get_lock():
                 retry_ctr.value += 1
     
     with success_ctr.get_lock(), retry_ctr.get_lock():
         log.info("success: %d, retries: %d", success_ctr.value, retry_ctr.value)
+
 
 def select_account_pair(accounts):
     """Selects a pair of accounts at random from accounts ensuring they are not
@@ -151,10 +150,12 @@ def select_account_pair(accounts):
         if not from_acc == to_acc:
             return (from_acc, to_acc)
 
+
 def load_from_query(txn, query, field):
     """Loads a field from the results of a query executed in a txn."""
     resp = txn.query(query)
     return json.loads(resp.json)[field]
+
 
 def dump_from_obj(txn, obj, commit=False):
     assigned = txn.mutate(set_obj=obj)

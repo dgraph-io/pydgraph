@@ -15,7 +15,7 @@
 import grpc
 import json
 
-from pydgraph import util
+from pydgraph import errors, util
 from pydgraph.meta import VERSION
 from pydgraph.proto import api_pb2 as api
 
@@ -32,11 +32,11 @@ class Txn(object):
     
     1. Created using Client.newTxn.
     
-    2. Various query and qutate calls made.
+    2. Various query and mutate calls made.
     
     3. commit or discard used. If any mutations have been made, It's important
     that at least one of these methods is called to clean up resources. discard
-    is a no-op if dommit has already been called, so it's safe to call discard
+    is a no-op if commit has already been called, so it's safe to call discard
     after calling commit.
     """
 
@@ -48,38 +48,39 @@ class Txn(object):
         self._finished = False
         self._mutated = False
 
-    def query(self, q, vars=None, timeout=None, metadata=None, credentials=None):
-        req = self._common_query(q, vars=vars)
+    def query(self, q, variables=None, timeout=None, metadata=None, credentials=None):
+        req = self._common_query(q, variables=variables)
         res = self._dc.any_client().query(req, timeout=timeout, metadata=metadata, credentials=credentials)
         self.merge_context(res.txn)
         return res
     
-    async def async_query(self, q, vars=None, timeout=None, metadata=None, credentials=None):
-        req = self._common_query(q, vars=vars)
+    async def async_query(self, q, variables=None, timeout=None, metadata=None, credentials=None):
+        req = self._common_query(q, variables=variables)
         res = await self._dc.any_client().async_query(req, timeout=timeout, metadata=metadata, credentials=credentials)
         self.merge_context(res.txn)
         return res
     
-    def _common_query(self, q, vars=None):
+    def _common_query(self, q, variables=None):
         if self._finished:
             raise Exception('Transaction has already been committed or discarded')
         
         req = api.Request(query=q, start_ts=self._ctx.start_ts, lin_read=self._ctx.lin_read)
-        if vars is not None:
-            for key, value in vars.items():
+        if variables is not None:
+            for key, value in variables.items():
                 if util.is_string(key) and util.is_string(value):
                     req.vars[key] = value
         
         return req
 
-    def mutate(
-        self, mu=None, set_obj=None, del_obj=None, set_nquads=None, del_nquads=None, ignore_index_conflict=None,
-        timeout=None, metadata=None, credentials=None):
-        mu = self._common_mutate(
-            mu=mu, set_obj=set_obj, del_obj=del_obj, set_nquads=set_nquads, del_nquads=del_nquads,
-            ignore_index_conflict=ignore_index_conflict)
+    def mutate(self, mu=None, set_obj=None, del_obj=None, set_nquads=None, del_nquads=None, ignore_index_conflict=None,
+               timeout=None, metadata=None, credentials=None):
+        mu = self._common_mutate(mu=mu, set_obj=set_obj, del_obj=del_obj, set_nquads=set_nquads, del_nquads=del_nquads,
+                                 ignore_index_conflict=ignore_index_conflict)
+
         try:
             ag = self._dc.any_client().mutate(mu, timeout=timeout, metadata=metadata, credentials=credentials)
+            self.merge_context(ag.context)
+            return ag
         except Exception as e:
             try:
                 self.discard(timeout=timeout, metadata=metadata, credentials=credentials)
@@ -87,19 +88,18 @@ class Txn(object):
                 # Ignore error - user should see the original error.
                 pass
 
-            self._common_except_mutate(e, timeout=timeout, metadata=metadata, credentials=credentials)
-
-        self.merge_context(ag.context)
-        return ag
+            self._common_except_mutate(e)
     
-    async def async_mutate(
-        self, mu=None, set_obj=None, del_obj=None, set_nquads=None, del_nquads=None, ignore_index_conflict=None,
-        timeout=None, metadata=None, credentials=None):
-        mu = self._common_mutate(
-            mu=mu, set_obj=set_obj, del_obj=del_obj, set_nquads=set_nquads, del_nquads=del_nquads,
-            ignore_index_conflict=ignore_index_conflict)
+    async def async_mutate(self, mu=None, set_obj=None, del_obj=None, set_nquads=None, del_nquads=None,
+                           ignore_index_conflict=None, timeout=None, metadata=None, credentials=None):
+        mu = self._common_mutate(mu=mu, set_obj=set_obj, del_obj=del_obj, set_nquads=set_nquads, del_nquads=del_nquads,
+                                 ignore_index_conflict=ignore_index_conflict)
+
         try:
-            ag = await self._dc.any_client().async_mutate(mu, timeout=timeout, metadata=metadata, credentials=credentials)
+            ag = await self._dc.any_client().async_mutate(mu, timeout=timeout, metadata=metadata,
+                                                          credentials=credentials)
+            self.merge_context(ag.context)
+            return ag
         except Exception as e:
             try:
                 await self.async_discard(timeout=timeout, metadata=metadata, credentials=credentials)
@@ -107,12 +107,10 @@ class Txn(object):
                 # Ignore error - user should see the original error.
                 pass
 
-            self._common_except_mutate(e, timeout=timeout, metadata=metadata, credentials=credentials)
-
-        self.merge_context(ag.context)
-        return ag
+            self._common_except_mutate(e)
     
-    def _common_mutate(self, mu=None, set_obj=None, del_obj=None, set_nquads=None, del_nquads=None, ignore_index_conflict=None):
+    def _common_mutate(self, mu=None, set_obj=None, del_obj=None, set_nquads=None, del_nquads=None,
+                       ignore_index_conflict=None):
         if not mu:
             mu = api.Mutation()
         if set_obj:
@@ -132,13 +130,14 @@ class Txn(object):
         self._mutated = True
         mu.start_ts = self._ctx.start_ts
         return mu
-    
-    def _common_except_mutate(self, e, timeout=None, metadata=None, credentials=None):
-        if isinstance(e, grpc.RpcError):
+
+    @staticmethod
+    def _common_except_mutate(e):
+        if isinstance(e, grpc._channel._Rendezvous):
             e.details()
             status_code = e.code()
             if status_code == grpc.StatusCode.ABORTED or status_code == grpc.StatusCode.FAILED_PRECONDITION:
-                raise AbortedError()
+                raise errors.AbortedError()
         
         raise e
 
@@ -147,7 +146,8 @@ class Txn(object):
             return
 
         try:
-            self._dc.any_client().commit_or_abort(self._ctx, timeout=None, metadata=None, credentials=None)
+            self._dc.any_client().commit_or_abort(self._ctx, timeout=timeout, metadata=metadata,
+                                                  credentials=credentials)
         except Exception as e:
             self._common_except_commit(e)
     
@@ -156,7 +156,8 @@ class Txn(object):
             return
 
         try:
-            await self._dc.any_client().async_commit_or_abort(self._ctx, timeout=None, metadata=None, credentials=None)
+            await self._dc.any_client().async_commit_or_abort(self._ctx, timeout=timeout, metadata=metadata,
+                                                              credentials=credentials)
         except Exception as e:
             self._common_except_commit(e)
     
@@ -166,13 +167,14 @@ class Txn(object):
         
         self._finished = True
         return self._mutated
-    
-    def _common_except_commit(self, e):
-        if isinstance(e, grpc.RpcError):
+
+    @staticmethod
+    def _common_except_commit(e):
+        if isinstance(e, grpc._channel._Rendezvous):
             e.details()
             status_code = e.code()
             if status_code == grpc.StatusCode.ABORTED:
-                raise AbortedError()
+                raise errors.AbortedError()
 
         raise e
 
@@ -180,13 +182,14 @@ class Txn(object):
         if not self._common_discard():
             return
 
-        self._dc.any_client().commit_or_abort(self._ctx, timeout=None, metadata=None, credentials=None)
+        self._dc.any_client().commit_or_abort(self._ctx, timeout=timeout, metadata=metadata, credentials=credentials)
     
     async def async_discard(self, timeout=None, metadata=None, credentials=None):
         if not self._common_discard():
             return
 
-        await self._dc.any_client().async_commit_or_abort(self._ctx, timeout=None, metadata=None, credentials=None)
+        await self._dc.any_client().async_commit_or_abort(self._ctx, timeout=timeout, metadata=metadata,
+                                                          credentials=credentials)
     
     def _common_discard(self):
         if self._finished:
@@ -215,8 +218,3 @@ class Txn(object):
             raise Exception('StartTs mismatch')
 
         self._ctx.keys[:] = src.keys[:]
-
-
-class AbortedError(Exception):
-    def __init__(self):
-        super(AbortedError, self).__init__('Transaction has been aborted. Please retry')

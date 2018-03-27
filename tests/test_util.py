@@ -16,7 +16,6 @@ __author__ = 'Garvit Pahal <garvit@dgraph.io>'
 __maintainer__ = 'Garvit Pahal <garvit@dgraph.io>'
 
 import unittest
-import sys
 
 from pydgraph import util
 from pydgraph.proto import api_pb2 as api
@@ -71,6 +70,7 @@ class TestMergeLinReads(unittest.TestCase):
         res = helper.create_lin_read({1: 1})
         self.common_test(lr1, lr2, res)
 
+
 class TestIsString(unittest.TestCase):
     def test_is_string(self):
         self.assertTrue(util.is_string(''))
@@ -78,10 +78,12 @@ class TestIsString(unittest.TestCase):
         self.assertFalse(util.is_string(object()))
         self.assertFalse(util.is_string({}))
 
+
 def suite():
-    suite = unittest.TestSuite()
-    suite.addTest(TestMergeLinReads())
-    return suite
+    s = unittest.TestSuite()
+    s.addTest(TestMergeLinReads())
+    return s
+
 
 if __name__ == '__main__':
     runner = unittest.TextTestRunner()

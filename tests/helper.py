@@ -16,48 +16,53 @@ __author__ = 'Garvit Pahal <garvit@dgraph.io>'
 __maintainer__ = 'Garvit Pahal <garvit@dgraph.io>'
 
 import unittest
-import grpc
 
-from pydgraph.client_stub import DgraphClientStub
-from pydgraph.client import DgraphClient
+from pydgraph import client_stub, client
 from pydgraph.proto import api_pb2 as api
 
-def create_lin_read(ids):
+
+def create_lin_read(src_ids):
     lr = api.LinRead()
     ids = lr.ids
-    for key, value in ids:
+    for key, value in src_ids.items():
         ids[key] = value
     
     return lr
 
-def are_lin_reads_equal(a, b):
-    aIds = a.ids
-    bIds = b.ids
 
-    if len(aIds) != len(bIds):
+def are_lin_reads_equal(a, b):
+    a_ids = a.ids
+    b_ids = b.ids
+
+    if len(a_ids) != len(b_ids):
         return False
     
-    for key in aIds.items():
-        if key not in bIds:
+    for (key, value) in a_ids.items():
+        if key not in b_ids or b.ids[key] != value:
             return False
     
     return True
 
+
 SERVER_ADDR = 'localhost:9080'
 
-def create_client(addr = SERVER_ADDR):
-    return DgraphClient(DgraphClientStub(addr))
 
-def set_schema(client, schema):
-    return client.alter(api.Operation(schema=schema))
+def create_client(addr=SERVER_ADDR):
+    return client.DgraphClient(client_stub.DgraphClientStub(addr))
 
-def drop_all(client):
-    return client.alter(api.Operation(drop_all=True))
+
+def set_schema(c, schema):
+    return c.alter(api.Operation(schema=schema))
+
+
+def drop_all(c):
+    return c.alter(api.Operation(drop_all=True))
+
 
 def setup():
-    client = create_client()
-    drop_all(client)
-    return client
+    c = create_client()
+    drop_all(c)
+    return c
 
 
 class ClientIntegrationTestCase(unittest.TestCase):
