@@ -15,13 +15,12 @@
 __author__ = 'Mohit Ranka <mohitranka@gmail.com>'
 __maintainer__ = 'Garvit Pahal <garvit@dgraph.io>'
 
-import unittest
 import json
 
-from pydgraph.client import DgraphClient
 from pydgraph.proto import api_pb2 as api
 
 from . import helper
+
 
 class TestQueries(helper.ClientIntegrationTestCase):
     def setUp(self):

@@ -16,16 +16,10 @@ __author__ = 'Garvit Pahal <garvit@dgraph.io>'
 __maintainer__ = 'Garvit Pahal <garvit@dgraph.io>'
 
 import unittest
-import grpc
 import json
 import logging
-import os
-import random
-import time
 
-from pydgraph.client import DgraphClient
-from pydgraph.txn import AbortedError
-from pydgraph.proto import api_pb2 as api
+from pydgraph import errors
 
 from . import helper
 
@@ -168,7 +162,7 @@ class TestTxn(helper.ClientIntegrationTestCase):
         assigned2 = txn2.mutate(set_obj={"uid": uid, "name": "Manish"})
 
         txn.commit()
-        self.assertRaises(AbortedError, txn2.commit)
+        self.assertRaises(errors.AbortedError, txn2.commit)
 
         txn3 = self.client.txn()
         query = """{{
@@ -198,7 +192,7 @@ class TestTxn(helper.ClientIntegrationTestCase):
 
         assigned2 = txn2.mutate(set_obj={"uid": uid, "name": "Jan the man"})
         txn2.commit()
-        self.assertRaises(AbortedError, txn.commit)
+        self.assertRaises(errors.AbortedError, txn.commit)
 
         txn3 = self.client.txn()
         resp = txn3.query(query)
@@ -216,7 +210,7 @@ class TestTxn(helper.ClientIntegrationTestCase):
         assigned2 = txn2.mutate(set_obj={"uid": uid, "name": "Jan the man"})
 
         txn.commit()
-        self.assertRaises(AbortedError, txn2.commit)
+        self.assertRaises(errors.AbortedError, txn2.commit)
 
         txn3 = self.client.txn()
         assigned3 = txn3.mutate(set_obj={"uid": uid, "name": "Jan the man"})

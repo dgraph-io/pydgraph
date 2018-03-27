@@ -15,31 +15,30 @@
 __author__ = 'Shailesh Kochhar <shailesh.kochhar@gmail.com>'
 __maintainer__ = 'Garvit Pahal <garvit@dgraph.io>'
 
-import grpc
-import functools
+import unittest
 import json
 import logging
 import multiprocessing
 import multiprocessing.dummy as mpd
 import time
-import unittest
 
-from pydgraph.txn import AbortedError
+from pydgraph import errors
 
 from . import helper
 
 
-class TestAcountUpsert(helper.ClientIntegrationTestCase):
+class TestAccountUpsert(helper.ClientIntegrationTestCase):
     """Account upsert integration test."""
 
     def setUp(self):
         """Drops existing schema and loads new schema for the test."""
-        super(TestAcountUpsert, self).setUp()
-        self.concurrency = 5
+        super(TestAccountUpsert, self).setUp()
+        self.concurrency = 2
 
         self.firsts = ['Paul', 'Eric', 'Jack', 'John', 'Martin']
         self.lasts = ['Brown', 'Smith', 'Robinson', 'Waters', 'Taylor']
         self.ages = [20, 25, 30, 35]
+
         self.accounts = [
             {'first': f, 'last': l, 'age': a}
             for f in self.firsts for l in self.lasts for a in self.ages
@@ -70,8 +69,8 @@ class TestAcountUpsert(helper.ClientIntegrationTestCase):
                                               account=acct,
                                               success_ctr=success_ctr,
                                               retry_ctr=retry_ctr)
-        results = [ pool.apply_async(updater, (acct,))
-                    for acct in account_list for _ in range(concurrency)]
+        results = [pool.apply_async(updater, (acct,))
+                   for acct in account_list for _ in range(concurrency)]
         [res.get() for res in results]
 
     def assert_changes(self, firsts, accounts):
@@ -103,10 +102,6 @@ def upsert_account(addr, account, success_ctr, retry_ctr):
     {{
         acct(func:eq(first, "{first}")) @filter(eq(last, "{last}") AND eq(age, {age})) {{
             uid
-            first
-            last
-            age
-            when
         }}
     }}'''.format(**account)
 
@@ -123,8 +118,6 @@ def upsert_account(addr, account, success_ctr, retry_ctr):
                                               'multiple accounts' % account)
 
             if not result['acct']:
-                if account['first'] == 'Paul':
-                    print('creating')
                 # Account does not exist, so create it
                 nquads = '''
                     _:acct <first> "{first}" .
@@ -144,24 +137,15 @@ def upsert_account(addr, account, success_ctr, retry_ctr):
                 <{0}> <when> "{1:d}"^^<xs:int> .
             '''.format(uid, int(time.time()))
 
-            prevresult = json.loads(txn.query(q=q).json)['acct']
-
-            updated = txn.mutate(set_nquads=updatequads)
-
+            txn.mutate(set_nquads=updatequads)
             txn.commit()
-
-            # result = json.loads(c.query(q=q).json)['acct']
-            # if len(result) > 1 and result[0]['first'] == 'Paul':
-            #     print('1:', prevresult)
-            #     print('2:', updatequads)
-            #     print('3:', result)
-            #     print()
 
             with success_ctr.get_lock():
                 success_ctr.value += 1
+
             # txn successful, break the loop
             return
-        except (AbortedError, grpc._channel._Rendezvous):
+        except errors.AbortedError:
             with retry_ctr.get_lock():
                 retry_ctr.value += 1
             # txn failed, retry the loop

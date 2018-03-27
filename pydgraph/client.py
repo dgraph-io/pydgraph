@@ -12,12 +12,11 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 
-import grpc
 import random
 
 from pydgraph import txn, util
 from pydgraph.meta import VERSION
-from pydgraph.proto import api_pb2 as api, api_pb2_grpc as api_grpc
+from pydgraph.proto import api_pb2 as api
 
 __author__ = 'Mohit Ranka <mohitranka@gmail.com>'
 __maintainer__ = 'Garvit Pahal <garvit@dgraph.io>'
@@ -45,20 +44,18 @@ class DgraphClient(object):
     async def async_alter(self, op, timeout=None, metadata=None, credentials=None):
         return await self.any_client().async_alter(op, timeout=timeout, metadata=metadata, credentials=credentials)
     
-    def query(self, q, vars=None, timeout=None, metadata=None, credentials=None):
-        return self.txn().query(q, vars=vars, timeout=timeout, metadata=metadata, credentials=credentials)
+    def query(self, q, variables=None, timeout=None, metadata=None, credentials=None):
+        return self.txn().query(q, variables=variables, timeout=timeout, metadata=metadata, credentials=credentials)
     
-    async def async_query(self, q, vars=None, timeout=None, metadata=None, credentials=None):
-        return self.txn().async_query(q, vars=vars, timeout=timeout, metadata=metadata, credentials=credentials)
+    async def async_query(self, q, variables=None, timeout=None, metadata=None, credentials=None):
+        return self.txn().async_query(q, variables=variables, timeout=timeout, metadata=metadata,
+                                      credentials=credentials)
 
     def txn(self):
         return txn.Txn(self)
 
     def set_lin_read(self, ctx):
-        ctx_lr_ids = ctx.lin_read.ids
-        ids = self._lin_read.ids
-        for key, value in ids.items():
-            ctx_lr_ids[key] = value
+        ctx.lin_read.MergeFrom(self._lin_read)
 
     def merge_lin_reads(self, src):
         util.merge_lin_reads(self._lin_read, src)

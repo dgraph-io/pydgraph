@@ -16,13 +16,11 @@ __author__ = 'Shailesh Kochhar <shailesh.kochhar@gmail.com>'
 __maintainer__ = 'Garvit Pahal <garvit@dgraph.io>'
 
 import unittest
-import grpc
 import json
 import logging
 
-from pydgraph import client
-
 from . import helper
+
 
 class TestEssentials(helper.ClientIntegrationTestCase):
     """Tests the essentials of the client."""
