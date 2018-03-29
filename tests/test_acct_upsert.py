@@ -26,7 +26,7 @@ from pydgraph import errors
 
 from . import helper
 
-CONCURRENCY = 2
+CONCURRENCY = 5
 FIRSTS = ['Paul', 'Eric', 'Jack', 'John', 'Martin']
 LASTS = ['Brown', 'Smith', 'Robinson', 'Waters', 'Taylor']
 AGES = [20, 25, 30, 35]
@@ -120,11 +120,11 @@ def upsert_account(addr, account, success_ctr, retry_ctr):
 
             if not result['acct']:
                 # account does not exist, so create it
-                nquads = '''
+                nquads = """
                     _:acct <first> "{first}" .
                     _:acct <last> "{last}" .
                     _:acct <age>  "{age}"^^<xs:int> .
-                '''.format(**account)
+                """.format(**account)
                 created = txn.mutate(set_nquads=nquads)
                 uid = created.uids.get('acct')
                 assert uid is not None and uid != '', 'Account with uid None'
