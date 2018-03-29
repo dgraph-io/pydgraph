@@ -16,35 +16,33 @@ __author__ = 'Garvit Pahal <garvit@dgraph.io>'
 __maintainer__ = 'Garvit Pahal <garvit@dgraph.io>'
 
 import unittest
-import json
 import logging
-import multiprocessing as mp
-import multiprocessing.dummy as mpd
+import json
 import random
 import time
+import multiprocessing as mp
+import multiprocessing.dummy as mpd
 
 from . import helper
 
 USERS = 100
 CONCURRENCY = 10
-XFER_COUNT = 1000
+TRANSFER_COUNT = 1000
 
 
 class TestBank(helper.ClientIntegrationTestCase):
-    """Bank transfer integration test."""
-
     def setUp(self):
-        """Drops existing schema and sets up schema for new test."""
         super(TestBank, self).setUp()
-        self.concurrency = CONCURRENCY
+
         self.accounts = [
             {'bal': 100} for _ in range(USERS)
         ]
         self.uids = []
+
         logging.debug(len(self.accounts))
 
-    def test_bank_xfer(self):
-        """Transfers, will run them concurrently."""
+    def test_bank_transfer(self):
+        """Run transfers concurrently."""
         self.create_accounts()
 
         try:
@@ -52,11 +50,12 @@ class TestBank(helper.ClientIntegrationTestCase):
 
             success_ctr = mp.Value('i', 0, lock=True)
             retry_ctr = mp.Value('i', 0, lock=True)
-            pool = mpd.Pool(self.concurrency)
-            results = [pool.apply_async(run_xfers, (self.TEST_SERVER_ADDR,
-                                                    XFER_COUNT, self.uids,
-                                                    success_ctr, retry_ctr))
-                        for _ in range(self.concurrency)]
+            pool = mpd.Pool(CONCURRENCY)
+            results = [pool.apply_async(
+                run_transfers,
+                (self.TEST_SERVER_ADDR, TRANSFER_COUNT, self.uids, success_ctr, retry_ctr)
+            ) for _ in range(CONCURRENCY)]
+
             [res.get() for res in results]
         finally:
             total_watcher.terminate()
@@ -64,17 +63,19 @@ class TestBank(helper.ClientIntegrationTestCase):
 
     def create_accounts(self):
         """Creates the default set of accounts."""
+
         helper.drop_all(self.client)
         helper.set_schema(self.client, 'bal: int .')
 
         txn = self.client.txn()
         assigned = txn.mutate(set_obj=self.accounts)
         txn.commit()
+
         self.uids.extend(assigned.uids.values())
         logging.debug('Created %d accounts', len(assigned.uids))
 
     def start_total_watcher(self):
-        """Watcher, will keep an eye on the total account balances."""
+        """Watcher keeps an eye on the total account balances."""
         total_watch = looper(run_total, self.client, self.uids)
         process = mp.Process(target=total_watch, name='total_watcher')
         process.start()
@@ -90,8 +91,9 @@ def looper(func, *args, **kwargs):
     return _looper
 
 
-def run_total(c, account_uids):
-    """Calculates the total ammount in the accounts."""
+def run_total(c, uids):
+    """Calculates the total amount in the accounts."""
+
     q = """{{
         var(func: uid("{uids:s}")) {{
             b as bal
@@ -99,17 +101,17 @@ def run_total(c, account_uids):
         total() {{
             bal: sum(val(b))
         }}
-    }}
-    """.format(uids='", "'.join(account_uids))
+    }}""".format(uids='", "'.join(uids))
+
     resp = c.query(q)
     total = json.loads(resp.json)['total']
     logging.info('Response: %s', total)
     assert total[0]['bal'] == 10000
 
 
-def run_xfers(addr, xfer_count, account_ids, success_ctr, retry_ctr):
+def run_transfers(addr, transfer_count, account_ids, success_ctr, retry_ctr):
     pname = mpd.current_process().name
-    log = logging.getLogger('test_bank.run_txfers[%s]' % (pname,))
+    log = logging.getLogger('test_bank.run_transfers[%s]' % (pname,))
     c = helper.create_client(addr)
 
     while True:
@@ -120,6 +122,7 @@ def run_xfers(addr, xfer_count, account_ids, success_ctr, retry_ctr):
                 bal
             }}
         }}""".format(uid1=from_acc, uid2=to_acc)
+
         txn = c.txn()
         try:
             accounts = load_from_query(txn, query, 'me')
@@ -131,14 +134,14 @@ def run_xfers(addr, xfer_count, account_ids, success_ctr, retry_ctr):
 
             if not success_ctr.value % 100:
                 log.info('Runs %d. Aborts: %d', success_ctr.value, retry_ctr.value)
-            if success_ctr.value >= xfer_count:
+            if success_ctr.value >= transfer_count:
                 break
         except:
             with retry_ctr.get_lock():
                 retry_ctr.value += 1
     
     with success_ctr.get_lock(), retry_ctr.get_lock():
-        log.info("success: %d, retries: %d", success_ctr.value, retry_ctr.value)
+        log.info('success: %d, retries: %d', success_ctr.value, retry_ctr.value)
 
 
 def select_account_pair(accounts):
@@ -147,8 +150,8 @@ def select_account_pair(accounts):
     while True:
         from_acc = random.choice(accounts)
         to_acc = random.choice(accounts)
-        if not from_acc == to_acc:
-            return (from_acc, to_acc)
+        if from_acc != to_acc:
+            return from_acc, to_acc
 
 
 def load_from_query(txn, query, field):
@@ -165,6 +168,13 @@ def dump_from_obj(txn, obj, commit=False):
     return txn.commit()
 
 
+def suite():
+    s = unittest.TestSuite()
+    s.addTest(TestBank())
+    return s
+
+
 if __name__ == '__main__':
     logging.basicConfig(level=logging.INFO)
-    unittest.main()
+    runner = unittest.TextTestRunner()
+    runner.run(suite())

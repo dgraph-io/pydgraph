@@ -15,6 +15,8 @@
 __author__ = 'Mohit Ranka <mohitranka@gmail.com>'
 __maintainer__ = 'Garvit Pahal <garvit@dgraph.io>'
 
+import unittest
+import logging
 import json
 
 from pydgraph.proto import api_pb2 as api
@@ -31,13 +33,13 @@ class TestQueries(helper.ClientIntegrationTestCase):
 
     def test_mutation_and_query(self):
         txn = self.client.txn()
-        assigned = txn.mutate(api.Mutation(commit_now=True), set_nquads="""
+        _ = txn.mutate(api.Mutation(commit_now=True), set_nquads="""
             <_:alice> <name> \"Alice\" .
             <_:greg> <name> \"Greg\" .
             <_:alice> <follows> <_:greg> .
         """)
 
-        query_string = """{
+        query = """{
             me(func: anyofterms(name, "Alice"))
             {
                 name
@@ -48,8 +50,21 @@ class TestQueries(helper.ClientIntegrationTestCase):
             }
         }
         """
-        response = self.client.query(query_string)
-        self.assertEqual([{"name": "Alice", "follows": [{"name": "Greg"}]}], json.loads(response.json).get("me"))
+
+        response = self.client.query(query)
+        self.assertEqual([{'name': 'Alice', 'follows': [{'name': 'Greg'}]}], json.loads(response.json).get('me'))
         self.assertTrue(isinstance(response.latency.parsing_ns, int), 'Parsing latency is not available')
         self.assertTrue(isinstance(response.latency.processing_ns, int), 'Processing latency is not available')
         self.assertTrue(isinstance(response.latency.encoding_ns, int), 'Encoding latency is not available')
+
+
+def suite():
+    s = unittest.TestSuite()
+    s.addTest(TestQueries())
+    return s
+
+
+if __name__ == '__main__':
+    logging.basicConfig(level=logging.INFO)
+    runner = unittest.TextTestRunner()
+    runner.run(suite())
