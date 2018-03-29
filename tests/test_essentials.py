@@ -16,25 +16,26 @@ __author__ = 'Shailesh Kochhar <shailesh.kochhar@gmail.com>'
 __maintainer__ = 'Garvit Pahal <garvit@dgraph.io>'
 
 import unittest
-import json
 import logging
+import json
 
 from . import helper
 
 
 class TestEssentials(helper.ClientIntegrationTestCase):
-    """Tests the essentials of the client."""
-
     def testMutationAfterQuery(self):
         """Tests what happens when making a mutation on a txn after querying
         on the client."""
-        _ = self.client.query('''{firsts(func: has(first)) { uid first }}''')
+
+        _ = self.client.query('{firsts(func: has(first)) { uid first }}')
 
         txn = self.client.txn()
         mutation = txn.mutate(set_nquads='_:node <first> "Node name first" .')
-        self.assertTrue(len(mutation.uids) > 0, "Mutation did not create new node")
+        self.assertTrue(len(mutation.uids) > 0, 'Mutation did not create new node')
+
         created = mutation.uids.get('node')
         self.assertIsNotNone(created)
+
         txn.commit()
 
         query = '{{node(func: uid({uid:s})) {{ uid }} }}'.format(uid=created)
@@ -42,6 +43,13 @@ class TestEssentials(helper.ClientIntegrationTestCase):
         self.assertEqual(created, json.loads(reread.json).get('node')[0]['uid'])
 
 
+def suite():
+    s = unittest.TestSuite()
+    s.addTest(TestEssentials())
+    return s
+
+
 if __name__ == '__main__':
     logging.basicConfig(level=logging.INFO)
-    unittest.main()
+    runner = unittest.TextTestRunner()
+    runner.run(suite())

@@ -16,32 +16,29 @@ __author__ = 'Shailesh Kochhar <shailesh.kochhar@gmail.com>'
 __maintainer__ = 'Garvit Pahal <garvit@dgraph.io>'
 
 import unittest
-import json
 import logging
+import json
+import time
 import multiprocessing
 import multiprocessing.dummy as mpd
-import time
 
 from pydgraph import errors
 
 from . import helper
 
+CONCURRENCY = 2
+FIRSTS = ['Paul', 'Eric', 'Jack', 'John', 'Martin']
+LASTS = ['Brown', 'Smith', 'Robinson', 'Waters', 'Taylor']
+AGES = [20, 25, 30, 35]
+
 
 class TestAccountUpsert(helper.ClientIntegrationTestCase):
-    """Account upsert integration test."""
-
     def setUp(self):
-        """Drops existing schema and loads new schema for the test."""
         super(TestAccountUpsert, self).setUp()
-        self.concurrency = 2
-
-        self.firsts = ['Paul', 'Eric', 'Jack', 'John', 'Martin']
-        self.lasts = ['Brown', 'Smith', 'Robinson', 'Waters', 'Taylor']
-        self.ages = [20, 25, 30, 35]
 
         self.accounts = [
             {'first': f, 'last': l, 'age': a}
-            for f in self.firsts for l in self.lasts for a in self.ages
+            for f in FIRSTS for l in LASTS for a in AGES
         ]
         logging.info(len(self.accounts))
 
@@ -53,14 +50,15 @@ class TestAccountUpsert(helper.ClientIntegrationTestCase):
             when:   int                   .
         """)
 
-    def test_acount_upsert(self):
-        """Account upsert integration. Will run upserts concurrently."""
-        self.do_upserts(self.accounts, self.concurrency)
-        self.assert_changes(self.firsts, self.accounts)
+    def test_account_upsert(self):
+        """Run upserts concurrently."""
+        self.do_upserts(self.accounts, CONCURRENCY)
+        self.assert_changes(FIRSTS, self.accounts)
 
     def do_upserts(self, account_list, concurrency):
-        """Will run the upsert command for the accouts in `account_list`. Execution
+        """Runs the upsert command for the accounts in `account_list`. Execution
         happens in concurrent processes."""
+
         success_ctr = multiprocessing.Value('i', 0, lock=True)
         retry_ctr = multiprocessing.Value('i', 0, lock=True)
 
@@ -69,28 +67,32 @@ class TestAccountUpsert(helper.ClientIntegrationTestCase):
                                               account=acct,
                                               success_ctr=success_ctr,
                                               retry_ctr=retry_ctr)
-        results = [pool.apply_async(updater, (acct,))
-                   for acct in account_list for _ in range(concurrency)]
+        results = [
+            pool.apply_async(updater, (acct,))
+            for acct in account_list for _ in range(concurrency)
+        ]
         [res.get() for res in results]
 
     def assert_changes(self, firsts, accounts):
         """Will check to see changes have been made."""
-        q = '''
-        {{
+
+        q = """{{
             all(func: anyofterms(first, "{}")) {{
                 first
                 last
                 age
             }}
-        }}'''.format(' '.join(firsts))
+        }}""".format(' '.join(firsts))
         logging.debug(q)
         result = json.loads(self.client.query(q=q).json)
+
         account_set = set()
         for acct in result['all']:
             self.assertTrue(acct['first'] is not None)
             self.assertTrue(acct['last'] is not None)
             self.assertTrue(acct['age'] is not None)
             account_set.add('{first}_{last}_{age}'.format(**acct))
+
         self.assertEqual(len(account_set), len(accounts))
         for acct in accounts:
             self.assertTrue('{first}_{last}_{age}'.format(**acct) in account_set)
@@ -98,12 +100,11 @@ class TestAccountUpsert(helper.ClientIntegrationTestCase):
 
 def upsert_account(addr, account, success_ctr, retry_ctr):
     c = helper.create_client(addr)
-    q = '''
-    {{
+    q = """{{
         acct(func:eq(first, "{first}")) @filter(eq(last, "{last}") AND eq(age, {age})) {{
             uid
         }}
-    }}'''.format(**account)
+    }}""".format(**account)
 
     last_update_time = time.time() - 10000
     while True:
@@ -118,7 +119,7 @@ def upsert_account(addr, account, success_ctr, retry_ctr):
                                               'multiple accounts' % account)
 
             if not result['acct']:
-                # Account does not exist, so create it
+                # account does not exist, so create it
                 nquads = '''
                     _:acct <first> "{first}" .
                     _:acct <last> "{last}" .
@@ -126,17 +127,14 @@ def upsert_account(addr, account, success_ctr, retry_ctr):
                 '''.format(**account)
                 created = txn.mutate(set_nquads=nquads)
                 uid = created.uids.get('acct')
-                assert uid is not None and uid != '', 'Account with uid None/""'
+                assert uid is not None and uid != '', 'Account with uid None'
             else:
-                # Account exists, read the uid
+                # account exists, read the uid
                 acct = result['acct'][0]
                 uid = acct['uid']
                 assert uid is not None, 'Account with uid None'
 
-            updatequads = '''
-                <{0}> <when> "{1:d}"^^<xs:int> .
-            '''.format(uid, int(time.time()))
-
+            updatequads = '<{0}> <when> "{1:d}"^^<xs:int> .'.format(uid, int(time.time()))
             txn.mutate(set_nquads=updatequads)
             txn.commit()
 
@@ -153,6 +151,13 @@ def upsert_account(addr, account, success_ctr, retry_ctr):
             txn.discard()
 
 
+def suite():
+    s = unittest.TestSuite()
+    s.addTest(TestAccountUpsert())
+    return s
+
+
 if __name__ == '__main__':
-    logging.basicConfig(level=logging.DEBUG)
-    unittest.main()
+    logging.basicConfig(level=logging.INFO)
+    runner = unittest.TextTestRunner()
+    runner.run(suite())

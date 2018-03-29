@@ -82,6 +82,7 @@ class TestIsString(unittest.TestCase):
 def suite():
     s = unittest.TestSuite()
     s.addTest(TestMergeLinReads())
+    s.addTest(TestIsString())
     return s
 
 
