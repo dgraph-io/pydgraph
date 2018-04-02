@@ -44,9 +44,9 @@ class TestAccountUpsert(helper.ClientIntegrationTestCase):
 
         helper.drop_all(self.client)
         helper.set_schema(self.client, """
-            first:  string   @index(term) .
-            last:   string   @index(hash) .
-            age:    int      @index(int)  .
+            first:  string   @index(term) @upsert .
+            last:   string   @index(hash) @upsert .
+            age:    int      @index(int)  @upsert .
             when:   int                   .
         """)
 
