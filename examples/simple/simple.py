@@ -6,7 +6,7 @@ import pydgraph
 
 # Create a client stub.
 def create_client_stub():
-    return pydgraph.DgraphClientStub("localhost:9080")
+    return pydgraph.DgraphClientStub('localhost:9080')
 
 
 # Create a client.
@@ -42,7 +42,7 @@ def create_data(client):
             'age': 26,
             'married': True,
             'loc': {
-                'type': "Point",
+                'type': 'Point',
                 'coordinates': [1.1, 2],
             },
             'dob': datetime.datetime(1980, 1, 1, 23, 0, 0, 0).isoformat(),
@@ -123,6 +123,9 @@ def main():
     set_schema(client)
     create_data(client)
     query_data(client)
+
+    # Close the client stub.
+    client_stub.close()
 
 
 if __name__ == '__main__':

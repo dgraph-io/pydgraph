@@ -72,10 +72,10 @@ class Txn(object):
         
         return req
 
-    def mutate(self, mu=None, set_obj=None, del_obj=None, set_nquads=None, del_nquads=None, ignore_index_conflict=None,
-               timeout=None, metadata=None, credentials=None):
+    def mutate(self, mu=None, set_obj=None, del_obj=None, set_nquads=None, del_nquads=None, commit_now=None,
+               ignore_index_conflict=None, timeout=None, metadata=None, credentials=None):
         mu = self._common_mutate(mu=mu, set_obj=set_obj, del_obj=del_obj, set_nquads=set_nquads, del_nquads=del_nquads,
-                                 ignore_index_conflict=ignore_index_conflict)
+                                 commit_now=commit_now, ignore_index_conflict=ignore_index_conflict)
 
         try:
             ag = self._dc.any_client().mutate(mu, timeout=timeout, metadata=metadata, credentials=credentials)
@@ -95,9 +95,9 @@ class Txn(object):
         return ag
     
     async def async_mutate(self, mu=None, set_obj=None, del_obj=None, set_nquads=None, del_nquads=None,
-                           ignore_index_conflict=None, timeout=None, metadata=None, credentials=None):
+                           commit_now=None, ignore_index_conflict=None, timeout=None, metadata=None, credentials=None):
         mu = self._common_mutate(mu=mu, set_obj=set_obj, del_obj=del_obj, set_nquads=set_nquads, del_nquads=del_nquads,
-                                 ignore_index_conflict=ignore_index_conflict)
+                                 commit_now=commit_now, ignore_index_conflict=ignore_index_conflict)
 
         try:
             ag = await self._dc.any_client().async_mutate(mu, timeout=timeout, metadata=metadata,
@@ -114,17 +114,19 @@ class Txn(object):
             self._common_except_mutate(e)
     
     def _common_mutate(self, mu=None, set_obj=None, del_obj=None, set_nquads=None, del_nquads=None,
-                       ignore_index_conflict=None):
+                       commit_now=None, ignore_index_conflict=None):
         if not mu:
             mu = api.Mutation()
         if set_obj:
-            mu.set_json = json.dumps(set_obj, default=str).encode('utf8')
+            mu.set_json = json.dumps(set_obj).encode('utf8')
         if del_obj:
-            mu.delete_json = json.dumps(del_obj, default=str).encode('utf8')
+            mu.delete_json = json.dumps(del_obj).encode('utf8')
         if set_nquads:
             mu.set_nquads = set_nquads.encode('utf8')
         if del_nquads:
             mu.del_nquads = del_nquads.encode('utf8')
+        if commit_now:
+            mu.commit_now = True
         if ignore_index_conflict:
             mu.ignore_index_conflict = True
         

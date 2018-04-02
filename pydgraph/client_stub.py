@@ -61,3 +61,7 @@ class DgraphClientStub(object):
     
     async def async_check_version(self, check, timeout=None, metadata=None, credentials=None):
         return await self.stub.CheckVersion.future(check, timeout=timeout, metadata=metadata, credentials=credentials)
+
+    def close(self):
+        del self.channel
+        del self.stub
