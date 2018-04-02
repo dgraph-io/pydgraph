@@ -118,9 +118,9 @@ class Txn(object):
         if not mu:
             mu = api.Mutation()
         if set_obj:
-            mu.set_json = json.dumps(set_obj).encode('utf8')
+            mu.set_json = json.dumps(set_obj, default=str).encode('utf8')
         if del_obj:
-            mu.delete_json = json.dumps(del_obj).encode('utf8')
+            mu.delete_json = json.dumps(del_obj, default=str).encode('utf8')
         if set_nquads:
             mu.set_nquads = set_nquads.encode('utf8')
         if del_nquads:
