@@ -79,8 +79,6 @@ class Txn(object):
 
         try:
             ag = self._dc.any_client().mutate(mu, timeout=timeout, metadata=metadata, credentials=credentials)
-            self.merge_context(ag.context)
-            return ag
         except Exception as e:
             try:
                 self.discard(timeout=timeout, metadata=metadata, credentials=credentials)
@@ -89,6 +87,12 @@ class Txn(object):
                 pass
 
             self._common_except_mutate(e)
+
+        if mu.commit_now:
+            self._finished = True
+
+        self.merge_context(ag.context)
+        return ag
     
     async def async_mutate(self, mu=None, set_obj=None, del_obj=None, set_nquads=None, del_nquads=None,
                            ignore_index_conflict=None, timeout=None, metadata=None, credentials=None):
@@ -217,4 +221,4 @@ class Txn(object):
             # This condition should never be true.
             raise Exception('StartTs mismatch')
 
-        self._ctx.keys[:] = src.keys[:]
+        self._ctx.keys.extend(src.keys[:])
