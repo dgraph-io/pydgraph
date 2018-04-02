@@ -44,7 +44,7 @@ For more configuration options, and other details, refer to
 ## Install dependencies
 
 ```sh
-npm install
+pip install -r requirements.txt
 ```
 
 ## Run the sample code
