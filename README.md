@@ -239,7 +239,7 @@ SERVER_ADDR = "localhost:9080"
 
 # Create instances of DgraphClientStub.
 stub1 = pydgraph.DgraphClientStub(SERVER_ADDR)
-stub2 = dgraph.DgraphClientStub(SERVER_ADDR)
+stub2 = pydgraph.DgraphClientStub(SERVER_ADDR)
 
 # Create an instance of DgraphClient.
 client = pydgraph.DgraphClient(stub1, stub2)
