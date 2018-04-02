@@ -18,7 +18,7 @@ __maintainer__ = 'Garvit Pahal <garvit@dgraph.io>'
 import unittest
 
 from pydgraph import util
-from pydgraph.proto import api_pb2 as api
+import pydgraph
 
 from . import helper
 
@@ -60,12 +60,12 @@ class TestMergeLinReads(unittest.TestCase):
     
     def test_no_src_ids(self):
         lr1 = helper.create_lin_read({1: 1})
-        lr2 = api.LinRead()
+        lr2 = pydgraph.LinRead()
         res = helper.create_lin_read({1: 1})
         self.common_test(lr1, lr2, res)
     
     def test_no_target_ids(self):
-        lr1 = api.LinRead()
+        lr1 = pydgraph.LinRead()
         lr2 = helper.create_lin_read({1: 1})
         res = helper.create_lin_read({1: 1})
         self.common_test(lr1, lr2, res)

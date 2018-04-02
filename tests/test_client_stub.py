@@ -17,8 +17,7 @@ __maintainer__ = 'Garvit Pahal <garvit@dgraph.io>'
 
 import unittest
 
-from pydgraph import client_stub
-from pydgraph.proto import api_pb2 as api
+import pydgraph
 
 
 class TestDgraphClientStub(unittest.TestCase):
@@ -27,14 +26,14 @@ class TestDgraphClientStub(unittest.TestCase):
         self.assertIsInstance(tag, str)
 
     def check_version(self, stub):
-        self.validate_version_object(stub.check_version(api.Check()))
+        self.validate_version_object(stub.check_version(pydgraph.Check()))
 
     def test_constructor(self):
-        self.check_version(client_stub.DgraphClientStub())
+        self.check_version(pydgraph.DgraphClientStub())
     
     def test_timeout(self):
         with self.assertRaises(Exception):
-            client_stub.DgraphClientStub().check_version(api.Check(), timeout=-1)
+            pydgraph.DgraphClientStub().check_version(pydgraph.Check(), timeout=-1)
 
 
 def suite():

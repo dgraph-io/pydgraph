@@ -17,12 +17,11 @@ __maintainer__ = 'Garvit Pahal <garvit@dgraph.io>'
 
 import unittest
 
-from pydgraph import client_stub, client
-from pydgraph.proto import api_pb2 as api
+import pydgraph
 
 
 def create_lin_read(src_ids):
-    lr = api.LinRead()
+    lr = pydgraph.LinRead()
     ids = lr.ids
     for key, value in src_ids.items():
         ids[key] = value
@@ -48,15 +47,15 @@ SERVER_ADDR = 'localhost:9080'
 
 
 def create_client(addr=SERVER_ADDR):
-    return client.DgraphClient(client_stub.DgraphClientStub(addr))
+    return pydgraph.DgraphClient(pydgraph.DgraphClientStub(addr))
 
 
 def set_schema(c, schema):
-    return c.alter(api.Operation(schema=schema))
+    return c.alter(pydgraph.Operation(schema=schema))
 
 
 def drop_all(c):
-    return c.alter(api.Operation(drop_all=True))
+    return c.alter(pydgraph.Operation(drop_all=True))
 
 
 def setup():
@@ -77,7 +76,7 @@ class ClientIntegrationTestCase(unittest.TestCase):
         """Sets up the client and verifies the version is compatible."""
 
         self.client = create_client(self.TEST_SERVER_ADDR)
-        version = self.client.any_client().check_version(api.Check());
+        version = self.client.any_client().check_version(pydgraph.Check())
 
         # version.tag string format is v<MAJOR>.<MINOR>.<PATCH>
         # version_tup = [MAJOR, MINOR, PATCH]

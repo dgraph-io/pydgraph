@@ -22,7 +22,7 @@ import time
 import multiprocessing
 import multiprocessing.dummy as mpd
 
-from pydgraph import errors
+import pydgraph
 
 from . import helper
 
@@ -143,7 +143,7 @@ def upsert_account(addr, account, success_ctr, retry_ctr):
 
             # txn successful, break the loop
             return
-        except errors.AbortedError:
+        except pydgraph.AbortedError:
             with retry_ctr.get_lock():
                 retry_ctr.value += 1
             # txn failed, retry the loop
