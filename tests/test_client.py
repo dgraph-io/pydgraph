@@ -17,13 +17,13 @@ __maintainer__ = 'Garvit Pahal <garvit@dgraph.io>'
 
 import unittest
 
-from pydgraph import client
+import pydgraph
 
 
 class TestDgraphClient(unittest.TestCase):
     def test_constructor(self):
         with self.assertRaises(ValueError):
-            client.DgraphClient()
+            pydgraph.DgraphClient()
 
 
 def suite():

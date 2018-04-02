@@ -19,7 +19,7 @@ import unittest
 import logging
 import json
 
-from pydgraph.proto import api_pb2 as api
+import pydgraph
 
 from . import helper
 
@@ -33,7 +33,7 @@ class TestQueries(helper.ClientIntegrationTestCase):
 
     def test_mutation_and_query(self):
         txn = self.client.txn()
-        _ = txn.mutate(api.Mutation(commit_now=True), set_nquads="""
+        _ = txn.mutate(pydgraph.Mutation(commit_now=True), set_nquads="""
             <_:alice> <name> \"Alice\" .
             <_:greg> <name> \"Greg\" .
             <_:alice> <follows> <_:greg> .

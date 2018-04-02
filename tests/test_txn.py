@@ -19,7 +19,7 @@ import unittest
 import logging
 import json
 
-from pydgraph import errors
+import pydgraph
 
 from . import helper
 
@@ -168,7 +168,7 @@ class TestTxn(helper.ClientIntegrationTestCase):
         _ = txn2.mutate(set_obj={'uid': uid, 'name': 'Manish'})
 
         txn.commit()
-        self.assertRaises(errors.AbortedError, txn2.commit)
+        self.assertRaises(pydgraph.AbortedError, txn2.commit)
 
         txn3 = self.client.txn()
         query = """{{
@@ -204,7 +204,7 @@ class TestTxn(helper.ClientIntegrationTestCase):
         _ = txn2.mutate(set_obj={'uid': uid, 'name': 'Jan the man'})
         txn2.commit()
 
-        self.assertRaises(errors.AbortedError, txn.commit)
+        self.assertRaises(pydgraph.AbortedError, txn.commit)
 
         txn3 = self.client.txn()
         resp = txn3.query(query)
@@ -224,7 +224,7 @@ class TestTxn(helper.ClientIntegrationTestCase):
         _ = txn2.mutate(set_obj={'uid': uid, 'name': 'Jan the man'})
 
         txn.commit()
-        self.assertRaises(errors.AbortedError, txn2.commit)
+        self.assertRaises(pydgraph.AbortedError, txn2.commit)
 
         txn3 = self.client.txn()
         _ = txn3.mutate(set_obj={'uid': uid, 'name': 'Jan the man'})
