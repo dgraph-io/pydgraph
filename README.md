@@ -280,4 +280,3 @@ Make sure you have a Dgraph server running on localhost before you run this task
 ```sh
 python setup.py test
 ```
->>>>>>> gp/v1
