@@ -8,6 +8,7 @@ before_install:
   - scripts/install_dgraph.sh
 install:
   - pip install -r requirements.txt
+  - pip install coveralls
 script:
   - scripts/build.sh
 after_success: coveralls
