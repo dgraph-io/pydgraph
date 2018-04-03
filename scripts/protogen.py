@@ -11,29 +11,18 @@
 # WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
 # See the License for the specific language governing permissions and
 # limitations under the License.
+"""Runs protoc with the gRPC plugin to generate messages and gRPC stubs."""
 
-from pydgraph.meta import VERSION
+import os
+from grpc_tools import protoc
 
-__author__ = 'Shailesh Kochhar <shailesh.kochhar@gmail.com>'
-__maintainer__ = 'Garvit Pahal <garvit@dgraph.io>'
-__version__ = VERSION
-__status__ = 'development'
+dirpath = os.path.dirname(os.path.realpath(__file__))
+protopath = os.path.realpath(os.path.join(dirpath, '../pydgraph/proto'))
 
-
-def merge_lin_reads(target, src):
-    if src is None:
-        return target
-
-    # cache for the loop
-    target_ids = target.ids
-    target_ids_get = target_ids.get
-
-    for key, src_value in src.ids.items():
-        if target_ids_get(key, 0) <= src_value:
-            target_ids[key] = src_value
-
-    return target
-
-
-def is_string(s):
-    return isinstance(s, str)
+protoc.main((
+    '',
+    '-I' + protopath,
+    '--python_out=' + protopath,
+    '--grpc_python_out=' + protopath,
+    os.path.join(protopath, 'api.proto'),
+))

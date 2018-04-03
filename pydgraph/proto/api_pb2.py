@@ -19,7 +19,7 @@ DESCRIPTOR = _descriptor.FileDescriptor(
   name='api.proto',
   package='api',
   syntax='proto3',
-  serialized_pb=_b('\n\tapi.proto\x12\x03\x61pi\"\x9d\x01\n\x07Request\x12\r\n\x05query\x18\x01 \x01(\t\x12$\n\x04vars\x18\x02 \x03(\x0b\x32\x16.api.Request.VarsEntry\x12\x10\n\x08start_ts\x18\r \x01(\x04\x12\x1e\n\x08lin_read\x18\x0e \x01(\x0b\x32\x0c.api.LinRead\x1a+\n\tVarsEntry\x12\x0b\n\x03key\x18\x01 \x01(\t\x12\r\n\x05value\x18\x02 \x01(\t:\x02\x38\x01\"v\n\x08Response\x12\x0c\n\x04json\x18\x01 \x01(\x0c\x12\x1f\n\x06schema\x18\x02 \x03(\x0b\x32\x0f.api.SchemaNode\x12\x1c\n\x03txn\x18\x03 \x01(\x0b\x32\x0f.api.TxnContext\x12\x1d\n\x07latency\x18\x0c \x01(\x0b\x32\x0c.api.Latency\"\x80\x01\n\x08\x41ssigned\x12%\n\x04uids\x18\x01 \x03(\x0b\x32\x17.api.Assigned.UidsEntry\x12 \n\x07\x63ontext\x18\x02 \x01(\x0b\x32\x0f.api.TxnContext\x1a+\n\tUidsEntry\x12\x0b\n\x03key\x18\x01 \x01(\t\x12\r\n\x05value\x18\x02 \x01(\t:\x02\x38\x01\"\xd0\x01\n\x08Mutation\x12\x10\n\x08set_json\x18\x01 \x01(\x0c\x12\x13\n\x0b\x64\x65lete_json\x18\x02 \x01(\x0c\x12\x12\n\nset_nquads\x18\x03 \x01(\x0c\x12\x12\n\ndel_nquads\x18\x04 \x01(\x0c\x12\x17\n\x03set\x18\n \x03(\x0b\x32\n.api.NQuad\x12\x17\n\x03\x64\x65l\x18\x0b \x03(\x0b\x32\n.api.NQuad\x12\x10\n\x08start_ts\x18\r \x01(\x04\x12\x12\n\ncommit_now\x18\x0e \x01(\x08\x12\x1d\n\x15ignore_index_conflict\x18\x0f \x01(\x08\"-\n\x0b\x41ssignedIds\x12\x0f\n\x07startId\x18\x01 \x01(\x04\x12\r\n\x05\x65ndId\x18\x02 \x01(\x04\"@\n\tOperation\x12\x0e\n\x06schema\x18\x01 \x01(\t\x12\x11\n\tdrop_attr\x18\x02 \x01(\t\x12\x10\n\x08\x64rop_all\x18\x03 \x01(\x08\"\x17\n\x07Payload\x12\x0c\n\x04\x44\x61ta\x18\x01 \x01(\x0c\"p\n\nTxnContext\x12\x10\n\x08start_ts\x18\x01 \x01(\x04\x12\x11\n\tcommit_ts\x18\x02 \x01(\x04\x12\x0f\n\x07\x61\x62orted\x18\x03 \x01(\x08\x12\x0c\n\x04keys\x18\x04 \x03(\t\x12\x1e\n\x08lin_read\x18\r \x01(\x0b\x32\x0c.api.LinRead\"\x07\n\x05\x43heck\"\x16\n\x07Version\x12\x0b\n\x03tag\x18\x01 \x01(\t\"Y\n\x07LinRead\x12\"\n\x03ids\x18\x01 \x03(\x0b\x32\x15.api.LinRead.IdsEntry\x1a*\n\x08IdsEntry\x12\x0b\n\x03key\x18\x01 \x01(\r\x12\r\n\x05value\x18\x02 \x01(\x04:\x02\x38\x01\"I\n\x07Latency\x12\x12\n\nparsing_ns\x18\x01 \x01(\x04\x12\x15\n\rprocessing_ns\x18\x02 \x01(\x04\x12\x13\n\x0b\x65ncoding_ns\x18\x03 \x01(\x04\"\x99\x01\n\x05NQuad\x12\x0f\n\x07subject\x18\x01 \x01(\t\x12\x11\n\tpredicate\x18\x02 \x01(\t\x12\x11\n\tobject_id\x18\x03 \x01(\t\x12 \n\x0cobject_value\x18\x04 \x01(\x0b\x32\n.api.Value\x12\r\n\x05label\x18\x05 \x01(\t\x12\x0c\n\x04lang\x18\x06 \x01(\t\x12\x1a\n\x06\x66\x61\x63\x65ts\x18\x07 \x03(\x0b\x32\n.api.Facet\"\xf4\x01\n\x05Value\x12\x15\n\x0b\x64\x65\x66\x61ult_val\x18\x01 \x01(\tH\x00\x12\x13\n\tbytes_val\x18\x02 \x01(\x0cH\x00\x12\x11\n\x07int_val\x18\x03 \x01(\x03H\x00\x12\x12\n\x08\x62ool_val\x18\x04 \x01(\x08H\x00\x12\x11\n\x07str_val\x18\x05 \x01(\tH\x00\x12\x14\n\ndouble_val\x18\x06 \x01(\x01H\x00\x12\x11\n\x07geo_val\x18\x07 \x01(\x0cH\x00\x12\x12\n\x08\x64\x61te_val\x18\x08 \x01(\x0cH\x00\x12\x16\n\x0c\x64\x61tetime_val\x18\t \x01(\x0cH\x00\x12\x16\n\x0cpassword_val\x18\n \x01(\tH\x00\x12\x11\n\x07uid_val\x18\x0b \x01(\x04H\x00\x42\x05\n\x03val\"\xab\x01\n\x05\x46\x61\x63\x65t\x12\x0b\n\x03key\x18\x01 \x01(\t\x12\r\n\x05value\x18\x02 \x01(\x0c\x12$\n\x08val_type\x18\x03 \x01(\x0e\x32\x12.api.Facet.ValType\x12\x0e\n\x06tokens\x18\x04 \x03(\t\x12\r\n\x05\x61lias\x18\x05 \x01(\t\"A\n\x07ValType\x12\n\n\x06STRING\x10\x00\x12\x07\n\x03INT\x10\x01\x12\t\n\x05\x46LOAT\x10\x02\x12\x08\n\x04\x42OOL\x10\x03\x12\x0c\n\x08\x44\x41TETIME\x10\x04\"}\n\nSchemaNode\x12\x11\n\tpredicate\x18\x01 \x01(\t\x12\x0c\n\x04type\x18\x02 \x01(\t\x12\r\n\x05index\x18\x03 \x01(\x08\x12\x11\n\ttokenizer\x18\x04 \x03(\t\x12\x0f\n\x07reverse\x18\x05 \x01(\x08\x12\r\n\x05\x63ount\x18\x06 \x01(\x08\x12\x0c\n\x04list\x18\x07 \x01(\x08\x32\xe4\x01\n\x06\x44graph\x12&\n\x05Query\x12\x0c.api.Request\x1a\r.api.Response\"\x00\x12(\n\x06Mutate\x12\r.api.Mutation\x1a\r.api.Assigned\"\x00\x12\'\n\x05\x41lter\x12\x0e.api.Operation\x1a\x0c.api.Payload\"\x00\x12\x33\n\rCommitOrAbort\x12\x0f.api.TxnContext\x1a\x0f.api.TxnContext\"\x00\x12*\n\x0c\x43heckVersion\x12\n.api.Check\x1a\x0c.api.Version\"\x00\x42\x18\n\tio.dgraphB\x0b\x44graphProtob\x06proto3')
+  serialized_pb=_b('\n\tapi.proto\x12\x03\x61pi\"\x9d\x01\n\x07Request\x12\r\n\x05query\x18\x01 \x01(\t\x12$\n\x04vars\x18\x02 \x03(\x0b\x32\x16.api.Request.VarsEntry\x12\x10\n\x08start_ts\x18\r \x01(\x04\x12\x1e\n\x08lin_read\x18\x0e \x01(\x0b\x32\x0c.api.LinRead\x1a+\n\tVarsEntry\x12\x0b\n\x03key\x18\x01 \x01(\t\x12\r\n\x05value\x18\x02 \x01(\t:\x02\x38\x01\"v\n\x08Response\x12\x0c\n\x04json\x18\x01 \x01(\x0c\x12\x1f\n\x06schema\x18\x02 \x03(\x0b\x32\x0f.api.SchemaNode\x12\x1c\n\x03txn\x18\x03 \x01(\x0b\x32\x0f.api.TxnContext\x12\x1d\n\x07latency\x18\x0c \x01(\x0b\x32\x0c.api.Latency\"\x9f\x01\n\x08\x41ssigned\x12%\n\x04uids\x18\x01 \x03(\x0b\x32\x17.api.Assigned.UidsEntry\x12 \n\x07\x63ontext\x18\x02 \x01(\x0b\x32\x0f.api.TxnContext\x12\x1d\n\x07latency\x18\x0c \x01(\x0b\x32\x0c.api.Latency\x1a+\n\tUidsEntry\x12\x0b\n\x03key\x18\x01 \x01(\t\x12\r\n\x05value\x18\x02 \x01(\t:\x02\x38\x01\"\xd0\x01\n\x08Mutation\x12\x10\n\x08set_json\x18\x01 \x01(\x0c\x12\x13\n\x0b\x64\x65lete_json\x18\x02 \x01(\x0c\x12\x12\n\nset_nquads\x18\x03 \x01(\x0c\x12\x12\n\ndel_nquads\x18\x04 \x01(\x0c\x12\x17\n\x03set\x18\n \x03(\x0b\x32\n.api.NQuad\x12\x17\n\x03\x64\x65l\x18\x0b \x03(\x0b\x32\n.api.NQuad\x12\x10\n\x08start_ts\x18\r \x01(\x04\x12\x12\n\ncommit_now\x18\x0e \x01(\x08\x12\x1d\n\x15ignore_index_conflict\x18\x0f \x01(\x08\"-\n\x0b\x41ssignedIds\x12\x0f\n\x07startId\x18\x01 \x01(\x04\x12\r\n\x05\x65ndId\x18\x02 \x01(\x04\"@\n\tOperation\x12\x0e\n\x06schema\x18\x01 \x01(\t\x12\x11\n\tdrop_attr\x18\x02 \x01(\t\x12\x10\n\x08\x64rop_all\x18\x03 \x01(\x08\"\x17\n\x07Payload\x12\x0c\n\x04\x44\x61ta\x18\x01 \x01(\x0c\"p\n\nTxnContext\x12\x10\n\x08start_ts\x18\x01 \x01(\x04\x12\x11\n\tcommit_ts\x18\x02 \x01(\x04\x12\x0f\n\x07\x61\x62orted\x18\x03 \x01(\x08\x12\x0c\n\x04keys\x18\x04 \x03(\t\x12\x1e\n\x08lin_read\x18\r \x01(\x0b\x32\x0c.api.LinRead\"\x07\n\x05\x43heck\"\x16\n\x07Version\x12\x0b\n\x03tag\x18\x01 \x01(\t\"Y\n\x07LinRead\x12\"\n\x03ids\x18\x01 \x03(\x0b\x32\x15.api.LinRead.IdsEntry\x1a*\n\x08IdsEntry\x12\x0b\n\x03key\x18\x01 \x01(\r\x12\r\n\x05value\x18\x02 \x01(\x04:\x02\x38\x01\"I\n\x07Latency\x12\x12\n\nparsing_ns\x18\x01 \x01(\x04\x12\x15\n\rprocessing_ns\x18\x02 \x01(\x04\x12\x13\n\x0b\x65ncoding_ns\x18\x03 \x01(\x04\"\x99\x01\n\x05NQuad\x12\x0f\n\x07subject\x18\x01 \x01(\t\x12\x11\n\tpredicate\x18\x02 \x01(\t\x12\x11\n\tobject_id\x18\x03 \x01(\t\x12 \n\x0cobject_value\x18\x04 \x01(\x0b\x32\n.api.Value\x12\r\n\x05label\x18\x05 \x01(\t\x12\x0c\n\x04lang\x18\x06 \x01(\t\x12\x1a\n\x06\x66\x61\x63\x65ts\x18\x07 \x03(\x0b\x32\n.api.Facet\"\xf4\x01\n\x05Value\x12\x15\n\x0b\x64\x65\x66\x61ult_val\x18\x01 \x01(\tH\x00\x12\x13\n\tbytes_val\x18\x02 \x01(\x0cH\x00\x12\x11\n\x07int_val\x18\x03 \x01(\x03H\x00\x12\x12\n\x08\x62ool_val\x18\x04 \x01(\x08H\x00\x12\x11\n\x07str_val\x18\x05 \x01(\tH\x00\x12\x14\n\ndouble_val\x18\x06 \x01(\x01H\x00\x12\x11\n\x07geo_val\x18\x07 \x01(\x0cH\x00\x12\x12\n\x08\x64\x61te_val\x18\x08 \x01(\x0cH\x00\x12\x16\n\x0c\x64\x61tetime_val\x18\t \x01(\x0cH\x00\x12\x16\n\x0cpassword_val\x18\n \x01(\tH\x00\x12\x11\n\x07uid_val\x18\x0b \x01(\x04H\x00\x42\x05\n\x03val\"\xab\x01\n\x05\x46\x61\x63\x65t\x12\x0b\n\x03key\x18\x01 \x01(\t\x12\r\n\x05value\x18\x02 \x01(\x0c\x12$\n\x08val_type\x18\x03 \x01(\x0e\x32\x12.api.Facet.ValType\x12\x0e\n\x06tokens\x18\x04 \x03(\t\x12\r\n\x05\x61lias\x18\x05 \x01(\t\"A\n\x07ValType\x12\n\n\x06STRING\x10\x00\x12\x07\n\x03INT\x10\x01\x12\t\n\x05\x46LOAT\x10\x02\x12\x08\n\x04\x42OOL\x10\x03\x12\x0c\n\x08\x44\x41TETIME\x10\x04\"}\n\nSchemaNode\x12\x11\n\tpredicate\x18\x01 \x01(\t\x12\x0c\n\x04type\x18\x02 \x01(\t\x12\r\n\x05index\x18\x03 \x01(\x08\x12\x11\n\ttokenizer\x18\x04 \x03(\t\x12\x0f\n\x07reverse\x18\x05 \x01(\x08\x12\r\n\x05\x63ount\x18\x06 \x01(\x08\x12\x0c\n\x04list\x18\x07 \x01(\x08\x32\xe4\x01\n\x06\x44graph\x12&\n\x05Query\x12\x0c.api.Request\x1a\r.api.Response\"\x00\x12(\n\x06Mutate\x12\r.api.Mutation\x1a\r.api.Assigned\"\x00\x12\'\n\x05\x41lter\x12\x0e.api.Operation\x1a\x0c.api.Payload\"\x00\x12\x33\n\rCommitOrAbort\x12\x0f.api.TxnContext\x1a\x0f.api.TxnContext\"\x00\x12*\n\x0c\x43heckVersion\x12\n.api.Check\x1a\x0c.api.Version\"\x00\x42\x18\n\tio.dgraphB\x0b\x44graphProtob\x06proto3')
 )
 
 
@@ -53,8 +53,8 @@ _FACET_VALTYPE = _descriptor.EnumDescriptor(
   ],
   containing_type=None,
   options=None,
-  serialized_start=1601,
-  serialized_end=1666,
+  serialized_start=1632,
+  serialized_end=1697,
 )
 _sym_db.RegisterEnumDescriptor(_FACET_VALTYPE)
 
@@ -233,8 +233,8 @@ _ASSIGNED_UIDSENTRY = _descriptor.Descriptor(
   extension_ranges=[],
   oneofs=[
   ],
-  serialized_start=384,
-  serialized_end=427,
+  serialized_start=415,
+  serialized_end=458,
 )
 
 _ASSIGNED = _descriptor.Descriptor(
@@ -258,6 +258,13 @@ _ASSIGNED = _descriptor.Descriptor(
       message_type=None, enum_type=None, containing_type=None,
       is_extension=False, extension_scope=None,
       options=None, file=DESCRIPTOR),
+    _descriptor.FieldDescriptor(
+      name='latency', full_name='api.Assigned.latency', index=2,
+      number=12, type=11, cpp_type=10, label=1,
+      has_default_value=False, default_value=None,
+      message_type=None, enum_type=None, containing_type=None,
+      is_extension=False, extension_scope=None,
+      options=None, file=DESCRIPTOR),
   ],
   extensions=[
   ],
@@ -271,7 +278,7 @@ _ASSIGNED = _descriptor.Descriptor(
   oneofs=[
   ],
   serialized_start=299,
-  serialized_end=427,
+  serialized_end=458,
 )
 
 
@@ -357,8 +364,8 @@ _MUTATION = _descriptor.Descriptor(
   extension_ranges=[],
   oneofs=[
   ],
-  serialized_start=430,
-  serialized_end=638,
+  serialized_start=461,
+  serialized_end=669,
 )
 
 
@@ -395,8 +402,8 @@ _ASSIGNEDIDS = _descriptor.Descriptor(
   extension_ranges=[],
   oneofs=[
   ],
-  serialized_start=640,
-  serialized_end=685,
+  serialized_start=671,
+  serialized_end=716,
 )
 
 
@@ -440,8 +447,8 @@ _OPERATION = _descriptor.Descriptor(
   extension_ranges=[],
   oneofs=[
   ],
-  serialized_start=687,
-  serialized_end=751,
+  serialized_start=718,
+  serialized_end=782,
 )
 
 
@@ -471,8 +478,8 @@ _PAYLOAD = _descriptor.Descriptor(
   extension_ranges=[],
   oneofs=[
   ],
-  serialized_start=753,
-  serialized_end=776,
+  serialized_start=784,
+  serialized_end=807,
 )
 
 
@@ -530,8 +537,8 @@ _TXNCONTEXT = _descriptor.Descriptor(
   extension_ranges=[],
   oneofs=[
   ],
-  serialized_start=778,
-  serialized_end=890,
+  serialized_start=809,
+  serialized_end=921,
 )
 
 
@@ -554,8 +561,8 @@ _CHECK = _descriptor.Descriptor(
   extension_ranges=[],
   oneofs=[
   ],
-  serialized_start=892,
-  serialized_end=899,
+  serialized_start=923,
+  serialized_end=930,
 )
 
 
@@ -585,8 +592,8 @@ _VERSION = _descriptor.Descriptor(
   extension_ranges=[],
   oneofs=[
   ],
-  serialized_start=901,
-  serialized_end=923,
+  serialized_start=932,
+  serialized_end=954,
 )
 
 
@@ -623,8 +630,8 @@ _LINREAD_IDSENTRY = _descriptor.Descriptor(
   extension_ranges=[],
   oneofs=[
   ],
-  serialized_start=972,
-  serialized_end=1014,
+  serialized_start=1003,
+  serialized_end=1045,
 )
 
 _LINREAD = _descriptor.Descriptor(
@@ -653,8 +660,8 @@ _LINREAD = _descriptor.Descriptor(
   extension_ranges=[],
   oneofs=[
   ],
-  serialized_start=925,
-  serialized_end=1014,
+  serialized_start=956,
+  serialized_end=1045,
 )
 
 
@@ -698,8 +705,8 @@ _LATENCY = _descriptor.Descriptor(
   extension_ranges=[],
   oneofs=[
   ],
-  serialized_start=1016,
-  serialized_end=1089,
+  serialized_start=1047,
+  serialized_end=1120,
 )
 
 
@@ -771,8 +778,8 @@ _NQUAD = _descriptor.Descriptor(
   extension_ranges=[],
   oneofs=[
   ],
-  serialized_start=1092,
-  serialized_end=1245,
+  serialized_start=1123,
+  serialized_end=1276,
 )
 
 
@@ -875,8 +882,8 @@ _VALUE = _descriptor.Descriptor(
       name='val', full_name='api.Value.val',
       index=0, containing_type=None, fields=[]),
   ],
-  serialized_start=1248,
-  serialized_end=1492,
+  serialized_start=1279,
+  serialized_end=1523,
 )
 
 
@@ -935,8 +942,8 @@ _FACET = _descriptor.Descriptor(
   extension_ranges=[],
   oneofs=[
   ],
-  serialized_start=1495,
-  serialized_end=1666,
+  serialized_start=1526,
+  serialized_end=1697,
 )
 
 
@@ -1008,8 +1015,8 @@ _SCHEMANODE = _descriptor.Descriptor(
   extension_ranges=[],
   oneofs=[
   ],
-  serialized_start=1668,
-  serialized_end=1793,
+  serialized_start=1699,
+  serialized_end=1824,
 )
 
 _REQUEST_VARSENTRY.containing_type = _REQUEST
@@ -1021,6 +1028,7 @@ _RESPONSE.fields_by_name['latency'].message_type = _LATENCY
 _ASSIGNED_UIDSENTRY.containing_type = _ASSIGNED
 _ASSIGNED.fields_by_name['uids'].message_type = _ASSIGNED_UIDSENTRY
 _ASSIGNED.fields_by_name['context'].message_type = _TXNCONTEXT
+_ASSIGNED.fields_by_name['latency'].message_type = _LATENCY
 _MUTATION.fields_by_name['set'].message_type = _NQUAD
 _MUTATION.fields_by_name['del'].message_type = _NQUAD
 _TXNCONTEXT.fields_by_name['lin_read'].message_type = _LINREAD
@@ -1233,8 +1241,8 @@ _DGRAPH = _descriptor.ServiceDescriptor(
   file=DESCRIPTOR,
   index=0,
   options=None,
-  serialized_start=1796,
-  serialized_end=2024,
+  serialized_start=1827,
+  serialized_end=2055,
   methods=[
   _descriptor.MethodDescriptor(
     name='Query',
