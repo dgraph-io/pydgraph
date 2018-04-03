@@ -31,6 +31,35 @@ class TestTxn(helper.ClientIntegrationTestCase):
         helper.drop_all(self.client)
         helper.set_schema(self.client, 'name: string @index(fulltext) .')
 
+    def test_query_after_commit(self):
+        txn = self.client.txn()
+        assigned = txn.mutate(set_obj={'name': 'Manish'})
+        self.assertEqual(1, len(assigned.uids), 'Nothing was assigned')
+
+        for _, uid in assigned.uids.items():
+            uid = uid
+
+        txn.commit()
+
+        query = """{{
+            me(func: uid("{uid:s}")) {{
+                name
+            }}
+        }}""".format(uid=uid)
+
+        with self.assertRaises(Exception):
+            txn.query(query)
+
+    def test_mutate_after_commit(self):
+        txn = self.client.txn()
+        assigned = txn.mutate(set_obj={'name': 'Manish'})
+        self.assertEqual(1, len(assigned.uids), 'Nothing was assigned')
+
+        txn.commit()
+
+        with self.assertRaises(Exception):
+            txn.mutate(set_obj={'name': 'Manish2'})
+
     def test_read_at_start_ts(self):
         """Tests read after write when readTs == startTs"""
 
