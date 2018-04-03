@@ -1,5 +1,4 @@
-#
-# Copyright 2016 DGraph Labs, Inc.
+# Copyright 2016 Dgraph Labs, Inc.
 #
 # Licensed under the Apache License, Version 2.0 (the "License");
 # you may not use this file except in compliance with the License.
@@ -13,74 +12,53 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 
-"""
-This module contains the main user-facing methods for interacting with the
-Dgraph server over gRPC.
-"""
-import grpc
-from pydgraph import txn
-from pydgraph import util
+import random
+
+from pydgraph import txn, util
 from pydgraph.meta import VERSION
 from pydgraph.proto import api_pb2 as api
-from pydgraph.proto import api_pb2_grpc as api_grpc
 
 __author__ = 'Mohit Ranka <mohitranka@gmail.com>'
-__maintainer__ = 'Mohit Ranka <mohitranka@gmail.com>'
+__maintainer__ = 'Garvit Pahal <garvit@dgraph.io>'
 __version__ = VERSION
 __status__ = 'development'
 
 
 class DgraphClient(object):
-    def __init__(self, host, port):
-        self.channel = grpc.insecure_channel("{host}:{port}".format(host=host, port=port))
-        self._stub = api_grpc.DgraphStub(self.channel)
+    """Creates a new Client for interacting with the Dgraph store.
+    
+    The client can be backed by multiple connections (to the same server, or
+    multiple servers in a cluster).
+    """
+
+    def __init__(self, *clients):
+        if len(clients) == 0:
+            raise ValueError('No clients provided in DgraphClient constructor')
+
+        self._clients = clients[:]
         self._lin_read = api.LinRead()
 
-    @property
-    def stub(self):
-        return self._stub
+    def alter(self, op, timeout=None, metadata=None, credentials=None):
+        return self.any_client().alter(op, timeout=timeout, metadata=metadata, credentials=credentials)
 
-    @property
-    def lin_read(self):
-        return self._lin_read
-
-    def merge_context(self, context):
-        """Merges txn_context into client's state."""
-        util.merge_lin_reads(self.lin_read, context.lin_read)
-
-    def check(self, timeout=None):
-        return self.stub.CheckVersion(api.Check(), timeout)
-
-    def query(self, q, timeout=None):
-        request = api.Request(query=q, lin_read=self.lin_read)
-        response = self.stub.Query(request, timeout)
-        self.merge_context(response.txn)
-        return response
-
-    async def aquery(self, q, timeout=None):
-        request = api.Request(query=q, lin_read=self.lin_read)
-        response = await self.stub.Query.future(request, timeout)
-        self.merge_context(response.txn)
-        return response
-
-    def alter(self, schema, timeout=None):
-        """Alter schema at the other end of the connection."""
-        operation = api.Operation(schema=schema)
-        return self.stub.Alter(operation, timeout)
-
-    async def aalter(self, schema, timeout=None):
-        operation = api.Operation(schema=schema)
-        return await self.stub.Alter.future(operation, timeout)
-
-    def drop_attr(self, drop_attr, timeout=None):
-        """Drop an attribute from the dgraph server."""
-        operation = api.Operation(drop_attr=drop_attr)
-        return self.stub.Alter(operation)
-
-    def drop_all(self, timeout=None):
-        """Drop all schema from the dgraph server."""
-        operation = api.Operation(drop_all=True)
-        return self.stub.Alter(operation)
+    async def async_alter(self, op, timeout=None, metadata=None, credentials=None):
+        return await self.any_client().async_alter(op, timeout=timeout, metadata=metadata, credentials=credentials)
+    
+    def query(self, q, variables=None, timeout=None, metadata=None, credentials=None):
+        return self.txn().query(q, variables=variables, timeout=timeout, metadata=metadata, credentials=credentials)
+    
+    async def async_query(self, q, variables=None, timeout=None, metadata=None, credentials=None):
+        return self.txn().async_query(q, variables=variables, timeout=timeout, metadata=metadata,
+                                      credentials=credentials)
 
     def txn(self):
-        return txn.DgraphTxn(self)
+        return txn.Txn(self)
+
+    def set_lin_read(self, ctx):
+        ctx.lin_read.MergeFrom(self._lin_read)
+
+    def merge_lin_reads(self, src):
+        util.merge_lin_reads(self._lin_read, src)
+
+    def any_client(self):
+        return random.choice(self._clients)

@@ -1,0 +1,13 @@
+language: python
+python:
+  - "3.5"
+  - "3.6"
+sudo: required
+dist: trusty
+before_install:
+  - scripts/install_dgraph.sh
+install:
+  - pip install -r requirements.txt
+script:
+  - scripts/build.sh
+after_success: coveralls

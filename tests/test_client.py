@@ -12,28 +12,26 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 
-from pydgraph.meta import VERSION
-
-__author__ = 'Shailesh Kochhar <shailesh.kochhar@gmail.com>'
+__author__ = 'Garvit Pahal <garvit@dgraph.io>'
 __maintainer__ = 'Garvit Pahal <garvit@dgraph.io>'
-__version__ = VERSION
-__status__ = 'development'
+
+import unittest
+
+import pydgraph
 
 
-def merge_lin_reads(target, src):
-    if src is None:
-        return target
-
-    # cache for the loop
-    target_ids = target.ids
-    target_ids_get = target_ids.get
-
-    for key, src_value in src.ids.items():
-        if target_ids_get(key, 0) <= src_value:
-            target_ids[key] = src_value
-
-    return target
+class TestDgraphClient(unittest.TestCase):
+    def test_constructor(self):
+        with self.assertRaises(ValueError):
+            pydgraph.DgraphClient()
 
 
-def is_string(s):
-    return isinstance(s, str)
+def suite():
+    s = unittest.TestSuite()
+    s.addTest(TestDgraphClient())
+    return s
+
+
+if __name__ == '__main__':
+    runner = unittest.TextTestRunner()
+    runner.run(suite())
