@@ -35,32 +35,17 @@ class DgraphClientStub(object):
     def alter(self, op, timeout=None, metadata=None, credentials=None):
         return self.stub.Alter(op, timeout=timeout, metadata=metadata, credentials=credentials)
 
-    async def async_alter(self, op, timeout=None, metadata=None, credentials=None):
-        return await self.stub.Alter.future(op, timeout=timeout, metadata=metadata, credentials=credentials)
-
     def query(self, req, timeout=None, metadata=None, credentials=None):
         return self.stub.Query(req, timeout=timeout, metadata=metadata, credentials=credentials)
-    
-    async def async_query(self, req, timeout=None, metadata=None, credentials=None):
-        return await self.stub.Query.future(req, timeout=timeout, metadata=metadata, credentials=credentials)
     
     def mutate(self, mu, timeout=None, metadata=None, credentials=None):
         return self.stub.Mutate(mu, timeout=timeout, metadata=metadata, credentials=credentials)
     
-    async def async_mutate(self, mu, timeout=None, metadata=None, credentials=None):
-        return await self.stub.Mutate.future(mu, timeout=timeout, metadata=metadata, credentials=credentials)
-    
     def commit_or_abort(self, ctx, timeout=None, metadata=None, credentials=None):
         return self.stub.CommitOrAbort(ctx, timeout=timeout, metadata=metadata, credentials=credentials)
     
-    async def async_commit_or_abort(self, ctx, timeout=None, metadata=None, credentials=None):
-        return await self.stub.CommitOrAbort.future(ctx, timeout=timeout, metadata=metadata, credentials=credentials)
-    
     def check_version(self, check, timeout=None, metadata=None, credentials=None):
         return self.stub.CheckVersion(check, timeout=timeout, metadata=metadata, credentials=credentials)
-    
-    async def async_check_version(self, check, timeout=None, metadata=None, credentials=None):
-        return await self.stub.CheckVersion.future(check, timeout=timeout, metadata=metadata, credentials=credentials)
 
     def close(self):
         del self.channel

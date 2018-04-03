@@ -35,6 +35,13 @@ class TestDgraphClientStub(unittest.TestCase):
         with self.assertRaises(Exception):
             pydgraph.DgraphClientStub().check_version(pydgraph.Check(), timeout=-1)
 
+    def test_close(self):
+        client_stub = pydgraph.DgraphClientStub()
+        self.check_version(client_stub)
+        client_stub.close()
+        with self.assertRaises(Exception):
+            client_stub.check_version(pydgraph.Check())
+
 
 def suite():
     s = unittest.TestSuite()
