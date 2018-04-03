@@ -16,6 +16,7 @@ __author__ = 'Garvit Pahal <garvit@dgraph.io>'
 __maintainer__ = 'Garvit Pahal <garvit@dgraph.io>'
 
 import unittest
+import sys
 
 import pydgraph
 
@@ -23,6 +24,10 @@ import pydgraph
 class TestDgraphClientStub(unittest.TestCase):
     def validate_version_object(self, version):
         tag = version.tag
+        if sys.version_info[0] < 3:
+            self.assertIsInstance(tag, basestring)
+            return
+
         self.assertIsInstance(tag, str)
 
     def check_version(self, stub):

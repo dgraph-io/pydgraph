@@ -1,6 +1,6 @@
 # pydgraph
 
-Official Dgraph client implementation for Python (Python v3.5 and above),
+Official Dgraph client implementation for Python (Python >= v2.7 and >= v3.5),
 using [grpc].
 
 [grpc]: https://grpc.io/

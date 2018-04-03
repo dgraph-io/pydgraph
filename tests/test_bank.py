@@ -50,6 +50,7 @@ class TestBank(helper.ClientIntegrationTestCase):
 
             success_ctr = mp.Value('i', 0, lock=True)
             retry_ctr = mp.Value('i', 0, lock=True)
+
             pool = mpd.Pool(CONCURRENCY)
             results = [pool.apply_async(
                 run_transfers,
@@ -57,6 +58,7 @@ class TestBank(helper.ClientIntegrationTestCase):
             ) for _ in range(CONCURRENCY)]
 
             [res.get() for res in results]
+            pool.close()
         finally:
             total_watcher.terminate()
             time.sleep(0.1)
