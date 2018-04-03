@@ -40,7 +40,7 @@ class TestQueries(helper.ClientIntegrationTestCase):
             <_:alice> <follows> <_:greg> .
         """)
 
-        query = """{
+        query = """query me($a: string) {
             me(func: anyofterms(name, "Alice"))
             {
                 name
@@ -49,10 +49,9 @@ class TestQueries(helper.ClientIntegrationTestCase):
                     name
                 }
             }
-        }
-        """
+        }"""
 
-        response = self.client.query(query)
+        response = self.client.query(query, variables={'$a': 'Alice'})
         self.assertEqual([{'name': 'Alice', 'follows': [{'name': 'Greg'}]}], json.loads(response.json).get('me'))
         self.assertTrue(is_number(response.latency.parsing_ns), 'Parsing latency is not available')
         self.assertTrue(is_number(response.latency.processing_ns), 'Processing latency is not available')
