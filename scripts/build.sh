@@ -9,6 +9,6 @@ init
 startZero
 start
 
-coverage run --source=pydgraph setup.py test
+coverage run --source=pydgraph --omit=pydgraph/proto/* setup.py test
 
 quit 0
