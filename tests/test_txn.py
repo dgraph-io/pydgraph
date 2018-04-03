@@ -29,7 +29,7 @@ class TestTxn(helper.ClientIntegrationTestCase):
         super(TestTxn, self).setUp()
 
         helper.drop_all(self.client)
-        helper.set_schema(self.client, 'name: string @index(fulltext) .')
+        helper.set_schema(self.client, 'name: string @index(fulltext) @upsert .')
 
     def test_query_after_commit(self):
         txn = self.client.txn()
@@ -59,6 +59,24 @@ class TestTxn(helper.ClientIntegrationTestCase):
 
         with self.assertRaises(Exception):
             txn.mutate(set_obj={'name': 'Manish2'})
+
+    def test_commit_now(self):
+        txn = self.client.txn()
+        assigned = txn.mutate(set_obj={'name': 'Manish'}, commit_now=True)
+        self.assertEqual(1, len(assigned.uids), 'Nothing was assigned')
+
+        for _, uid in assigned.uids.items():
+            uid = uid
+
+        self.assertRaises(Exception, txn.commit)
+
+        query = """{{
+            me(func: uid("{uid:s}")) {{
+                name
+            }}
+        }}""".format(uid=uid)
+        resp = self.client.query(query)
+        self.assertEqual([{'name': 'Manish'}], json.loads(resp.json).get('me'))
 
     def test_read_at_start_ts(self):
         """Tests read after write when readTs == startTs"""
@@ -239,9 +257,7 @@ class TestTxn(helper.ClientIntegrationTestCase):
         resp = txn3.query(query)
         self.assertEqual([{'name': 'Jan the man'}], json.loads(resp.json).get('me'))
 
-    def test_mutation_after_commit(self):
-        """Tests a second mutation after failing to commit a first mutation."""
-
+    def test_commit_conflict(self):
         txn = self.client.txn()
         assigned = txn.mutate(set_obj={'name': 'Manish'})
         self.assertEqual(1, len(assigned.uids), 'Nothing was assigned')
@@ -268,8 +284,25 @@ class TestTxn(helper.ClientIntegrationTestCase):
         resp4 = self.client.query(query)
         self.assertEqual([{'name': 'Jan the man'}], json.loads(resp4.json).get('me'))
 
+    def test_mutate_conflict(self):
+        txn = self.client.txn()
+        assigned = txn.mutate(set_obj={'name': 'Manish'})
+        self.assertEqual(1, len(assigned.uids), 'Nothing was assigned')
+
+        for _, uid in assigned.uids.items():
+            uid = uid
+
+        txn2 = self.client.txn()
+        _ = txn2.mutate(set_obj={'uid': uid, 'name': 'Jan the man'})
+
+        txn2.commit()
+        with self.assertRaises(pydgraph.AbortedError):
+            txn.mutate(set_obj={'uid': uid, 'name': 'Manish2'})
+
     def test_conflict_ignore(self):
         """Tests a mutation with ignore index conflict."""
+
+        helper.set_schema(self.client, 'name: string @index(fulltext) .')
 
         txn = self.client.txn()
         assigned1 = txn.mutate(set_obj={'name': 'Manish'}, ignore_index_conflict=True)
