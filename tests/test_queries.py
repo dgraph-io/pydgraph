@@ -16,6 +16,7 @@ __author__ = 'Mohit Ranka <mohitranka@gmail.com>'
 __maintainer__ = 'Garvit Pahal <garvit@dgraph.io>'
 
 import unittest
+import sys
 import logging
 import json
 
@@ -53,9 +54,16 @@ class TestQueries(helper.ClientIntegrationTestCase):
 
         response = self.client.query(query)
         self.assertEqual([{'name': 'Alice', 'follows': [{'name': 'Greg'}]}], json.loads(response.json).get('me'))
-        self.assertTrue(isinstance(response.latency.parsing_ns, int), 'Parsing latency is not available')
-        self.assertTrue(isinstance(response.latency.processing_ns, int), 'Processing latency is not available')
-        self.assertTrue(isinstance(response.latency.encoding_ns, int), 'Encoding latency is not available')
+        self.assertTrue(is_number(response.latency.parsing_ns), 'Parsing latency is not available')
+        self.assertTrue(is_number(response.latency.processing_ns), 'Processing latency is not available')
+        self.assertTrue(is_number(response.latency.encoding_ns), 'Encoding latency is not available')
+
+
+def is_number(n):
+    if sys.version_info[0] < 3:
+        return isinstance(n, (int, long))
+
+    return isinstance(n, int)
 
 
 def suite():

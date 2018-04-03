@@ -62,16 +62,17 @@ class TestAccountUpsert(helper.ClientIntegrationTestCase):
         success_ctr = multiprocessing.Value('i', 0, lock=True)
         retry_ctr = multiprocessing.Value('i', 0, lock=True)
 
+        def _updater(acct):
+            upsert_account(addr=self.TEST_SERVER_ADDR, account=acct, success_ctr=success_ctr, retry_ctr=retry_ctr)
+
         pool = mpd.Pool(concurrency)
-        updater = lambda acct: upsert_account(addr=self.TEST_SERVER_ADDR,
-                                              account=acct,
-                                              success_ctr=success_ctr,
-                                              retry_ctr=retry_ctr)
         results = [
-            pool.apply_async(updater, (acct,))
+            pool.apply_async(_updater, (acct,))
             for acct in account_list for _ in range(concurrency)
         ]
+
         [res.get() for res in results]
+        pool.close()
 
     def assert_changes(self, firsts, accounts):
         """Will check to see changes have been made."""
