@@ -78,6 +78,37 @@ class TestTxn(helper.ClientIntegrationTestCase):
         resp = self.client.query(query)
         self.assertEqual([{'name': 'Manish'}], json.loads(resp.json).get('me'))
 
+    def test_discard(self):
+        txn = self.client.txn()
+        assigned = txn.mutate(set_obj={'name': 'Manish'})
+        self.assertEqual(1, len(assigned.uids), 'Nothing was assigned')
+        txn.commit()
+
+        for _, uid in assigned.uids.items():
+            uid = uid
+
+        txn2 = self.client.txn()
+        _ = txn2.mutate(set_obj={'uid': uid, 'name': 'Manish2'})
+
+        txn.discard()
+        self.assertRaises(Exception, txn.commit)
+
+        query = """{{
+            me(func: uid("{uid:s}")) {{
+                name
+            }}
+        }}""".format(uid=uid)
+        resp = self.client.query(query)
+        self.assertEqual([{'name': 'Manish'}], json.loads(resp.json).get('me'))
+
+    def test_mutate_error(self):
+        txn = self.client.txn()
+        with self.assertRaises(Exception):
+            # Following N-Quad is invalid
+            _ = txn.mutate(set_nquads='_:node <name> Manish')
+
+        self.assertRaises(Exception, txn.commit)
+
     def test_read_at_start_ts(self):
         """Tests read after write when readTs == startTs"""
 
