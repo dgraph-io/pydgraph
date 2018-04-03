@@ -54,12 +54,6 @@ class Txn(object):
         self.merge_context(res.txn)
         return res
     
-    async def async_query(self, q, variables=None, timeout=None, metadata=None, credentials=None):
-        req = self._common_query(q, variables=variables)
-        res = await self._dc.any_client().async_query(req, timeout=timeout, metadata=metadata, credentials=credentials)
-        self.merge_context(res.txn)
-        return res
-    
     def _common_query(self, q, variables=None):
         if self._finished:
             raise Exception('Transaction has already been committed or discarded')
@@ -93,25 +87,6 @@ class Txn(object):
 
         self.merge_context(ag.context)
         return ag
-    
-    async def async_mutate(self, mu=None, set_obj=None, del_obj=None, set_nquads=None, del_nquads=None,
-                           commit_now=None, ignore_index_conflict=None, timeout=None, metadata=None, credentials=None):
-        mu = self._common_mutate(mu=mu, set_obj=set_obj, del_obj=del_obj, set_nquads=set_nquads, del_nquads=del_nquads,
-                                 commit_now=commit_now, ignore_index_conflict=ignore_index_conflict)
-
-        try:
-            ag = await self._dc.any_client().async_mutate(mu, timeout=timeout, metadata=metadata,
-                                                          credentials=credentials)
-            self.merge_context(ag.context)
-            return ag
-        except Exception as e:
-            try:
-                await self.async_discard(timeout=timeout, metadata=metadata, credentials=credentials)
-            except:
-                # Ignore error - user should see the original error.
-                pass
-
-            self._common_except_mutate(e)
     
     def _common_mutate(self, mu=None, set_obj=None, del_obj=None, set_nquads=None, del_nquads=None,
                        commit_now=None, ignore_index_conflict=None):
@@ -157,16 +132,6 @@ class Txn(object):
         except Exception as e:
             self._common_except_commit(e)
     
-    async def async_commit(self, timeout=None, metadata=None, credentials=None):
-        if not self._common_commit():
-            return
-
-        try:
-            await self._dc.any_client().async_commit_or_abort(self._ctx, timeout=timeout, metadata=metadata,
-                                                              credentials=credentials)
-        except Exception as e:
-            self._common_except_commit(e)
-    
     def _common_commit(self):
         if self._finished:
             raise Exception('Transaction has already been committed or discarded')
@@ -189,13 +154,6 @@ class Txn(object):
             return
 
         self._dc.any_client().commit_or_abort(self._ctx, timeout=timeout, metadata=metadata, credentials=credentials)
-    
-    async def async_discard(self, timeout=None, metadata=None, credentials=None):
-        if not self._common_discard():
-            return
-
-        await self._dc.any_client().async_commit_or_abort(self._ctx, timeout=timeout, metadata=metadata,
-                                                          credentials=credentials)
     
     def _common_discard(self):
         if self._finished:
