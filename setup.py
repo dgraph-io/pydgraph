@@ -12,35 +12,31 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 
-import sys
 try:
     from setuptools import setup
 except ImportError:
     from distutils.core import setup
 
-if sys.version_info >= (2, 7, 9):
-    import ssl
-    ssl._create_default_https_context = ssl._create_unverified_context
-
 from pydgraph.meta import VERSION
 
-setup(name='pydgraph',
-      version=VERSION,
-      description='Official Dgraph client implementation for Python',
-      license='Apache License, Version 2.0',
-      author='Mohit Ranka',
-      author_email='mohitranka@gmail.com',
-      url='https://github.com/dgraph-io/pydgraph',
-      classifiers=[
-          'Intended Audience :: Developers',
-          'License :: OSI Approved :: Apache Software License',
-          'Operating System :: OS Independent',
-          'Topic :: Database',
-          'Topic :: Software Development',
-          'Programming Language :: Python :: 3.5',
-          'Programming Language :: Python :: 3.6',
-      ],
-      packages=['pydgraph', 'pydgraph.proto'],
-      install_requires=open('requirements.txt').readlines(),
-      test_suite='tests',
+setup(
+    name='pydgraph',
+    version=VERSION,
+    description='Official Dgraph client implementation for Python',
+    license='Apache License, Version 2.0',
+    author='Dgraph Labs',
+    author_email='contact@dgraph.io',
+    url='https://github.com/dgraph-io/pydgraph',
+    classifiers=[
+      'Intended Audience :: Developers',
+      'License :: OSI Approved :: Apache Software License',
+      'Operating System :: OS Independent',
+      'Topic :: Database',
+      'Topic :: Software Development',
+      'Programming Language :: Python :: 3.5',
+      'Programming Language :: Python :: 3.6',
+    ],
+    packages=['pydgraph', 'pydgraph.proto'],
+    install_requires=open('requirements.txt').readlines(),
+    test_suite='tests',
 )
