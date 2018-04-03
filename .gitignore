@@ -25,6 +25,9 @@ wheels/
 *.egg
 MANIFEST
 
+# Coverage
+.coverage
+
 # IntelliJ
 .idea
 pydgraph.iml
