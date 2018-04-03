@@ -296,8 +296,9 @@ class TestTxn(helper.ClientIntegrationTestCase):
         _ = txn2.mutate(set_obj={'uid': uid, 'name': 'Jan the man'})
 
         txn2.commit()
-        with self.assertRaises(pydgraph.AbortedError):
-            txn.mutate(set_obj={'uid': uid, 'name': 'Manish2'})
+
+        _ = txn.mutate(set_obj={'uid': uid, 'name': 'Manish2'})
+        self.assertRaises(pydgraph.AbortedError, txn.commit)
 
     def test_conflict_ignore(self):
         """Tests a mutation with ignore index conflict."""
