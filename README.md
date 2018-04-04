@@ -1,4 +1,4 @@
-# pydgraph
+# pydgraph [![Build Status](https://img.shields.io/travis/dgraph-io/pydgraph/master.svg?style=flat)](https://travis-ci.org/dgraph-io/pydgraph) [![Coverage Status](https://img.shields.io/coveralls/github/dgraph-io/pydgraph/master.svg?style=flat)](https://coveralls.io/github/dgraph-io/pydgraph?branch=master)
 
 Official Dgraph client implementation for Python (Python >= v2.7 and >= v3.5),
 using [grpc].
