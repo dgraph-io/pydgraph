@@ -12,6 +12,9 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 
+import os
+from pypandoc import convert
+
 try:
     from setuptools import setup
 except ImportError:
@@ -19,10 +22,13 @@ except ImportError:
 
 from pydgraph.meta import VERSION
 
+README = os.path.join(os.path.dirname(__file__), 'README.md')
+
 setup(
     name='pydgraph',
     version=VERSION,
     description='Official Dgraph client implementation for Python',
+    long_description=convert(README, 'rst'),
     license='Apache License, Version 2.0',
     author='Dgraph Labs',
     author_email='contact@dgraph.io',
