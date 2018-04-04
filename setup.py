@@ -13,12 +13,22 @@
 # limitations under the License.
 
 import os
-from pypandoc import convert
+import sys
 
 try:
     from setuptools import setup
 except ImportError:
     from distutils.core import setup
+
+try:
+    from pypandoc import convert
+except ImportError as e:
+    # NOTE: error is thrown only for package build steps
+    if 'sdist' in sys.argv or 'bdist_wheel' in sys.argv:
+        raise e
+
+    def convert(f, _):
+        return open(f, 'r').read()
 
 from pydgraph.meta import VERSION
 
