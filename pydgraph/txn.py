@@ -47,6 +47,10 @@ class Txn(object):
 
         self._finished = False
         self._mutated = False
+        self._sequencing = api.LinRead.CLIENT_SIDE
+
+    def sequencing(self, sequencing):
+        self._sequencing = sequencing
 
     def query(self, q, variables=None, timeout=None, metadata=None, credentials=None):
         req = self._common_query(q, variables=variables)
@@ -57,8 +61,10 @@ class Txn(object):
     def _common_query(self, q, variables=None):
         if self._finished:
             raise Exception('Transaction has already been committed or discarded')
-        
-        req = api.Request(query=q, start_ts=self._ctx.start_ts, lin_read=self._ctx.lin_read)
+
+        lin_read = self._ctx.lin_read
+        lin_read.sequencing = self._sequencing
+        req = api.Request(query=q, start_ts=self._ctx.start_ts, lin_read=lin_read)
         if variables is not None:
             for key, value in variables.items():
                 if util.is_string(key) and util.is_string(value):
