@@ -7,7 +7,10 @@ and this project adheres to [Semantic Versioning](http://semver.org/spec/v2.0.0.
 
 ## [Unreleased]
 
+## [v1.0.0] - 2018-05-16
+
 ### Added
 - Full compatibility with Dgraph v1.0.0
 
-[Unreleased]: https://github.com/dgraph-io/dgraph-js/tree/master
+[Unreleased]: https://github.com/dgraph-io/dgraph-js/compare/v1.0.0...HEAD
+[v1.0.0]: https://github.com/dgraph-io/dgraph-js/tree/v1.0.0
