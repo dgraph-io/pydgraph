@@ -135,6 +135,27 @@ txn.mutate(set_obj=p)
 # txn.mutate(set_nquads='_:alice <name> "Alice"')
 ```
 
+```python
+# Delete data.
+
+query1 = """query all($a: string)
+ {
+   all(func: eq(name, $a)) 
+    {
+      uid
+    }   
+  }"""
+  
+variables1 = {'$a': 'Bob'}
+
+res1 = client.query(query1, variables=variables1)
+
+ppl1 = json.loads(res1.json)
+
+#For mutation to delete node, use this: 
+txn.mutate(del_obj= person)
+```
+
 For a more complete example with multiple fields and relationships, look at the
 [simple] project in the `examples` folder.
 
