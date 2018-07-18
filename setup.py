@@ -30,7 +30,11 @@ except ImportError as e:
     def convert(f, _):
         return open(f, 'r').read()
 
-from pydgraph.meta import VERSION
+
+VERSION = None
+
+with open(os.path.join('pydgraph', 'meta.py')) as version_file:
+    exec(version_file.read(), globals())
 
 README = os.path.join(os.path.dirname(__file__), 'README.md')
 
