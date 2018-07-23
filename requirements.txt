@@ -1,1 +1,2 @@
-grpcio==1.10.0
+grpcio>=1.13.0,<2.0.0
+protobuf>=3.5.0.post1
