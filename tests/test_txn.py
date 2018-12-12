@@ -363,7 +363,9 @@ class TestTxn(helper.ClientIntegrationTestCase):
         self.assertEqual([{'uid': uid1}, {'uid': uid2}], json.loads(resp.json).get('me'))
 
     def test_read_index_key_same_txn(self):
-        """Tests reading an indexed field within a transaction."""
+        """Tests reading an indexed field within a transaction. The read
+        should return the results from before any writes of the same
+        txn."""
 
         helper.drop_all(self.client)
         helper.set_schema(self.client, 'name: string @index(exact) .')
@@ -382,7 +384,8 @@ class TestTxn(helper.ClientIntegrationTestCase):
         }"""
 
         resp = txn.query(query)
-        self.assertEqual([{'uid': uid}], json.loads(resp.json).get('me'))
+        self.assertEqual([], json.loads(resp.json).get('me'),
+                         "Expected 0 nodes read from index")
 
 
 class TestSPStar(helper.ClientIntegrationTestCase):
