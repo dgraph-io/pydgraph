@@ -43,8 +43,7 @@ def are_lin_reads_equal(a, b):
     return True
 
 
-SERVER_ADDR = 'localhost:9080'
-
+SERVER_ADDR = 'localhost:9180'
 
 def create_client(addr=SERVER_ADDR):
     return pydgraph.DgraphClient(pydgraph.DgraphClientStub(addr))
