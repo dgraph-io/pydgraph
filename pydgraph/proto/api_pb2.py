@@ -7,7 +7,6 @@ from google.protobuf import descriptor as _descriptor
 from google.protobuf import message as _message
 from google.protobuf import reflection as _reflection
 from google.protobuf import symbol_database as _symbol_database
-from google.protobuf import descriptor_pb2
 # @@protoc_insertion_point(imports)
 
 _sym_db = _symbol_database.Default()
@@ -19,7 +18,8 @@ DESCRIPTOR = _descriptor.FileDescriptor(
   name='api.proto',
   package='api',
   syntax='proto3',
-  serialized_pb=_b('\n\tapi.proto\x12\x03\x61pi\"\x9d\x01\n\x07Request\x12\r\n\x05query\x18\x01 \x01(\t\x12$\n\x04vars\x18\x02 \x03(\x0b\x32\x16.api.Request.VarsEntry\x12\x10\n\x08start_ts\x18\r \x01(\x04\x12\x1e\n\x08lin_read\x18\x0e \x01(\x0b\x32\x0c.api.LinRead\x1a+\n\tVarsEntry\x12\x0b\n\x03key\x18\x01 \x01(\t\x12\r\n\x05value\x18\x02 \x01(\t:\x02\x38\x01\"v\n\x08Response\x12\x0c\n\x04json\x18\x01 \x01(\x0c\x12\x1f\n\x06schema\x18\x02 \x03(\x0b\x32\x0f.api.SchemaNode\x12\x1c\n\x03txn\x18\x03 \x01(\x0b\x32\x0f.api.TxnContext\x12\x1d\n\x07latency\x18\x0c \x01(\x0b\x32\x0c.api.Latency\"\x9f\x01\n\x08\x41ssigned\x12%\n\x04uids\x18\x01 \x03(\x0b\x32\x17.api.Assigned.UidsEntry\x12 \n\x07\x63ontext\x18\x02 \x01(\x0b\x32\x0f.api.TxnContext\x12\x1d\n\x07latency\x18\x0c \x01(\x0b\x32\x0c.api.Latency\x1a+\n\tUidsEntry\x12\x0b\n\x03key\x18\x01 \x01(\t\x12\r\n\x05value\x18\x02 \x01(\t:\x02\x38\x01\"\xd0\x01\n\x08Mutation\x12\x10\n\x08set_json\x18\x01 \x01(\x0c\x12\x13\n\x0b\x64\x65lete_json\x18\x02 \x01(\x0c\x12\x12\n\nset_nquads\x18\x03 \x01(\x0c\x12\x12\n\ndel_nquads\x18\x04 \x01(\x0c\x12\x17\n\x03set\x18\n \x03(\x0b\x32\n.api.NQuad\x12\x17\n\x03\x64\x65l\x18\x0b \x03(\x0b\x32\n.api.NQuad\x12\x10\n\x08start_ts\x18\r \x01(\x04\x12\x12\n\ncommit_now\x18\x0e \x01(\x08\x12\x1d\n\x15ignore_index_conflict\x18\x0f \x01(\x08\"-\n\x0b\x41ssignedIds\x12\x0f\n\x07startId\x18\x01 \x01(\x04\x12\r\n\x05\x65ndId\x18\x02 \x01(\x04\"@\n\tOperation\x12\x0e\n\x06schema\x18\x01 \x01(\t\x12\x11\n\tdrop_attr\x18\x02 \x01(\t\x12\x10\n\x08\x64rop_all\x18\x03 \x01(\x08\"\x17\n\x07Payload\x12\x0c\n\x04\x44\x61ta\x18\x01 \x01(\x0c\"p\n\nTxnContext\x12\x10\n\x08start_ts\x18\x01 \x01(\x04\x12\x11\n\tcommit_ts\x18\x02 \x01(\x04\x12\x0f\n\x07\x61\x62orted\x18\x03 \x01(\x08\x12\x0c\n\x04keys\x18\x04 \x03(\t\x12\x1e\n\x08lin_read\x18\r \x01(\x0b\x32\x0c.api.LinRead\"\x07\n\x05\x43heck\"\x16\n\x07Version\x12\x0b\n\x03tag\x18\x01 \x01(\t\"\xb6\x01\n\x07LinRead\x12\"\n\x03ids\x18\x01 \x03(\x0b\x32\x15.api.LinRead.IdsEntry\x12+\n\nsequencing\x18\x02 \x01(\x0e\x32\x17.api.LinRead.Sequencing\x1a*\n\x08IdsEntry\x12\x0b\n\x03key\x18\x01 \x01(\r\x12\r\n\x05value\x18\x02 \x01(\x04:\x02\x38\x01\".\n\nSequencing\x12\x0f\n\x0b\x43LIENT_SIDE\x10\x00\x12\x0f\n\x0bSERVER_SIDE\x10\x01\"I\n\x07Latency\x12\x12\n\nparsing_ns\x18\x01 \x01(\x04\x12\x15\n\rprocessing_ns\x18\x02 \x01(\x04\x12\x13\n\x0b\x65ncoding_ns\x18\x03 \x01(\x04\"\x99\x01\n\x05NQuad\x12\x0f\n\x07subject\x18\x01 \x01(\t\x12\x11\n\tpredicate\x18\x02 \x01(\t\x12\x11\n\tobject_id\x18\x03 \x01(\t\x12 \n\x0cobject_value\x18\x04 \x01(\x0b\x32\n.api.Value\x12\r\n\x05label\x18\x05 \x01(\t\x12\x0c\n\x04lang\x18\x06 \x01(\t\x12\x1a\n\x06\x66\x61\x63\x65ts\x18\x07 \x03(\x0b\x32\n.api.Facet\"\xf4\x01\n\x05Value\x12\x15\n\x0b\x64\x65\x66\x61ult_val\x18\x01 \x01(\tH\x00\x12\x13\n\tbytes_val\x18\x02 \x01(\x0cH\x00\x12\x11\n\x07int_val\x18\x03 \x01(\x03H\x00\x12\x12\n\x08\x62ool_val\x18\x04 \x01(\x08H\x00\x12\x11\n\x07str_val\x18\x05 \x01(\tH\x00\x12\x14\n\ndouble_val\x18\x06 \x01(\x01H\x00\x12\x11\n\x07geo_val\x18\x07 \x01(\x0cH\x00\x12\x12\n\x08\x64\x61te_val\x18\x08 \x01(\x0cH\x00\x12\x16\n\x0c\x64\x61tetime_val\x18\t \x01(\x0cH\x00\x12\x16\n\x0cpassword_val\x18\n \x01(\tH\x00\x12\x11\n\x07uid_val\x18\x0b \x01(\x04H\x00\x42\x05\n\x03val\"\xab\x01\n\x05\x46\x61\x63\x65t\x12\x0b\n\x03key\x18\x01 \x01(\t\x12\r\n\x05value\x18\x02 \x01(\x0c\x12$\n\x08val_type\x18\x03 \x01(\x0e\x32\x12.api.Facet.ValType\x12\x0e\n\x06tokens\x18\x04 \x03(\t\x12\r\n\x05\x61lias\x18\x05 \x01(\t\"A\n\x07ValType\x12\n\n\x06STRING\x10\x00\x12\x07\n\x03INT\x10\x01\x12\t\n\x05\x46LOAT\x10\x02\x12\x08\n\x04\x42OOL\x10\x03\x12\x0c\n\x08\x44\x41TETIME\x10\x04\"\x9b\x01\n\nSchemaNode\x12\x11\n\tpredicate\x18\x01 \x01(\t\x12\x0c\n\x04type\x18\x02 \x01(\t\x12\r\n\x05index\x18\x03 \x01(\x08\x12\x11\n\ttokenizer\x18\x04 \x03(\t\x12\x0f\n\x07reverse\x18\x05 \x01(\x08\x12\r\n\x05\x63ount\x18\x06 \x01(\x08\x12\x0c\n\x04list\x18\x07 \x01(\x08\x12\x0e\n\x06upsert\x18\x08 \x01(\x08\x12\x0c\n\x04lang\x18\t \x01(\x08\x32\xe4\x01\n\x06\x44graph\x12&\n\x05Query\x12\x0c.api.Request\x1a\r.api.Response\"\x00\x12(\n\x06Mutate\x12\r.api.Mutation\x1a\r.api.Assigned\"\x00\x12\'\n\x05\x41lter\x12\x0e.api.Operation\x1a\x0c.api.Payload\"\x00\x12\x33\n\rCommitOrAbort\x12\x0f.api.TxnContext\x1a\x0f.api.TxnContext\"\x00\x12*\n\x0c\x43heckVersion\x12\n.api.Check\x1a\x0c.api.Version\"\x00\x42\x18\n\tio.dgraphB\x0b\x44graphProtob\x06proto3')
+  serialized_options=_b('\n\tio.dgraphB\013DgraphProto'),
+  serialized_pb=_b('\n\tapi.proto\x12\x03\x61pi\"\xb0\x01\n\x07Request\x12\r\n\x05query\x18\x01 \x01(\t\x12$\n\x04vars\x18\x02 \x03(\x0b\x32\x16.api.Request.VarsEntry\x12\x10\n\x08start_ts\x18\r \x01(\x04\x12\x1e\n\x08lin_read\x18\x0e \x01(\x0b\x32\x0c.api.LinRead\x12\x11\n\tread_only\x18\x0f \x01(\x08\x1a+\n\tVarsEntry\x12\x0b\n\x03key\x18\x01 \x01(\t\x12\r\n\x05value\x18\x02 \x01(\t:\x02\x38\x01\"v\n\x08Response\x12\x0c\n\x04json\x18\x01 \x01(\x0c\x12\x1f\n\x06schema\x18\x02 \x03(\x0b\x32\x0f.api.SchemaNode\x12\x1c\n\x03txn\x18\x03 \x01(\x0b\x32\x0f.api.TxnContext\x12\x1d\n\x07latency\x18\x0c \x01(\x0b\x32\x0c.api.Latency\"\x9f\x01\n\x08\x41ssigned\x12%\n\x04uids\x18\x01 \x03(\x0b\x32\x17.api.Assigned.UidsEntry\x12 \n\x07\x63ontext\x18\x02 \x01(\x0b\x32\x0f.api.TxnContext\x12\x1d\n\x07latency\x18\x0c \x01(\x0b\x32\x0c.api.Latency\x1a+\n\tUidsEntry\x12\x0b\n\x03key\x18\x01 \x01(\t\x12\r\n\x05value\x18\x02 \x01(\t:\x02\x38\x01\"\xd0\x01\n\x08Mutation\x12\x10\n\x08set_json\x18\x01 \x01(\x0c\x12\x13\n\x0b\x64\x65lete_json\x18\x02 \x01(\x0c\x12\x12\n\nset_nquads\x18\x03 \x01(\x0c\x12\x12\n\ndel_nquads\x18\x04 \x01(\x0c\x12\x17\n\x03set\x18\n \x03(\x0b\x32\n.api.NQuad\x12\x17\n\x03\x64\x65l\x18\x0b \x03(\x0b\x32\n.api.NQuad\x12\x10\n\x08start_ts\x18\r \x01(\x04\x12\x12\n\ncommit_now\x18\x0e \x01(\x08\x12\x1d\n\x15ignore_index_conflict\x18\x0f \x01(\x08\"@\n\tOperation\x12\x0e\n\x06schema\x18\x01 \x01(\t\x12\x11\n\tdrop_attr\x18\x02 \x01(\t\x12\x10\n\x08\x64rop_all\x18\x03 \x01(\x08\"\x17\n\x07Payload\x12\x0c\n\x04\x44\x61ta\x18\x01 \x01(\x0c\"\x7f\n\nTxnContext\x12\x10\n\x08start_ts\x18\x01 \x01(\x04\x12\x11\n\tcommit_ts\x18\x02 \x01(\x04\x12\x0f\n\x07\x61\x62orted\x18\x03 \x01(\x08\x12\x0c\n\x04keys\x18\x04 \x03(\t\x12\r\n\x05preds\x18\x05 \x03(\t\x12\x1e\n\x08lin_read\x18\r \x01(\x0b\x32\x0c.api.LinRead\"\x07\n\x05\x43heck\"\x16\n\x07Version\x12\x0b\n\x03tag\x18\x01 \x01(\t\"\xb6\x01\n\x07LinRead\x12\"\n\x03ids\x18\x01 \x03(\x0b\x32\x15.api.LinRead.IdsEntry\x12+\n\nsequencing\x18\x02 \x01(\x0e\x32\x17.api.LinRead.Sequencing\x1a*\n\x08IdsEntry\x12\x0b\n\x03key\x18\x01 \x01(\r\x12\r\n\x05value\x18\x02 \x01(\x04:\x02\x38\x01\".\n\nSequencing\x12\x0f\n\x0b\x43LIENT_SIDE\x10\x00\x12\x0f\n\x0bSERVER_SIDE\x10\x01\"I\n\x07Latency\x12\x12\n\nparsing_ns\x18\x01 \x01(\x04\x12\x15\n\rprocessing_ns\x18\x02 \x01(\x04\x12\x13\n\x0b\x65ncoding_ns\x18\x03 \x01(\x04\"\x99\x01\n\x05NQuad\x12\x0f\n\x07subject\x18\x01 \x01(\t\x12\x11\n\tpredicate\x18\x02 \x01(\t\x12\x11\n\tobject_id\x18\x03 \x01(\t\x12 \n\x0cobject_value\x18\x04 \x01(\x0b\x32\n.api.Value\x12\r\n\x05label\x18\x05 \x01(\t\x12\x0c\n\x04lang\x18\x06 \x01(\t\x12\x1a\n\x06\x66\x61\x63\x65ts\x18\x07 \x03(\x0b\x32\n.api.Facet\"\xf4\x01\n\x05Value\x12\x15\n\x0b\x64\x65\x66\x61ult_val\x18\x01 \x01(\tH\x00\x12\x13\n\tbytes_val\x18\x02 \x01(\x0cH\x00\x12\x11\n\x07int_val\x18\x03 \x01(\x03H\x00\x12\x12\n\x08\x62ool_val\x18\x04 \x01(\x08H\x00\x12\x11\n\x07str_val\x18\x05 \x01(\tH\x00\x12\x14\n\ndouble_val\x18\x06 \x01(\x01H\x00\x12\x11\n\x07geo_val\x18\x07 \x01(\x0cH\x00\x12\x12\n\x08\x64\x61te_val\x18\x08 \x01(\x0cH\x00\x12\x16\n\x0c\x64\x61tetime_val\x18\t \x01(\x0cH\x00\x12\x16\n\x0cpassword_val\x18\n \x01(\tH\x00\x12\x11\n\x07uid_val\x18\x0b \x01(\x04H\x00\x42\x05\n\x03val\"\xab\x01\n\x05\x46\x61\x63\x65t\x12\x0b\n\x03key\x18\x01 \x01(\t\x12\r\n\x05value\x18\x02 \x01(\x0c\x12$\n\x08val_type\x18\x03 \x01(\x0e\x32\x12.api.Facet.ValType\x12\x0e\n\x06tokens\x18\x04 \x03(\t\x12\r\n\x05\x61lias\x18\x05 \x01(\t\"A\n\x07ValType\x12\n\n\x06STRING\x10\x00\x12\x07\n\x03INT\x10\x01\x12\t\n\x05\x46LOAT\x10\x02\x12\x08\n\x04\x42OOL\x10\x03\x12\x0c\n\x08\x44\x41TETIME\x10\x04\"\x9b\x01\n\nSchemaNode\x12\x11\n\tpredicate\x18\x01 \x01(\t\x12\x0c\n\x04type\x18\x02 \x01(\t\x12\r\n\x05index\x18\x03 \x01(\x08\x12\x11\n\ttokenizer\x18\x04 \x03(\t\x12\x0f\n\x07reverse\x18\x05 \x01(\x08\x12\r\n\x05\x63ount\x18\x06 \x01(\x08\x12\x0c\n\x04list\x18\x07 \x01(\x08\x12\x0e\n\x06upsert\x18\x08 \x01(\x08\x12\x0c\n\x04lang\x18\t \x01(\x08\"G\n\x0cLoginRequest\x12\x0e\n\x06userid\x18\x01 \x01(\t\x12\x10\n\x08password\x18\x02 \x01(\t\x12\x15\n\rrefresh_token\x18\x03 \x01(\t\".\n\x03Jwt\x12\x12\n\naccess_jwt\x18\x01 \x01(\t\x12\x13\n\x0brefresh_jwt\x18\x02 \x01(\t2\x91\x02\n\x06\x44graph\x12+\n\x05Login\x12\x11.api.LoginRequest\x1a\r.api.Response\"\x00\x12&\n\x05Query\x12\x0c.api.Request\x1a\r.api.Response\"\x00\x12(\n\x06Mutate\x12\r.api.Mutation\x1a\r.api.Assigned\"\x00\x12\'\n\x05\x41lter\x12\x0e.api.Operation\x1a\x0c.api.Payload\"\x00\x12\x33\n\rCommitOrAbort\x12\x0f.api.TxnContext\x1a\x0f.api.TxnContext\"\x00\x12*\n\x0c\x43heckVersion\x12\n.api.Check\x1a\x0c.api.Version\"\x00\x42\x18\n\tio.dgraphB\x0b\x44graphProtob\x06proto3')
 )
 
 
@@ -32,17 +32,17 @@ _LINREAD_SEQUENCING = _descriptor.EnumDescriptor(
   values=[
     _descriptor.EnumValueDescriptor(
       name='CLIENT_SIDE', index=0, number=0,
-      options=None,
+      serialized_options=None,
       type=None),
     _descriptor.EnumValueDescriptor(
       name='SERVER_SIDE', index=1, number=1,
-      options=None,
+      serialized_options=None,
       type=None),
   ],
   containing_type=None,
-  options=None,
-  serialized_start=1093,
-  serialized_end=1139,
+  serialized_options=None,
+  serialized_start=1080,
+  serialized_end=1126,
 )
 _sym_db.RegisterEnumDescriptor(_LINREAD_SEQUENCING)
 
@@ -54,29 +54,29 @@ _FACET_VALTYPE = _descriptor.EnumDescriptor(
   values=[
     _descriptor.EnumValueDescriptor(
       name='STRING', index=0, number=0,
-      options=None,
+      serialized_options=None,
       type=None),
     _descriptor.EnumValueDescriptor(
       name='INT', index=1, number=1,
-      options=None,
+      serialized_options=None,
       type=None),
     _descriptor.EnumValueDescriptor(
       name='FLOAT', index=2, number=2,
-      options=None,
+      serialized_options=None,
       type=None),
     _descriptor.EnumValueDescriptor(
       name='BOOL', index=3, number=3,
-      options=None,
+      serialized_options=None,
       type=None),
     _descriptor.EnumValueDescriptor(
       name='DATETIME', index=4, number=4,
-      options=None,
+      serialized_options=None,
       type=None),
   ],
   containing_type=None,
-  options=None,
-  serialized_start=1726,
-  serialized_end=1791,
+  serialized_options=None,
+  serialized_start=1713,
+  serialized_end=1778,
 )
 _sym_db.RegisterEnumDescriptor(_FACET_VALTYPE)
 
@@ -94,28 +94,28 @@ _REQUEST_VARSENTRY = _descriptor.Descriptor(
       has_default_value=False, default_value=_b("").decode('utf-8'),
       message_type=None, enum_type=None, containing_type=None,
       is_extension=False, extension_scope=None,
-      options=None, file=DESCRIPTOR),
+      serialized_options=None, file=DESCRIPTOR),
     _descriptor.FieldDescriptor(
       name='value', full_name='api.Request.VarsEntry.value', index=1,
       number=2, type=9, cpp_type=9, label=1,
       has_default_value=False, default_value=_b("").decode('utf-8'),
       message_type=None, enum_type=None, containing_type=None,
       is_extension=False, extension_scope=None,
-      options=None, file=DESCRIPTOR),
+      serialized_options=None, file=DESCRIPTOR),
   ],
   extensions=[
   ],
   nested_types=[],
   enum_types=[
   ],
-  options=_descriptor._ParseOptions(descriptor_pb2.MessageOptions(), _b('8\001')),
+  serialized_options=_b('8\001'),
   is_extendable=False,
   syntax='proto3',
   extension_ranges=[],
   oneofs=[
   ],
-  serialized_start=133,
-  serialized_end=176,
+  serialized_start=152,
+  serialized_end=195,
 )
 
 _REQUEST = _descriptor.Descriptor(
@@ -131,42 +131,49 @@ _REQUEST = _descriptor.Descriptor(
       has_default_value=False, default_value=_b("").decode('utf-8'),
       message_type=None, enum_type=None, containing_type=None,
       is_extension=False, extension_scope=None,
-      options=None, file=DESCRIPTOR),
+      serialized_options=None, file=DESCRIPTOR),
     _descriptor.FieldDescriptor(
       name='vars', full_name='api.Request.vars', index=1,
       number=2, type=11, cpp_type=10, label=3,
       has_default_value=False, default_value=[],
       message_type=None, enum_type=None, containing_type=None,
       is_extension=False, extension_scope=None,
-      options=None, file=DESCRIPTOR),
+      serialized_options=None, file=DESCRIPTOR),
     _descriptor.FieldDescriptor(
       name='start_ts', full_name='api.Request.start_ts', index=2,
       number=13, type=4, cpp_type=4, label=1,
       has_default_value=False, default_value=0,
       message_type=None, enum_type=None, containing_type=None,
       is_extension=False, extension_scope=None,
-      options=None, file=DESCRIPTOR),
+      serialized_options=None, file=DESCRIPTOR),
     _descriptor.FieldDescriptor(
       name='lin_read', full_name='api.Request.lin_read', index=3,
       number=14, type=11, cpp_type=10, label=1,
       has_default_value=False, default_value=None,
       message_type=None, enum_type=None, containing_type=None,
       is_extension=False, extension_scope=None,
-      options=None, file=DESCRIPTOR),
+      serialized_options=None, file=DESCRIPTOR),
+    _descriptor.FieldDescriptor(
+      name='read_only', full_name='api.Request.read_only', index=4,
+      number=15, type=8, cpp_type=7, label=1,
+      has_default_value=False, default_value=False,
+      message_type=None, enum_type=None, containing_type=None,
+      is_extension=False, extension_scope=None,
+      serialized_options=None, file=DESCRIPTOR),
   ],
   extensions=[
   ],
   nested_types=[_REQUEST_VARSENTRY, ],
   enum_types=[
   ],
-  options=None,
+  serialized_options=None,
   is_extendable=False,
   syntax='proto3',
   extension_ranges=[],
   oneofs=[
   ],
   serialized_start=19,
-  serialized_end=176,
+  serialized_end=195,
 )
 
 
@@ -183,42 +190,42 @@ _RESPONSE = _descriptor.Descriptor(
       has_default_value=False, default_value=_b(""),
       message_type=None, enum_type=None, containing_type=None,
       is_extension=False, extension_scope=None,
-      options=None, file=DESCRIPTOR),
+      serialized_options=None, file=DESCRIPTOR),
     _descriptor.FieldDescriptor(
       name='schema', full_name='api.Response.schema', index=1,
       number=2, type=11, cpp_type=10, label=3,
       has_default_value=False, default_value=[],
       message_type=None, enum_type=None, containing_type=None,
       is_extension=False, extension_scope=None,
-      options=None, file=DESCRIPTOR),
+      serialized_options=None, file=DESCRIPTOR),
     _descriptor.FieldDescriptor(
       name='txn', full_name='api.Response.txn', index=2,
       number=3, type=11, cpp_type=10, label=1,
       has_default_value=False, default_value=None,
       message_type=None, enum_type=None, containing_type=None,
       is_extension=False, extension_scope=None,
-      options=None, file=DESCRIPTOR),
+      serialized_options=None, file=DESCRIPTOR),
     _descriptor.FieldDescriptor(
       name='latency', full_name='api.Response.latency', index=3,
       number=12, type=11, cpp_type=10, label=1,
       has_default_value=False, default_value=None,
       message_type=None, enum_type=None, containing_type=None,
       is_extension=False, extension_scope=None,
-      options=None, file=DESCRIPTOR),
+      serialized_options=None, file=DESCRIPTOR),
   ],
   extensions=[
   ],
   nested_types=[],
   enum_types=[
   ],
-  options=None,
+  serialized_options=None,
   is_extendable=False,
   syntax='proto3',
   extension_ranges=[],
   oneofs=[
   ],
-  serialized_start=178,
-  serialized_end=296,
+  serialized_start=197,
+  serialized_end=315,
 )
 
 
@@ -235,28 +242,28 @@ _ASSIGNED_UIDSENTRY = _descriptor.Descriptor(
       has_default_value=False, default_value=_b("").decode('utf-8'),
       message_type=None, enum_type=None, containing_type=None,
       is_extension=False, extension_scope=None,
-      options=None, file=DESCRIPTOR),
+      serialized_options=None, file=DESCRIPTOR),
     _descriptor.FieldDescriptor(
       name='value', full_name='api.Assigned.UidsEntry.value', index=1,
       number=2, type=9, cpp_type=9, label=1,
       has_default_value=False, default_value=_b("").decode('utf-8'),
       message_type=None, enum_type=None, containing_type=None,
       is_extension=False, extension_scope=None,
-      options=None, file=DESCRIPTOR),
+      serialized_options=None, file=DESCRIPTOR),
   ],
   extensions=[
   ],
   nested_types=[],
   enum_types=[
   ],
-  options=_descriptor._ParseOptions(descriptor_pb2.MessageOptions(), _b('8\001')),
+  serialized_options=_b('8\001'),
   is_extendable=False,
   syntax='proto3',
   extension_ranges=[],
   oneofs=[
   ],
-  serialized_start=415,
-  serialized_end=458,
+  serialized_start=434,
+  serialized_end=477,
 )
 
 _ASSIGNED = _descriptor.Descriptor(
@@ -272,35 +279,35 @@ _ASSIGNED = _descriptor.Descriptor(
       has_default_value=False, default_value=[],
       message_type=None, enum_type=None, containing_type=None,
       is_extension=False, extension_scope=None,
-      options=None, file=DESCRIPTOR),
+      serialized_options=None, file=DESCRIPTOR),
     _descriptor.FieldDescriptor(
       name='context', full_name='api.Assigned.context', index=1,
       number=2, type=11, cpp_type=10, label=1,
       has_default_value=False, default_value=None,
       message_type=None, enum_type=None, containing_type=None,
       is_extension=False, extension_scope=None,
-      options=None, file=DESCRIPTOR),
+      serialized_options=None, file=DESCRIPTOR),
     _descriptor.FieldDescriptor(
       name='latency', full_name='api.Assigned.latency', index=2,
       number=12, type=11, cpp_type=10, label=1,
       has_default_value=False, default_value=None,
       message_type=None, enum_type=None, containing_type=None,
       is_extension=False, extension_scope=None,
-      options=None, file=DESCRIPTOR),
+      serialized_options=None, file=DESCRIPTOR),
   ],
   extensions=[
   ],
   nested_types=[_ASSIGNED_UIDSENTRY, ],
   enum_types=[
   ],
-  options=None,
+  serialized_options=None,
   is_extendable=False,
   syntax='proto3',
   extension_ranges=[],
   oneofs=[
   ],
-  serialized_start=299,
-  serialized_end=458,
+  serialized_start=318,
+  serialized_end=477,
 )
 
 
@@ -317,115 +324,77 @@ _MUTATION = _descriptor.Descriptor(
       has_default_value=False, default_value=_b(""),
       message_type=None, enum_type=None, containing_type=None,
       is_extension=False, extension_scope=None,
-      options=None, file=DESCRIPTOR),
+      serialized_options=None, file=DESCRIPTOR),
     _descriptor.FieldDescriptor(
       name='delete_json', full_name='api.Mutation.delete_json', index=1,
       number=2, type=12, cpp_type=9, label=1,
       has_default_value=False, default_value=_b(""),
       message_type=None, enum_type=None, containing_type=None,
       is_extension=False, extension_scope=None,
-      options=None, file=DESCRIPTOR),
+      serialized_options=None, file=DESCRIPTOR),
     _descriptor.FieldDescriptor(
       name='set_nquads', full_name='api.Mutation.set_nquads', index=2,
       number=3, type=12, cpp_type=9, label=1,
       has_default_value=False, default_value=_b(""),
       message_type=None, enum_type=None, containing_type=None,
       is_extension=False, extension_scope=None,
-      options=None, file=DESCRIPTOR),
+      serialized_options=None, file=DESCRIPTOR),
     _descriptor.FieldDescriptor(
       name='del_nquads', full_name='api.Mutation.del_nquads', index=3,
       number=4, type=12, cpp_type=9, label=1,
       has_default_value=False, default_value=_b(""),
       message_type=None, enum_type=None, containing_type=None,
       is_extension=False, extension_scope=None,
-      options=None, file=DESCRIPTOR),
+      serialized_options=None, file=DESCRIPTOR),
     _descriptor.FieldDescriptor(
       name='set', full_name='api.Mutation.set', index=4,
       number=10, type=11, cpp_type=10, label=3,
       has_default_value=False, default_value=[],
       message_type=None, enum_type=None, containing_type=None,
       is_extension=False, extension_scope=None,
-      options=None, file=DESCRIPTOR),
+      serialized_options=None, file=DESCRIPTOR),
     _descriptor.FieldDescriptor(
       name='del', full_name='api.Mutation.del', index=5,
       number=11, type=11, cpp_type=10, label=3,
       has_default_value=False, default_value=[],
       message_type=None, enum_type=None, containing_type=None,
       is_extension=False, extension_scope=None,
-      options=None, file=DESCRIPTOR),
+      serialized_options=None, file=DESCRIPTOR),
     _descriptor.FieldDescriptor(
       name='start_ts', full_name='api.Mutation.start_ts', index=6,
       number=13, type=4, cpp_type=4, label=1,
       has_default_value=False, default_value=0,
       message_type=None, enum_type=None, containing_type=None,
       is_extension=False, extension_scope=None,
-      options=None, file=DESCRIPTOR),
+      serialized_options=None, file=DESCRIPTOR),
     _descriptor.FieldDescriptor(
       name='commit_now', full_name='api.Mutation.commit_now', index=7,
       number=14, type=8, cpp_type=7, label=1,
       has_default_value=False, default_value=False,
       message_type=None, enum_type=None, containing_type=None,
       is_extension=False, extension_scope=None,
-      options=None, file=DESCRIPTOR),
+      serialized_options=None, file=DESCRIPTOR),
     _descriptor.FieldDescriptor(
       name='ignore_index_conflict', full_name='api.Mutation.ignore_index_conflict', index=8,
       number=15, type=8, cpp_type=7, label=1,
       has_default_value=False, default_value=False,
       message_type=None, enum_type=None, containing_type=None,
       is_extension=False, extension_scope=None,
-      options=None, file=DESCRIPTOR),
+      serialized_options=None, file=DESCRIPTOR),
   ],
   extensions=[
   ],
   nested_types=[],
   enum_types=[
   ],
-  options=None,
+  serialized_options=None,
   is_extendable=False,
   syntax='proto3',
   extension_ranges=[],
   oneofs=[
   ],
-  serialized_start=461,
-  serialized_end=669,
-)
-
-
-_ASSIGNEDIDS = _descriptor.Descriptor(
-  name='AssignedIds',
-  full_name='api.AssignedIds',
-  filename=None,
-  file=DESCRIPTOR,
-  containing_type=None,
-  fields=[
-    _descriptor.FieldDescriptor(
-      name='startId', full_name='api.AssignedIds.startId', index=0,
-      number=1, type=4, cpp_type=4, label=1,
-      has_default_value=False, default_value=0,
-      message_type=None, enum_type=None, containing_type=None,
-      is_extension=False, extension_scope=None,
-      options=None, file=DESCRIPTOR),
-    _descriptor.FieldDescriptor(
-      name='endId', full_name='api.AssignedIds.endId', index=1,
-      number=2, type=4, cpp_type=4, label=1,
-      has_default_value=False, default_value=0,
-      message_type=None, enum_type=None, containing_type=None,
-      is_extension=False, extension_scope=None,
-      options=None, file=DESCRIPTOR),
-  ],
-  extensions=[
-  ],
-  nested_types=[],
-  enum_types=[
-  ],
-  options=None,
-  is_extendable=False,
-  syntax='proto3',
-  extension_ranges=[],
-  oneofs=[
-  ],
-  serialized_start=671,
-  serialized_end=716,
+  serialized_start=480,
+  serialized_end=688,
 )
 
 
@@ -442,35 +411,35 @@ _OPERATION = _descriptor.Descriptor(
       has_default_value=False, default_value=_b("").decode('utf-8'),
       message_type=None, enum_type=None, containing_type=None,
       is_extension=False, extension_scope=None,
-      options=None, file=DESCRIPTOR),
+      serialized_options=None, file=DESCRIPTOR),
     _descriptor.FieldDescriptor(
       name='drop_attr', full_name='api.Operation.drop_attr', index=1,
       number=2, type=9, cpp_type=9, label=1,
       has_default_value=False, default_value=_b("").decode('utf-8'),
       message_type=None, enum_type=None, containing_type=None,
       is_extension=False, extension_scope=None,
-      options=None, file=DESCRIPTOR),
+      serialized_options=None, file=DESCRIPTOR),
     _descriptor.FieldDescriptor(
       name='drop_all', full_name='api.Operation.drop_all', index=2,
       number=3, type=8, cpp_type=7, label=1,
       has_default_value=False, default_value=False,
       message_type=None, enum_type=None, containing_type=None,
       is_extension=False, extension_scope=None,
-      options=None, file=DESCRIPTOR),
+      serialized_options=None, file=DESCRIPTOR),
   ],
   extensions=[
   ],
   nested_types=[],
   enum_types=[
   ],
-  options=None,
+  serialized_options=None,
   is_extendable=False,
   syntax='proto3',
   extension_ranges=[],
   oneofs=[
   ],
-  serialized_start=718,
-  serialized_end=782,
+  serialized_start=690,
+  serialized_end=754,
 )
 
 
@@ -487,21 +456,21 @@ _PAYLOAD = _descriptor.Descriptor(
       has_default_value=False, default_value=_b(""),
       message_type=None, enum_type=None, containing_type=None,
       is_extension=False, extension_scope=None,
-      options=None, file=DESCRIPTOR),
+      serialized_options=None, file=DESCRIPTOR),
   ],
   extensions=[
   ],
   nested_types=[],
   enum_types=[
   ],
-  options=None,
+  serialized_options=None,
   is_extendable=False,
   syntax='proto3',
   extension_ranges=[],
   oneofs=[
   ],
-  serialized_start=784,
-  serialized_end=807,
+  serialized_start=756,
+  serialized_end=779,
 )
 
 
@@ -518,49 +487,56 @@ _TXNCONTEXT = _descriptor.Descriptor(
       has_default_value=False, default_value=0,
       message_type=None, enum_type=None, containing_type=None,
       is_extension=False, extension_scope=None,
-      options=None, file=DESCRIPTOR),
+      serialized_options=None, file=DESCRIPTOR),
     _descriptor.FieldDescriptor(
       name='commit_ts', full_name='api.TxnContext.commit_ts', index=1,
       number=2, type=4, cpp_type=4, label=1,
       has_default_value=False, default_value=0,
       message_type=None, enum_type=None, containing_type=None,
       is_extension=False, extension_scope=None,
-      options=None, file=DESCRIPTOR),
+      serialized_options=None, file=DESCRIPTOR),
     _descriptor.FieldDescriptor(
       name='aborted', full_name='api.TxnContext.aborted', index=2,
       number=3, type=8, cpp_type=7, label=1,
       has_default_value=False, default_value=False,
       message_type=None, enum_type=None, containing_type=None,
       is_extension=False, extension_scope=None,
-      options=None, file=DESCRIPTOR),
+      serialized_options=None, file=DESCRIPTOR),
     _descriptor.FieldDescriptor(
       name='keys', full_name='api.TxnContext.keys', index=3,
       number=4, type=9, cpp_type=9, label=3,
       has_default_value=False, default_value=[],
       message_type=None, enum_type=None, containing_type=None,
       is_extension=False, extension_scope=None,
-      options=None, file=DESCRIPTOR),
+      serialized_options=None, file=DESCRIPTOR),
     _descriptor.FieldDescriptor(
-      name='lin_read', full_name='api.TxnContext.lin_read', index=4,
+      name='preds', full_name='api.TxnContext.preds', index=4,
+      number=5, type=9, cpp_type=9, label=3,
+      has_default_value=False, default_value=[],
+      message_type=None, enum_type=None, containing_type=None,
+      is_extension=False, extension_scope=None,
+      serialized_options=None, file=DESCRIPTOR),
+    _descriptor.FieldDescriptor(
+      name='lin_read', full_name='api.TxnContext.lin_read', index=5,
       number=13, type=11, cpp_type=10, label=1,
       has_default_value=False, default_value=None,
       message_type=None, enum_type=None, containing_type=None,
       is_extension=False, extension_scope=None,
-      options=None, file=DESCRIPTOR),
+      serialized_options=None, file=DESCRIPTOR),
   ],
   extensions=[
   ],
   nested_types=[],
   enum_types=[
   ],
-  options=None,
+  serialized_options=None,
   is_extendable=False,
   syntax='proto3',
   extension_ranges=[],
   oneofs=[
   ],
-  serialized_start=809,
-  serialized_end=921,
+  serialized_start=781,
+  serialized_end=908,
 )
 
 
@@ -577,14 +553,14 @@ _CHECK = _descriptor.Descriptor(
   nested_types=[],
   enum_types=[
   ],
-  options=None,
+  serialized_options=None,
   is_extendable=False,
   syntax='proto3',
   extension_ranges=[],
   oneofs=[
   ],
-  serialized_start=923,
-  serialized_end=930,
+  serialized_start=910,
+  serialized_end=917,
 )
 
 
@@ -601,21 +577,21 @@ _VERSION = _descriptor.Descriptor(
       has_default_value=False, default_value=_b("").decode('utf-8'),
       message_type=None, enum_type=None, containing_type=None,
       is_extension=False, extension_scope=None,
-      options=None, file=DESCRIPTOR),
+      serialized_options=None, file=DESCRIPTOR),
   ],
   extensions=[
   ],
   nested_types=[],
   enum_types=[
   ],
-  options=None,
+  serialized_options=None,
   is_extendable=False,
   syntax='proto3',
   extension_ranges=[],
   oneofs=[
   ],
-  serialized_start=932,
-  serialized_end=954,
+  serialized_start=919,
+  serialized_end=941,
 )
 
 
@@ -632,28 +608,28 @@ _LINREAD_IDSENTRY = _descriptor.Descriptor(
       has_default_value=False, default_value=0,
       message_type=None, enum_type=None, containing_type=None,
       is_extension=False, extension_scope=None,
-      options=None, file=DESCRIPTOR),
+      serialized_options=None, file=DESCRIPTOR),
     _descriptor.FieldDescriptor(
       name='value', full_name='api.LinRead.IdsEntry.value', index=1,
       number=2, type=4, cpp_type=4, label=1,
       has_default_value=False, default_value=0,
       message_type=None, enum_type=None, containing_type=None,
       is_extension=False, extension_scope=None,
-      options=None, file=DESCRIPTOR),
+      serialized_options=None, file=DESCRIPTOR),
   ],
   extensions=[
   ],
   nested_types=[],
   enum_types=[
   ],
-  options=_descriptor._ParseOptions(descriptor_pb2.MessageOptions(), _b('8\001')),
+  serialized_options=_b('8\001'),
   is_extendable=False,
   syntax='proto3',
   extension_ranges=[],
   oneofs=[
   ],
-  serialized_start=1049,
-  serialized_end=1091,
+  serialized_start=1036,
+  serialized_end=1078,
 )
 
 _LINREAD = _descriptor.Descriptor(
@@ -669,14 +645,14 @@ _LINREAD = _descriptor.Descriptor(
       has_default_value=False, default_value=[],
       message_type=None, enum_type=None, containing_type=None,
       is_extension=False, extension_scope=None,
-      options=None, file=DESCRIPTOR),
+      serialized_options=None, file=DESCRIPTOR),
     _descriptor.FieldDescriptor(
       name='sequencing', full_name='api.LinRead.sequencing', index=1,
       number=2, type=14, cpp_type=8, label=1,
       has_default_value=False, default_value=0,
       message_type=None, enum_type=None, containing_type=None,
       is_extension=False, extension_scope=None,
-      options=None, file=DESCRIPTOR),
+      serialized_options=None, file=DESCRIPTOR),
   ],
   extensions=[
   ],
@@ -684,14 +660,14 @@ _LINREAD = _descriptor.Descriptor(
   enum_types=[
     _LINREAD_SEQUENCING,
   ],
-  options=None,
+  serialized_options=None,
   is_extendable=False,
   syntax='proto3',
   extension_ranges=[],
   oneofs=[
   ],
-  serialized_start=957,
-  serialized_end=1139,
+  serialized_start=944,
+  serialized_end=1126,
 )
 
 
@@ -708,35 +684,35 @@ _LATENCY = _descriptor.Descriptor(
       has_default_value=False, default_value=0,
       message_type=None, enum_type=None, containing_type=None,
       is_extension=False, extension_scope=None,
-      options=None, file=DESCRIPTOR),
+      serialized_options=None, file=DESCRIPTOR),
     _descriptor.FieldDescriptor(
       name='processing_ns', full_name='api.Latency.processing_ns', index=1,
       number=2, type=4, cpp_type=4, label=1,
       has_default_value=False, default_value=0,
       message_type=None, enum_type=None, containing_type=None,
       is_extension=False, extension_scope=None,
-      options=None, file=DESCRIPTOR),
+      serialized_options=None, file=DESCRIPTOR),
     _descriptor.FieldDescriptor(
       name='encoding_ns', full_name='api.Latency.encoding_ns', index=2,
       number=3, type=4, cpp_type=4, label=1,
       has_default_value=False, default_value=0,
       message_type=None, enum_type=None, containing_type=None,
       is_extension=False, extension_scope=None,
-      options=None, file=DESCRIPTOR),
+      serialized_options=None, file=DESCRIPTOR),
   ],
   extensions=[
   ],
   nested_types=[],
   enum_types=[
   ],
-  options=None,
+  serialized_options=None,
   is_extendable=False,
   syntax='proto3',
   extension_ranges=[],
   oneofs=[
   ],
-  serialized_start=1141,
-  serialized_end=1214,
+  serialized_start=1128,
+  serialized_end=1201,
 )
 
 
@@ -753,63 +729,63 @@ _NQUAD = _descriptor.Descriptor(
       has_default_value=False, default_value=_b("").decode('utf-8'),
       message_type=None, enum_type=None, containing_type=None,
       is_extension=False, extension_scope=None,
-      options=None, file=DESCRIPTOR),
+      serialized_options=None, file=DESCRIPTOR),
     _descriptor.FieldDescriptor(
       name='predicate', full_name='api.NQuad.predicate', index=1,
       number=2, type=9, cpp_type=9, label=1,
       has_default_value=False, default_value=_b("").decode('utf-8'),
       message_type=None, enum_type=None, containing_type=None,
       is_extension=False, extension_scope=None,
-      options=None, file=DESCRIPTOR),
+      serialized_options=None, file=DESCRIPTOR),
     _descriptor.FieldDescriptor(
       name='object_id', full_name='api.NQuad.object_id', index=2,
       number=3, type=9, cpp_type=9, label=1,
       has_default_value=False, default_value=_b("").decode('utf-8'),
       message_type=None, enum_type=None, containing_type=None,
       is_extension=False, extension_scope=None,
-      options=None, file=DESCRIPTOR),
+      serialized_options=None, file=DESCRIPTOR),
     _descriptor.FieldDescriptor(
       name='object_value', full_name='api.NQuad.object_value', index=3,
       number=4, type=11, cpp_type=10, label=1,
       has_default_value=False, default_value=None,
       message_type=None, enum_type=None, containing_type=None,
       is_extension=False, extension_scope=None,
-      options=None, file=DESCRIPTOR),
+      serialized_options=None, file=DESCRIPTOR),
     _descriptor.FieldDescriptor(
       name='label', full_name='api.NQuad.label', index=4,
       number=5, type=9, cpp_type=9, label=1,
       has_default_value=False, default_value=_b("").decode('utf-8'),
       message_type=None, enum_type=None, containing_type=None,
       is_extension=False, extension_scope=None,
-      options=None, file=DESCRIPTOR),
+      serialized_options=None, file=DESCRIPTOR),
     _descriptor.FieldDescriptor(
       name='lang', full_name='api.NQuad.lang', index=5,
       number=6, type=9, cpp_type=9, label=1,
       has_default_value=False, default_value=_b("").decode('utf-8'),
       message_type=None, enum_type=None, containing_type=None,
       is_extension=False, extension_scope=None,
-      options=None, file=DESCRIPTOR),
+      serialized_options=None, file=DESCRIPTOR),
     _descriptor.FieldDescriptor(
       name='facets', full_name='api.NQuad.facets', index=6,
       number=7, type=11, cpp_type=10, label=3,
       has_default_value=False, default_value=[],
       message_type=None, enum_type=None, containing_type=None,
       is_extension=False, extension_scope=None,
-      options=None, file=DESCRIPTOR),
+      serialized_options=None, file=DESCRIPTOR),
   ],
   extensions=[
   ],
   nested_types=[],
   enum_types=[
   ],
-  options=None,
+  serialized_options=None,
   is_extendable=False,
   syntax='proto3',
   extension_ranges=[],
   oneofs=[
   ],
-  serialized_start=1217,
-  serialized_end=1370,
+  serialized_start=1204,
+  serialized_end=1357,
 )
 
 
@@ -826,84 +802,84 @@ _VALUE = _descriptor.Descriptor(
       has_default_value=False, default_value=_b("").decode('utf-8'),
       message_type=None, enum_type=None, containing_type=None,
       is_extension=False, extension_scope=None,
-      options=None, file=DESCRIPTOR),
+      serialized_options=None, file=DESCRIPTOR),
     _descriptor.FieldDescriptor(
       name='bytes_val', full_name='api.Value.bytes_val', index=1,
       number=2, type=12, cpp_type=9, label=1,
       has_default_value=False, default_value=_b(""),
       message_type=None, enum_type=None, containing_type=None,
       is_extension=False, extension_scope=None,
-      options=None, file=DESCRIPTOR),
+      serialized_options=None, file=DESCRIPTOR),
     _descriptor.FieldDescriptor(
       name='int_val', full_name='api.Value.int_val', index=2,
       number=3, type=3, cpp_type=2, label=1,
       has_default_value=False, default_value=0,
       message_type=None, enum_type=None, containing_type=None,
       is_extension=False, extension_scope=None,
-      options=None, file=DESCRIPTOR),
+      serialized_options=None, file=DESCRIPTOR),
     _descriptor.FieldDescriptor(
       name='bool_val', full_name='api.Value.bool_val', index=3,
       number=4, type=8, cpp_type=7, label=1,
       has_default_value=False, default_value=False,
       message_type=None, enum_type=None, containing_type=None,
       is_extension=False, extension_scope=None,
-      options=None, file=DESCRIPTOR),
+      serialized_options=None, file=DESCRIPTOR),
     _descriptor.FieldDescriptor(
       name='str_val', full_name='api.Value.str_val', index=4,
       number=5, type=9, cpp_type=9, label=1,
       has_default_value=False, default_value=_b("").decode('utf-8'),
       message_type=None, enum_type=None, containing_type=None,
       is_extension=False, extension_scope=None,
-      options=None, file=DESCRIPTOR),
+      serialized_options=None, file=DESCRIPTOR),
     _descriptor.FieldDescriptor(
       name='double_val', full_name='api.Value.double_val', index=5,
       number=6, type=1, cpp_type=5, label=1,
       has_default_value=False, default_value=float(0),
       message_type=None, enum_type=None, containing_type=None,
       is_extension=False, extension_scope=None,
-      options=None, file=DESCRIPTOR),
+      serialized_options=None, file=DESCRIPTOR),
     _descriptor.FieldDescriptor(
       name='geo_val', full_name='api.Value.geo_val', index=6,
       number=7, type=12, cpp_type=9, label=1,
       has_default_value=False, default_value=_b(""),
       message_type=None, enum_type=None, containing_type=None,
       is_extension=False, extension_scope=None,
-      options=None, file=DESCRIPTOR),
+      serialized_options=None, file=DESCRIPTOR),
     _descriptor.FieldDescriptor(
       name='date_val', full_name='api.Value.date_val', index=7,
       number=8, type=12, cpp_type=9, label=1,
       has_default_value=False, default_value=_b(""),
       message_type=None, enum_type=None, containing_type=None,
       is_extension=False, extension_scope=None,
-      options=None, file=DESCRIPTOR),
+      serialized_options=None, file=DESCRIPTOR),
     _descriptor.FieldDescriptor(
       name='datetime_val', full_name='api.Value.datetime_val', index=8,
       number=9, type=12, cpp_type=9, label=1,
       has_default_value=False, default_value=_b(""),
       message_type=None, enum_type=None, containing_type=None,
       is_extension=False, extension_scope=None,
-      options=None, file=DESCRIPTOR),
+      serialized_options=None, file=DESCRIPTOR),
     _descriptor.FieldDescriptor(
       name='password_val', full_name='api.Value.password_val', index=9,
       number=10, type=9, cpp_type=9, label=1,
       has_default_value=False, default_value=_b("").decode('utf-8'),
       message_type=None, enum_type=None, containing_type=None,
       is_extension=False, extension_scope=None,
-      options=None, file=DESCRIPTOR),
+      serialized_options=None, file=DESCRIPTOR),
     _descriptor.FieldDescriptor(
       name='uid_val', full_name='api.Value.uid_val', index=10,
       number=11, type=4, cpp_type=4, label=1,
       has_default_value=False, default_value=0,
       message_type=None, enum_type=None, containing_type=None,
       is_extension=False, extension_scope=None,
-      options=None, file=DESCRIPTOR),
+      serialized_options=None, file=DESCRIPTOR),
   ],
   extensions=[
   ],
   nested_types=[],
   enum_types=[
   ],
-  options=None,
+  serialized_options=None,
   is_extendable=False,
   syntax='proto3',
   extension_ranges=[],
@@ -912,8 +888,8 @@ _VALUE = _descriptor.Descriptor(
       name='val', full_name='api.Value.val',
       index=0, containing_type=None, fields=[]),
   ],
-  serialized_start=1373,
-  serialized_end=1617,
+  serialized_start=1360,
+  serialized_end=1604,
 )
 
 
@@ -930,35 +906,35 @@ _FACET = _descriptor.Descriptor(
       has_default_value=False, default_value=_b("").decode('utf-8'),
       message_type=None, enum_type=None, containing_type=None,
       is_extension=False, extension_scope=None,
-      options=None, file=DESCRIPTOR),
+      serialized_options=None, file=DESCRIPTOR),
     _descriptor.FieldDescriptor(
       name='value', full_name='api.Facet.value', index=1,
       number=2, type=12, cpp_type=9, label=1,
       has_default_value=False, default_value=_b(""),
       message_type=None, enum_type=None, containing_type=None,
       is_extension=False, extension_scope=None,
-      options=None, file=DESCRIPTOR),
+      serialized_options=None, file=DESCRIPTOR),
     _descriptor.FieldDescriptor(
       name='val_type', full_name='api.Facet.val_type', index=2,
       number=3, type=14, cpp_type=8, label=1,
       has_default_value=False, default_value=0,
       message_type=None, enum_type=None, containing_type=None,
       is_extension=False, extension_scope=None,
-      options=None, file=DESCRIPTOR),
+      serialized_options=None, file=DESCRIPTOR),
     _descriptor.FieldDescriptor(
       name='tokens', full_name='api.Facet.tokens', index=3,
       number=4, type=9, cpp_type=9, label=3,
       has_default_value=False, default_value=[],
       message_type=None, enum_type=None, containing_type=None,
       is_extension=False, extension_scope=None,
-      options=None, file=DESCRIPTOR),
+      serialized_options=None, file=DESCRIPTOR),
     _descriptor.FieldDescriptor(
       name='alias', full_name='api.Facet.alias', index=4,
       number=5, type=9, cpp_type=9, label=1,
       has_default_value=False, default_value=_b("").decode('utf-8'),
       message_type=None, enum_type=None, containing_type=None,
       is_extension=False, extension_scope=None,
-      options=None, file=DESCRIPTOR),
+      serialized_options=None, file=DESCRIPTOR),
   ],
   extensions=[
   ],
@@ -966,14 +942,14 @@ _FACET = _descriptor.Descriptor(
   enum_types=[
     _FACET_VALTYPE,
   ],
-  options=None,
+  serialized_options=None,
   is_extendable=False,
   syntax='proto3',
   extension_ranges=[],
   oneofs=[
   ],
-  serialized_start=1620,
-  serialized_end=1791,
+  serialized_start=1607,
+  serialized_end=1778,
 )
 
 
@@ -990,77 +966,160 @@ _SCHEMANODE = _descriptor.Descriptor(
       has_default_value=False, default_value=_b("").decode('utf-8'),
       message_type=None, enum_type=None, containing_type=None,
       is_extension=False, extension_scope=None,
-      options=None, file=DESCRIPTOR),
+      serialized_options=None, file=DESCRIPTOR),
     _descriptor.FieldDescriptor(
       name='type', full_name='api.SchemaNode.type', index=1,
       number=2, type=9, cpp_type=9, label=1,
       has_default_value=False, default_value=_b("").decode('utf-8'),
       message_type=None, enum_type=None, containing_type=None,
       is_extension=False, extension_scope=None,
-      options=None, file=DESCRIPTOR),
+      serialized_options=None, file=DESCRIPTOR),
     _descriptor.FieldDescriptor(
       name='index', full_name='api.SchemaNode.index', index=2,
       number=3, type=8, cpp_type=7, label=1,
       has_default_value=False, default_value=False,
       message_type=None, enum_type=None, containing_type=None,
       is_extension=False, extension_scope=None,
-      options=None, file=DESCRIPTOR),
+      serialized_options=None, file=DESCRIPTOR),
     _descriptor.FieldDescriptor(
       name='tokenizer', full_name='api.SchemaNode.tokenizer', index=3,
       number=4, type=9, cpp_type=9, label=3,
       has_default_value=False, default_value=[],
       message_type=None, enum_type=None, containing_type=None,
       is_extension=False, extension_scope=None,
-      options=None, file=DESCRIPTOR),
+      serialized_options=None, file=DESCRIPTOR),
     _descriptor.FieldDescriptor(
       name='reverse', full_name='api.SchemaNode.reverse', index=4,
       number=5, type=8, cpp_type=7, label=1,
       has_default_value=False, default_value=False,
       message_type=None, enum_type=None, containing_type=None,
       is_extension=False, extension_scope=None,
-      options=None, file=DESCRIPTOR),
+      serialized_options=None, file=DESCRIPTOR),
     _descriptor.FieldDescriptor(
       name='count', full_name='api.SchemaNode.count', index=5,
       number=6, type=8, cpp_type=7, label=1,
       has_default_value=False, default_value=False,
       message_type=None, enum_type=None, containing_type=None,
       is_extension=False, extension_scope=None,
-      options=None, file=DESCRIPTOR),
+      serialized_options=None, file=DESCRIPTOR),
     _descriptor.FieldDescriptor(
       name='list', full_name='api.SchemaNode.list', index=6,
       number=7, type=8, cpp_type=7, label=1,
       has_default_value=False, default_value=False,
       message_type=None, enum_type=None, containing_type=None,
       is_extension=False, extension_scope=None,
-      options=None, file=DESCRIPTOR),
+      serialized_options=None, file=DESCRIPTOR),
     _descriptor.FieldDescriptor(
       name='upsert', full_name='api.SchemaNode.upsert', index=7,
       number=8, type=8, cpp_type=7, label=1,
       has_default_value=False, default_value=False,
       message_type=None, enum_type=None, containing_type=None,
       is_extension=False, extension_scope=None,
-      options=None, file=DESCRIPTOR),
+      serialized_options=None, file=DESCRIPTOR),
     _descriptor.FieldDescriptor(
       name='lang', full_name='api.SchemaNode.lang', index=8,
       number=9, type=8, cpp_type=7, label=1,
       has_default_value=False, default_value=False,
       message_type=None, enum_type=None, containing_type=None,
       is_extension=False, extension_scope=None,
-      options=None, file=DESCRIPTOR),
+      serialized_options=None, file=DESCRIPTOR),
   ],
   extensions=[
   ],
   nested_types=[],
   enum_types=[
   ],
-  options=None,
+  serialized_options=None,
   is_extendable=False,
   syntax='proto3',
   extension_ranges=[],
   oneofs=[
   ],
-  serialized_start=1794,
-  serialized_end=1949,
+  serialized_start=1781,
+  serialized_end=1936,
+)
+
+
+_LOGINREQUEST = _descriptor.Descriptor(
+  name='LoginRequest',
+  full_name='api.LoginRequest',
+  filename=None,
+  file=DESCRIPTOR,
+  containing_type=None,
+  fields=[
+    _descriptor.FieldDescriptor(
+      name='userid', full_name='api.LoginRequest.userid', index=0,
+      number=1, type=9, cpp_type=9, label=1,
+      has_default_value=False, default_value=_b("").decode('utf-8'),
+      message_type=None, enum_type=None, containing_type=None,
+      is_extension=False, extension_scope=None,
+      serialized_options=None, file=DESCRIPTOR),
+    _descriptor.FieldDescriptor(
+      name='password', full_name='api.LoginRequest.password', index=1,
+      number=2, type=9, cpp_type=9, label=1,
+      has_default_value=False, default_value=_b("").decode('utf-8'),
+      message_type=None, enum_type=None, containing_type=None,
+      is_extension=False, extension_scope=None,
+      serialized_options=None, file=DESCRIPTOR),
+    _descriptor.FieldDescriptor(
+      name='refresh_token', full_name='api.LoginRequest.refresh_token', index=2,
+      number=3, type=9, cpp_type=9, label=1,
+      has_default_value=False, default_value=_b("").decode('utf-8'),
+      message_type=None, enum_type=None, containing_type=None,
+      is_extension=False, extension_scope=None,
+      serialized_options=None, file=DESCRIPTOR),
+  ],
+  extensions=[
+  ],
+  nested_types=[],
+  enum_types=[
+  ],
+  serialized_options=None,
+  is_extendable=False,
+  syntax='proto3',
+  extension_ranges=[],
+  oneofs=[
+  ],
+  serialized_start=1938,
+  serialized_end=2009,
+)
+
+
+_JWT = _descriptor.Descriptor(
+  name='Jwt',
+  full_name='api.Jwt',
+  filename=None,
+  file=DESCRIPTOR,
+  containing_type=None,
+  fields=[
+    _descriptor.FieldDescriptor(
+      name='access_jwt', full_name='api.Jwt.access_jwt', index=0,
+      number=1, type=9, cpp_type=9, label=1,
+      has_default_value=False, default_value=_b("").decode('utf-8'),
+      message_type=None, enum_type=None, containing_type=None,
+      is_extension=False, extension_scope=None,
+      serialized_options=None, file=DESCRIPTOR),
+    _descriptor.FieldDescriptor(
+      name='refresh_jwt', full_name='api.Jwt.refresh_jwt', index=1,
+      number=2, type=9, cpp_type=9, label=1,
+      has_default_value=False, default_value=_b("").decode('utf-8'),
+      message_type=None, enum_type=None, containing_type=None,
+      is_extension=False, extension_scope=None,
+      serialized_options=None, file=DESCRIPTOR),
+  ],
+  extensions=[
+  ],
+  nested_types=[],
+  enum_types=[
+  ],
+  serialized_options=None,
+  is_extendable=False,
+  syntax='proto3',
+  extension_ranges=[],
+  oneofs=[
+  ],
+  serialized_start=2011,
+  serialized_end=2057,
 )
 
 _REQUEST_VARSENTRY.containing_type = _REQUEST
@@ -1121,7 +1180,6 @@ DESCRIPTOR.message_types_by_name['Request'] = _REQUEST
 DESCRIPTOR.message_types_by_name['Response'] = _RESPONSE
 DESCRIPTOR.message_types_by_name['Assigned'] = _ASSIGNED
 DESCRIPTOR.message_types_by_name['Mutation'] = _MUTATION
-DESCRIPTOR.message_types_by_name['AssignedIds'] = _ASSIGNEDIDS
 DESCRIPTOR.message_types_by_name['Operation'] = _OPERATION
 DESCRIPTOR.message_types_by_name['Payload'] = _PAYLOAD
 DESCRIPTOR.message_types_by_name['TxnContext'] = _TXNCONTEXT
@@ -1133,6 +1191,8 @@ DESCRIPTOR.message_types_by_name['NQuad'] = _NQUAD
 DESCRIPTOR.message_types_by_name['Value'] = _VALUE
 DESCRIPTOR.message_types_by_name['Facet'] = _FACET
 DESCRIPTOR.message_types_by_name['SchemaNode'] = _SCHEMANODE
+DESCRIPTOR.message_types_by_name['LoginRequest'] = _LOGINREQUEST
+DESCRIPTOR.message_types_by_name['Jwt'] = _JWT
 _sym_db.RegisterFileDescriptor(DESCRIPTOR)
 
 Request = _reflection.GeneratedProtocolMessageType('Request', (_message.Message,), dict(
@@ -1178,13 +1238,6 @@ Mutation = _reflection.GeneratedProtocolMessageType('Mutation', (_message.Messag
   # @@protoc_insertion_point(class_scope:api.Mutation)
   ))
 _sym_db.RegisterMessage(Mutation)
-
-AssignedIds = _reflection.GeneratedProtocolMessageType('AssignedIds', (_message.Message,), dict(
-  DESCRIPTOR = _ASSIGNEDIDS,
-  __module__ = 'api_pb2'
-  # @@protoc_insertion_point(class_scope:api.AssignedIds)
-  ))
-_sym_db.RegisterMessage(AssignedIds)
 
 Operation = _reflection.GeneratedProtocolMessageType('Operation', (_message.Message,), dict(
   DESCRIPTOR = _OPERATION,
@@ -1271,69 +1324,88 @@ SchemaNode = _reflection.GeneratedProtocolMessageType('SchemaNode', (_message.Me
   ))
 _sym_db.RegisterMessage(SchemaNode)
 
+LoginRequest = _reflection.GeneratedProtocolMessageType('LoginRequest', (_message.Message,), dict(
+  DESCRIPTOR = _LOGINREQUEST,
+  __module__ = 'api_pb2'
+  # @@protoc_insertion_point(class_scope:api.LoginRequest)
+  ))
+_sym_db.RegisterMessage(LoginRequest)
 
-DESCRIPTOR.has_options = True
-DESCRIPTOR._options = _descriptor._ParseOptions(descriptor_pb2.FileOptions(), _b('\n\tio.dgraphB\013DgraphProto'))
-_REQUEST_VARSENTRY.has_options = True
-_REQUEST_VARSENTRY._options = _descriptor._ParseOptions(descriptor_pb2.MessageOptions(), _b('8\001'))
-_ASSIGNED_UIDSENTRY.has_options = True
-_ASSIGNED_UIDSENTRY._options = _descriptor._ParseOptions(descriptor_pb2.MessageOptions(), _b('8\001'))
-_LINREAD_IDSENTRY.has_options = True
-_LINREAD_IDSENTRY._options = _descriptor._ParseOptions(descriptor_pb2.MessageOptions(), _b('8\001'))
+Jwt = _reflection.GeneratedProtocolMessageType('Jwt', (_message.Message,), dict(
+  DESCRIPTOR = _JWT,
+  __module__ = 'api_pb2'
+  # @@protoc_insertion_point(class_scope:api.Jwt)
+  ))
+_sym_db.RegisterMessage(Jwt)
+
+
+DESCRIPTOR._options = None
+_REQUEST_VARSENTRY._options = None
+_ASSIGNED_UIDSENTRY._options = None
+_LINREAD_IDSENTRY._options = None
 
 _DGRAPH = _descriptor.ServiceDescriptor(
   name='Dgraph',
   full_name='api.Dgraph',
   file=DESCRIPTOR,
   index=0,
-  options=None,
-  serialized_start=1952,
-  serialized_end=2180,
+  serialized_options=None,
+  serialized_start=2060,
+  serialized_end=2333,
   methods=[
+  _descriptor.MethodDescriptor(
+    name='Login',
+    full_name='api.Dgraph.Login',
+    index=0,
+    containing_service=None,
+    input_type=_LOGINREQUEST,
+    output_type=_RESPONSE,
+    serialized_options=None,
+  ),
   _descriptor.MethodDescriptor(
     name='Query',
     full_name='api.Dgraph.Query',
-    index=0,
+    index=1,
     containing_service=None,
     input_type=_REQUEST,
     output_type=_RESPONSE,
-    options=None,
+    serialized_options=None,
   ),
   _descriptor.MethodDescriptor(
     name='Mutate',
     full_name='api.Dgraph.Mutate',
-    index=1,
+    index=2,
     containing_service=None,
     input_type=_MUTATION,
     output_type=_ASSIGNED,
-    options=None,
+    serialized_options=None,
   ),
   _descriptor.MethodDescriptor(
     name='Alter',
     full_name='api.Dgraph.Alter',
-    index=2,
+    index=3,
     containing_service=None,
     input_type=_OPERATION,
     output_type=_PAYLOAD,
-    options=None,
+    serialized_options=None,
   ),
   _descriptor.MethodDescriptor(
     name='CommitOrAbort',
     full_name='api.Dgraph.CommitOrAbort',
-    index=3,
+    index=4,
     containing_service=None,
     input_type=_TXNCONTEXT,
     output_type=_TXNCONTEXT,
-    options=None,
+    serialized_options=None,
   ),
   _descriptor.MethodDescriptor(
     name='CheckVersion',
     full_name='api.Dgraph.CheckVersion',
-    index=4,
+    index=5,
     containing_service=None,
     input_type=_CHECK,
     output_type=_VERSION,
-    options=None,
+    serialized_options=None,
   ),
 ])
 _sym_db.RegisterServiceDescriptor(_DGRAPH)
