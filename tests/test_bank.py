@@ -141,7 +141,7 @@ def run_transfers(addr, transfer_count, account_ids, success_ctr, retry_ctr):
         except:
             with retry_ctr.get_lock():
                 retry_ctr.value += 1
-    
+
     with success_ctr.get_lock(), retry_ctr.get_lock():
         log.info('success: %d, retries: %d', success_ctr.value, retry_ctr.value)
 
