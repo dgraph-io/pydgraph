@@ -19,8 +19,7 @@ import unittest
 import sys
 
 import pydgraph
-import helper
-
+from . import helper
 
 class TestDgraphClientStub(helper.ClientIntegrationTestCase):
 
