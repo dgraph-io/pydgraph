@@ -53,7 +53,7 @@ class DgraphClientStub(object):
 
     def commit_or_abort(self, ctx, timeout=None, metadata=None,
                         credentials=None):
-        """Runs commint or abort operation."""
+        """Runs commit or abort operation."""
         return self.stub.CommitOrAbort(ctx, timeout=timeout, metadata=metadata,
                                        credentials=credentials)
 
