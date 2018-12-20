@@ -43,7 +43,7 @@ def are_lin_reads_equal(a, b):
     return True
 
 
-SERVER_ADDR = 'localhost:9080'
+SERVER_ADDR = 'localhost:9180'
 
 
 def create_client(addr=SERVER_ADDR):
@@ -70,7 +70,7 @@ class ClientIntegrationTestCase(unittest.TestCase):
     v1.0 or greater.
     """
 
-    TEST_SERVER_ADDR = 'localhost:9180'
+    TEST_SERVER_ADDR = SERVER_ADDR
 
     def setUp(self):
         """Sets up the client and verifies the version is compatible."""

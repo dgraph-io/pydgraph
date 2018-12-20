@@ -19,10 +19,10 @@ import unittest
 import sys
 
 import pydgraph
+import helper
 
 
-class TestDgraphClientStub(unittest.TestCase):
-    TEST_SERVER_ADDR = 'localhost:9180'
+class TestDgraphClientStub(helper.ClientIntegrationTestCase):
 
     def validate_version_object(self, version):
         tag = version.tag
