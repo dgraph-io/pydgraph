@@ -66,13 +66,12 @@ def setup():
 
 class ClientIntegrationTestCase(unittest.TestCase):
     """Base class for other integration test cases. Provides a client object
-    with a connection to the dgraph server and ensures that the server is
-    v1.0 or greater.
+    with a connection to the dgraph server.
     """
 
     TEST_SERVER_ADDR = SERVER_ADDR
 
     def setUp(self):
-        """Sets up the client and verifies the version is compatible."""
+        """Sets up the client."""
 
         self.client = create_client(self.TEST_SERVER_ADDR)
