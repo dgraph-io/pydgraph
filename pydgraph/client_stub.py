@@ -12,41 +12,59 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 
+"""Stub for RPC request."""
+
 import grpc
 
 from pydgraph.meta import VERSION
 from pydgraph.proto import api_pb2_grpc as api_grpc
 
 __author__ = 'Garvit Pahal <garvit@dgraph.io>'
-__maintainer__ = 'Garvit Pahal <garvit@dgraph.io>'
+__maintainer__ = 'Martin Martinez Rivera <martinmr@dgraph.io>'
 __version__ = VERSION
 __status__ = 'development'
 
 
 class DgraphClientStub(object):
+    """Stub for the Dgraph grpc client."""
+
     def __init__(self, addr='localhost:9080', credentials=None, options=None):
         if credentials is None:
             self.channel = grpc.insecure_channel(addr, options)
         else:
-            self.channel = grpc.secure_channel(addr,  credentials, options)
-        
+            self.channel = grpc.secure_channel(addr, credentials, options)
+
         self.stub = api_grpc.DgraphStub(self.channel)
 
-    def alter(self, op, timeout=None, metadata=None, credentials=None):
-        return self.stub.Alter(op, timeout=timeout, metadata=metadata, credentials=credentials)
+    def alter(self, operation, timeout=None, metadata=None, credentials=None):
+        """Runs alter operation."""
+        return self.stub.Alter(operation, timeout=timeout, metadata=metadata,
+                               credentials=credentials)
 
     def query(self, req, timeout=None, metadata=None, credentials=None):
-        return self.stub.Query(req, timeout=timeout, metadata=metadata, credentials=credentials)
-    
-    def mutate(self, mu, timeout=None, metadata=None, credentials=None):
-        return self.stub.Mutate(mu, timeout=timeout, metadata=metadata, credentials=credentials)
-    
-    def commit_or_abort(self, ctx, timeout=None, metadata=None, credentials=None):
-        return self.stub.CommitOrAbort(ctx, timeout=timeout, metadata=metadata, credentials=credentials)
-    
-    def check_version(self, check, timeout=None, metadata=None, credentials=None):
-        return self.stub.CheckVersion(check, timeout=timeout, metadata=metadata, credentials=credentials)
+        """Runs query operation."""
+        return self.stub.Query(req, timeout=timeout, metadata=metadata,
+                               credentials=credentials)
+
+    def mutate(self, mutation, timeout=None, metadata=None, credentials=None):
+        """Runs mutate operation."""
+        return self.stub.Mutate(mutation, timeout=timeout, metadata=metadata,
+                                credentials=credentials)
+
+    def commit_or_abort(self, ctx, timeout=None, metadata=None,
+                        credentials=None):
+        """Runs commint or abort operation."""
+        return self.stub.CommitOrAbort(ctx, timeout=timeout, metadata=metadata,
+                                       credentials=credentials)
+
+    def check_version(self, check, timeout=None, metadata=None,
+                      credentials=None):
+        """Returns the version of the Dgraph instance."""
+        return self.stub.CheckVersion(check, timeout=timeout,
+                                      metadata=metadata,
+                                      credentials=credentials)
 
     def close(self):
+        """Deletes channel and stub."""
         del self.channel
         del self.stub

@@ -12,14 +12,19 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 
+"""Errors thrown by the Dgraph client."""
+
 from pydgraph.meta import VERSION
 
 __author__ = 'Garvit Pahal <garvit@dgraph.io>'
-__maintainer__ = 'Garvit Pahal <garvit@dgraph.io>'
+__maintainer__ = 'Martin Martinez Rivera <martinmr@dgraph.io>'
 __version__ = VERSION
 __status__ = 'development'
 
 
 class AbortedError(Exception):
+    """Error thrown by aborted transactions."""
+
     def __init__(self):
-        super(AbortedError, self).__init__('Transaction has been aborted. Please retry')
+        super(AbortedError, self).__init__(
+            'Transaction has been aborted. Please retry')

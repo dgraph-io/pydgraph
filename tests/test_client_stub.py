@@ -12,8 +12,10 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 
+"""Tests client stub."""
+
 __author__ = 'Garvit Pahal <garvit@dgraph.io>'
-__maintainer__ = 'Garvit Pahal <garvit@dgraph.io>'
+__maintainer__ = 'Martin Martinez Rivera <martinmr@dgraph.io>'
 
 import unittest
 import sys
@@ -22,6 +24,7 @@ import pydgraph
 from . import helper
 
 class TestDgraphClientStub(helper.ClientIntegrationTestCase):
+    """Tests client stub."""
 
     def validate_version_object(self, version):
         tag = version.tag
@@ -51,9 +54,10 @@ class TestDgraphClientStub(helper.ClientIntegrationTestCase):
 
 
 def suite():
-    s = unittest.TestSuite()
-    s.addTest(TestDgraphClientStub())
-    return s
+    """Returns a test suite object."""
+    suite_obj = unittest.TestSuite()
+    suite_obj.addTest(TestDgraphClientStub())
+    return suite_obj
 
 
 if __name__ == '__main__':
