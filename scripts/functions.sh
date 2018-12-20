@@ -7,7 +7,7 @@ fi
 
 function quit {
     echo "Shutting down Dgraph Alpha and zero."
-    curl -s localhost:8080/admin/shutdown
+    curl -s localhost:8180/admin/shutdown
     # Kill Dgraph zero.
     kill -9 $(pgrep -f "dgraph zero") > /dev/null
 
@@ -26,7 +26,7 @@ function quit {
 
 function start {
     echo -e "Starting first Alpha."
-    dgraph alpha -p data/p -w data/w --lru_mb 4096 --zero localhost:5080 > data/alpha.log 2>&1 &
+    dgraph alpha -o 100 -p data/p -w data/w --lru_mb 4096 --zero localhost:5080 > data/alpha.log 2>&1 &
     # Wait for membership sync to happen.
     sleep $sleepTime
     return 0

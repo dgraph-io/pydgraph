@@ -19,9 +19,10 @@ import unittest
 import sys
 
 import pydgraph
+from . import helper
 
+class TestDgraphClientStub(helper.ClientIntegrationTestCase):
 
-class TestDgraphClientStub(unittest.TestCase):
     def validate_version_object(self, version):
         tag = version.tag
         if sys.version_info[0] < 3:
@@ -34,14 +35,15 @@ class TestDgraphClientStub(unittest.TestCase):
         self.validate_version_object(stub.check_version(pydgraph.Check()))
 
     def test_constructor(self):
-        self.check_version(pydgraph.DgraphClientStub())
-    
+        self.check_version(pydgraph.DgraphClientStub(addr=self.TEST_SERVER_ADDR))
+
     def test_timeout(self):
         with self.assertRaises(Exception):
-            pydgraph.DgraphClientStub().check_version(pydgraph.Check(), timeout=-1)
+            pydgraph.DgraphClientStub(self.TEST_SERVER_ADDR).check_version(
+                pydgraph.Check(), timeout=-1)
 
     def test_close(self):
-        client_stub = pydgraph.DgraphClientStub()
+        client_stub = pydgraph.DgraphClientStub(addr=self.TEST_SERVER_ADDR)
         self.check_version(client_stub)
         client_stub.close()
         with self.assertRaises(Exception):

@@ -296,8 +296,14 @@ python scripts/protogen.py
 
 ### Running tests
 
-Make sure you have a Dgraph server running on localhost before you run this task.
+To run the tests in your local machine you can run the script
+`scripts/local-tests.sh`. This script assumes Dgraph and dgo (Go client) are
+already built on the local machine. The script will take care of bringing up a
+Dgraph cluster and bringing it down after the tests are executed. The script
+uses the port 9180 by default to prevent interference with clusters running on
+the default port. Docker and docker-compose need to be installed before running
+the script. Refer to the official Docker documentation for instructions on how
+to install those packages.
 
-```sh
-python setup.py test
-```
+The `test.sh` script downloads and installs Dgraph. It is meant for use by our
+CI systems and using it for local development is not recommended.
