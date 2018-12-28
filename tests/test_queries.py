@@ -12,8 +12,10 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 
+"""Tests behavior of queries after mutation in the same transaction."""
+
 __author__ = 'Mohit Ranka <mohitranka@gmail.com>'
-__maintainer__ = 'Garvit Pahal <garvit@dgraph.io>'
+__maintainer__ = 'Martin Martinez Rivera <martinmr@dgraph.io>'
 
 import unittest
 import sys
@@ -26,6 +28,8 @@ from . import helper
 
 
 class TestQueries(helper.ClientIntegrationTestCase):
+    """Tests behavior of queries after mutation in the same transaction."""
+
     def setUp(self):
         super(TestQueries, self).setUp()
 
@@ -33,6 +37,8 @@ class TestQueries(helper.ClientIntegrationTestCase):
         helper.set_schema(self.client, 'name: string @index(term) .')
 
     def test_mutation_and_query(self):
+        """Runs mutation and verifies queries see the results."""
+
         txn = self.client.txn()
         _ = txn.mutate(pydgraph.Mutation(commit_now=True), set_nquads="""
             <_:alice> <name> \"Alice\" .
@@ -52,23 +58,29 @@ class TestQueries(helper.ClientIntegrationTestCase):
         }"""
 
         response = self.client.query(query, variables={'$a': 'Alice'})
-        self.assertEqual([{'name': 'Alice', 'follows': [{'name': 'Greg'}]}], json.loads(response.json).get('me'))
-        self.assertTrue(is_number(response.latency.parsing_ns), 'Parsing latency is not available')
-        self.assertTrue(is_number(response.latency.processing_ns), 'Processing latency is not available')
-        self.assertTrue(is_number(response.latency.encoding_ns), 'Encoding latency is not available')
+        self.assertEqual([{'name': 'Alice', 'follows': [{'name': 'Greg'}]}],
+                         json.loads(response.json).get('me'))
+        self.assertTrue(is_number(response.latency.parsing_ns),
+                        'Parsing latency is not available')
+        self.assertTrue(is_number(response.latency.processing_ns),
+                        'Processing latency is not available')
+        self.assertTrue(is_number(response.latency.encoding_ns),
+                        'Encoding latency is not available')
 
 
-def is_number(n):
+def is_number(number):
+    """Returns true if object is a number. Compatible with Python 2 and 3."""
     if sys.version_info[0] < 3:
-        return isinstance(n, (int, long))
+        return isinstance(number, (int, long))
 
-    return isinstance(n, int)
+    return isinstance(number, int)
 
 
 def suite():
-    s = unittest.TestSuite()
-    s.addTest(TestQueries())
-    return s
+    """Returns a test suite object."""
+    suite_obj = unittest.TestSuite()
+    suite_obj.addTest(TestQueries())
+    return suite_obj
 
 
 if __name__ == '__main__':

@@ -12,17 +12,20 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 
+"""Various utility functions."""
+
 import sys
 
 from pydgraph.meta import VERSION
 
 __author__ = 'Shailesh Kochhar <shailesh.kochhar@gmail.com>'
-__maintainer__ = 'Garvit Pahal <garvit@dgraph.io>'
+__maintainer__ = 'Martin Martinez Rivera <martinmr@dgraph.io>'
 __version__ = VERSION
 __status__ = 'development'
 
 
 def merge_lin_reads(target, src):
+    """Merger src linread map into target linread map."""
     if src is None:
         return target
 
@@ -37,8 +40,9 @@ def merge_lin_reads(target, src):
     return target
 
 
-def is_string(s):
+def is_string(string):
+    """Checks if argument is a string. Compatible with Python 2 and 3."""
     if sys.version_info[0] < 3:
-        return isinstance(s, basestring)
+        return isinstance(string, basestring)
 
-    return isinstance(s, str)
+    return isinstance(string, str)

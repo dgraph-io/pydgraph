@@ -12,8 +12,10 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 
+"""Tests to verify upsert directive."""
+
 __author__ = 'Shailesh Kochhar <shailesh.kochhar@gmail.com>'
-__maintainer__ = 'Garvit Pahal <garvit@dgraph.io>'
+__maintainer__ = 'Martin Martinez Rivera <martinmr@dgraph.io>'
 
 import unittest
 import logging
@@ -33,6 +35,7 @@ AGES = [20, 25, 30, 35]
 
 
 class TestAccountUpsert(helper.ClientIntegrationTestCase):
+    """Tests to verify upsert directive."""
     def setUp(self):
         super(TestAccountUpsert, self).setUp()
 
@@ -63,7 +66,8 @@ class TestAccountUpsert(helper.ClientIntegrationTestCase):
         retry_ctr = multiprocessing.Value('i', 0, lock=True)
 
         def _updater(acct):
-            upsert_account(addr=self.TEST_SERVER_ADDR, account=acct, success_ctr=success_ctr, retry_ctr=retry_ctr)
+            upsert_account(addr=self.TEST_SERVER_ADDR, account=acct,
+                           success_ctr=success_ctr, retry_ctr=retry_ctr)
 
         pool = mpd.Pool(concurrency)
         results = [
@@ -71,21 +75,21 @@ class TestAccountUpsert(helper.ClientIntegrationTestCase):
             for acct in account_list for _ in range(concurrency)
         ]
 
-        [res.get() for res in results]
+        _ = [res.get() for res in results]
         pool.close()
 
     def assert_changes(self, firsts, accounts):
         """Will check to see changes have been made."""
 
-        q = """{{
+        query = """{{
             all(func: anyofterms(first, "{}")) {{
                 first
                 last
                 age
             }}
         }}""".format(' '.join(firsts))
-        logging.debug(q)
-        result = json.loads(self.client.query(q=q).json)
+        logging.debug(query)
+        result = json.loads(self.client.query(query).json)
 
         account_set = set()
         for acct in result['all']:
@@ -100,8 +104,9 @@ class TestAccountUpsert(helper.ClientIntegrationTestCase):
 
 
 def upsert_account(addr, account, success_ctr, retry_ctr):
-    c = helper.create_client(addr)
-    q = """{{
+    """Runs upsert operation."""
+    client = helper.create_client(addr)
+    query = """{{
         acct(func:eq(first, "{first}")) @filter(eq(last, "{last}") AND eq(age, {age})) {{
             uid
         }}
@@ -110,12 +115,13 @@ def upsert_account(addr, account, success_ctr, retry_ctr):
     last_update_time = time.time() - 10000
     while True:
         if time.time() > last_update_time + 10000:
-            logging.debug('Success: %d Retries: %d', success_ctr.value, retry_ctr.value)
+            logging.debug('Success: %d Retries: %d', success_ctr.value,
+                          retry_ctr.value)
             last_update_time = time.time()
 
-        txn = c.txn()
+        txn = client.txn()
         try:
-            result = json.loads(txn.query(q=q).json)
+            result = json.loads(txn.query(query).json)
             assert len(result['acct']) <= 1, ('Lookup of account %s found '
                                               'multiple accounts' % account)
 
@@ -135,7 +141,8 @@ def upsert_account(addr, account, success_ctr, retry_ctr):
                 uid = acct['uid']
                 assert uid is not None, 'Account with uid None'
 
-            updatequads = '<{0}> <when> "{1:d}"^^<xs:int> .'.format(uid, int(time.time()))
+            updatequads = '<{0}> <when> "{1:d}"^^<xs:int> .'.format(
+                uid, int(time.time()))
             txn.mutate(set_nquads=updatequads)
             txn.commit()
 
@@ -153,9 +160,10 @@ def upsert_account(addr, account, success_ctr, retry_ctr):
 
 
 def suite():
-    s = unittest.TestSuite()
-    s.addTest(TestAccountUpsert())
-    return s
+    """Returns a test suite object."""
+    suite_obj = unittest.TestSuite()
+    suite_obj.addTest(TestAccountUpsert())
+    return suite_obj
 
 
 if __name__ == '__main__':
