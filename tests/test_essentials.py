@@ -12,8 +12,10 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 
+"""Tests mutation after query behavior."""
+
 __author__ = 'Shailesh Kochhar <shailesh.kochhar@gmail.com>'
-__maintainer__ = 'Garvit Pahal <garvit@dgraph.io>'
+__maintainer__ = 'Martin Martinez Rivera <martinmr@dgraph.io>'
 
 import unittest
 import logging
@@ -23,6 +25,8 @@ from . import helper
 
 
 class TestEssentials(helper.ClientIntegrationTestCase):
+    """Tests mutation after query behavior."""
+
     def testMutationAfterQuery(self):
         """Tests what happens when making a mutation on a txn after querying
         on the client."""
@@ -44,9 +48,10 @@ class TestEssentials(helper.ClientIntegrationTestCase):
 
 
 def suite():
-    s = unittest.TestSuite()
-    s.addTest(TestEssentials())
-    return s
+    """Returns a test suite object."""
+    suite_obj = unittest.TestSuite()
+    suite_obj.addTest(TestEssentials())
+    return suite_obj
 
 
 if __name__ == '__main__':

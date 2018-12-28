@@ -12,30 +12,32 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 
-import grpc
+"""Dgraph atomic transaction support."""
+
 import json
+import grpc
 
 from pydgraph import errors, util
 from pydgraph.meta import VERSION
 from pydgraph.proto import api_pb2 as api
 
 __author__ = 'Shailesh Kochhar <shailesh.kochhar@gmail.com>'
-__maintainer__ = 'Garvit Pahal <garvit@dgraph.io>'
+__maintainer__ = 'Martin Martinez Rivera <martinmr@dgraph.io>'
 __version__ = VERSION
 __status__ = 'development'
 
 
 class Txn(object):
     """Txn is a single atomic transaction.
-    
+
     A transaction lifecycle is as follows:
-    
+
     1. Created using Client.newTxn.
-    
-    2. Various query and mutate calls made.
-    
-    3. commit or discard used. If any mutations have been made, It's important
-    that at least one of these methods is called to clean up resources. discard
+
+    2. Modified via calls to query and mutate.
+
+    3. Committed or discarded. If any mutations have been made, it's important
+    that at least one of these methods is called to clean up resources. Discard
     is a no-op if commit has already been called, so it's safe to call discard
     after calling commit.
     """
@@ -50,129 +52,153 @@ class Txn(object):
         self._sequencing = api.LinRead.CLIENT_SIDE
 
     def sequencing(self, sequencing):
+        """Sets sequencing."""
         self._sequencing = sequencing
 
-    def query(self, q, variables=None, timeout=None, metadata=None, credentials=None):
-        req = self._common_query(q, variables=variables)
-        res = self._dc.any_client().query(req, timeout=timeout, metadata=metadata, credentials=credentials)
+    def query(self, query, variables=None, timeout=None, metadata=None,
+              credentials=None):
+        """Adds a query operation to the transaction."""
+        req = self._common_query(query, variables=variables)
+        res = self._dc.any_client().query(req, timeout=timeout,
+                                          metadata=metadata,
+                                          credentials=credentials)
         self.merge_context(res.txn)
         return res
-    
-    def _common_query(self, q, variables=None):
+
+    def _common_query(self, query, variables=None):
         if self._finished:
-            raise Exception('Transaction has already been committed or discarded')
+            raise Exception(
+                'Transaction has already been committed or discarded')
 
         lin_read = self._ctx.lin_read
         lin_read.sequencing = self._sequencing
-        req = api.Request(query=q, start_ts=self._ctx.start_ts, lin_read=lin_read)
+        req = api.Request(query=query, start_ts=self._ctx.start_ts,
+                          lin_read=lin_read)
         if variables is not None:
             for key, value in variables.items():
                 if util.is_string(key) and util.is_string(value):
                     req.vars[key] = value
-        
+
         return req
 
-    def mutate(self, mu=None, set_obj=None, del_obj=None, set_nquads=None, del_nquads=None, commit_now=None,
-               ignore_index_conflict=None, timeout=None, metadata=None, credentials=None):
-        mu = self._common_mutate(mu=mu, set_obj=set_obj, del_obj=del_obj, set_nquads=set_nquads, del_nquads=del_nquads,
-                                 commit_now=commit_now, ignore_index_conflict=ignore_index_conflict)
+    def mutate(self, mutation=None, set_obj=None, del_obj=None, set_nquads=None,
+               del_nquads=None, commit_now=None, ignore_index_conflict=None,
+               timeout=None, metadata=None, credentials=None):
+        """Adds a mutate operation to the transaction."""
+        mutation = self._common_mutate(
+            mutation=mutation, set_obj=set_obj, del_obj=del_obj,
+            set_nquads=set_nquads, del_nquads=del_nquads,
+            commit_now=commit_now, ignore_index_conflict=ignore_index_conflict)
 
         try:
-            ag = self._dc.any_client().mutate(mu, timeout=timeout, metadata=metadata, credentials=credentials)
-        except Exception as e:
+            assigned = self._dc.any_client().mutate(mutation, timeout=timeout,
+                                                    metadata=metadata,
+                                                    credentials=credentials)
+        except Exception as error:
             try:
-                self.discard(timeout=timeout, metadata=metadata, credentials=credentials)
+                self.discard(timeout=timeout, metadata=metadata,
+                             credentials=credentials)
             except:
                 # Ignore error - user should see the original error.
                 pass
 
-            self._common_except_mutate(e)
+            self._common_except_mutate(error)
 
-        if mu.commit_now:
+        if mutation.commit_now:
             self._finished = True
 
-        self.merge_context(ag.context)
-        return ag
-    
-    def _common_mutate(self, mu=None, set_obj=None, del_obj=None, set_nquads=None, del_nquads=None,
+        self.merge_context(assigned.context)
+        return assigned
+
+    def _common_mutate(self, mutation=None, set_obj=None, del_obj=None,
+                       set_nquads=None, del_nquads=None,
                        commit_now=None, ignore_index_conflict=None):
-        if not mu:
-            mu = api.Mutation()
+        if not mutation:
+            mutation = api.Mutation()
         if set_obj:
-            mu.set_json = json.dumps(set_obj).encode('utf8')
+            mutation.set_json = json.dumps(set_obj).encode('utf8')
         if del_obj:
-            mu.delete_json = json.dumps(del_obj).encode('utf8')
+            mutation.delete_json = json.dumps(del_obj).encode('utf8')
         if set_nquads:
-            mu.set_nquads = set_nquads.encode('utf8')
+            mutation.set_nquads = set_nquads.encode('utf8')
         if del_nquads:
-            mu.del_nquads = del_nquads.encode('utf8')
+            mutation.del_nquads = del_nquads.encode('utf8')
         if commit_now:
-            mu.commit_now = True
+            mutation.commit_now = True
         if ignore_index_conflict:
-            mu.ignore_index_conflict = True
-        
+            mutation.ignore_index_conflict = True
+
         if self._finished:
-            raise Exception('Transaction has already been committed or discarded')
-        
+            raise Exception(
+                'Transaction has already been committed or discarded')
+
         self._mutated = True
-        mu.start_ts = self._ctx.start_ts
-        return mu
+        mutation.start_ts = self._ctx.start_ts
+        return mutation
 
     @staticmethod
-    def _common_except_mutate(e):
-        if isinstance(e, grpc._channel._Rendezvous):
-            e.details()
-            status_code = e.code()
-            if status_code == grpc.StatusCode.ABORTED or status_code == grpc.StatusCode.FAILED_PRECONDITION:
+    def _common_except_mutate(error):
+        if isinstance(error, grpc._channel._Rendezvous):
+            error.details()
+            status_code = error.code()
+            if (status_code == grpc.StatusCode.ABORTED or
+                    status_code == grpc.StatusCode.FAILED_PRECONDITION):
                 raise errors.AbortedError()
-        
-        raise e
+
+        raise error
 
     def commit(self, timeout=None, metadata=None, credentials=None):
+        """Commits the transaction."""
         if not self._common_commit():
             return
 
         try:
-            self._dc.any_client().commit_or_abort(self._ctx, timeout=timeout, metadata=metadata,
+            self._dc.any_client().commit_or_abort(self._ctx, timeout=timeout,
+                                                  metadata=metadata,
                                                   credentials=credentials)
-        except Exception as e:
-            self._common_except_commit(e)
-    
+        except Exception as error:
+            self._common_except_commit(error)
+
     def _common_commit(self):
         if self._finished:
-            raise Exception('Transaction has already been committed or discarded')
-        
+            raise Exception(
+                'Transaction has already been committed or discarded')
+
         self._finished = True
         return self._mutated
 
     @staticmethod
-    def _common_except_commit(e):
-        if isinstance(e, grpc._channel._Rendezvous):
-            e.details()
-            status_code = e.code()
+    def _common_except_commit(error):
+        if isinstance(error, grpc._channel._Rendezvous):
+            error.details()
+            status_code = error.code()
             if status_code == grpc.StatusCode.ABORTED:
                 raise errors.AbortedError()
 
-        raise e
+        raise error
 
     def discard(self, timeout=None, metadata=None, credentials=None):
+        """Discards the transaction."""
         if not self._common_discard():
             return
 
-        self._dc.any_client().commit_or_abort(self._ctx, timeout=timeout, metadata=metadata, credentials=credentials)
-    
+        self._dc.any_client().commit_or_abort(self._ctx, timeout=timeout,
+                                              metadata=metadata,
+                                              credentials=credentials)
+
     def _common_discard(self):
         if self._finished:
             return False
-        
+
         self._finished = True
         if not self._mutated:
             return False
-        
+
         self._ctx.aborted = True
         return True
-    
+
     def merge_context(self, src=None):
+        """Merges context from this instance with src."""
         if src is None:
             # This condition will be true only if the server doesn't return a
             # txn context after a query or mutation.

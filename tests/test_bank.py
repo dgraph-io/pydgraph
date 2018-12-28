@@ -12,8 +12,10 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 
+"""Test that runs through example bank transactions."""
+
 __author__ = 'Garvit Pahal <garvit@dgraph.io>'
-__maintainer__ = 'Garvit Pahal <garvit@dgraph.io>'
+__maintainer__ = 'Martin Martinez Rivera <martinmr@dgraph.io>'
 
 import unittest
 import logging
@@ -31,6 +33,8 @@ TRANSFER_COUNT = 1000
 
 
 class TestBank(helper.ClientIntegrationTestCase):
+    """Test that runs through example bank transactions."""
+
     def setUp(self):
         super(TestBank, self).setUp()
 
@@ -54,10 +58,11 @@ class TestBank(helper.ClientIntegrationTestCase):
             pool = mpd.Pool(CONCURRENCY)
             results = [pool.apply_async(
                 run_transfers,
-                (self.TEST_SERVER_ADDR, TRANSFER_COUNT, self.uids, success_ctr, retry_ctr)
+                (self.TEST_SERVER_ADDR, TRANSFER_COUNT, self.uids, success_ctr,
+                 retry_ctr)
             ) for _ in range(CONCURRENCY)]
 
-            [res.get() for res in results]
+            _ = [res.get() for res in results]
             pool.close()
         finally:
             total_watcher.terminate()
@@ -85,6 +90,7 @@ class TestBank(helper.ClientIntegrationTestCase):
 
 
 def looper(func, *args, **kwargs):
+    """Returns a function that runs func in an infinite loop."""
     def _looper():
         while True:
             func(*args, **kwargs)
@@ -93,10 +99,10 @@ def looper(func, *args, **kwargs):
     return _looper
 
 
-def run_total(c, uids):
+def run_total(client, uids):
     """Calculates the total amount in the accounts."""
 
-    q = """{{
+    query = """{{
         var(func: uid("{uids:s}")) {{
             b as bal
         }}
@@ -105,16 +111,17 @@ def run_total(c, uids):
         }}
     }}""".format(uids='", "'.join(uids))
 
-    resp = c.query(q)
+    resp = client.query(query)
     total = json.loads(resp.json)['total']
     logging.info('Response: %s', total)
     assert total[0]['bal'] == 10000
 
 
 def run_transfers(addr, transfer_count, account_ids, success_ctr, retry_ctr):
+    """Runs transfers between the given accounts."""
     pname = mpd.current_process().name
     log = logging.getLogger('test_bank.run_transfers[%s]' % (pname,))
-    c = helper.create_client(addr)
+    client = helper.create_client(addr)
 
     while True:
         from_acc, to_acc = select_account_pair(account_ids)
@@ -125,7 +132,7 @@ def run_transfers(addr, transfer_count, account_ids, success_ctr, retry_ctr):
             }}
         }}""".format(uid1=from_acc, uid2=to_acc)
 
-        txn = c.txn()
+        txn = client.txn()
         try:
             accounts = load_from_query(txn, query, 'me')
             accounts[0]['bal'] += 5
@@ -135,10 +142,11 @@ def run_transfers(addr, transfer_count, account_ids, success_ctr, retry_ctr):
                 success_ctr.value += 1
 
             if not success_ctr.value % 100:
-                log.info('Runs %d. Aborts: %d', success_ctr.value, retry_ctr.value)
+                log.info('Runs %d. Aborts: %d', success_ctr.value,
+                         retry_ctr.value)
             if success_ctr.value >= transfer_count:
                 break
-        except:
+        except BaseException:
             with retry_ctr.get_lock():
                 retry_ctr.value += 1
 
@@ -163,6 +171,7 @@ def load_from_query(txn, query, field):
 
 
 def dump_from_obj(txn, obj, commit=False):
+    """Dumps the given object into the transaction."""
     assigned = txn.mutate(set_obj=obj)
 
     if not commit:
@@ -171,9 +180,10 @@ def dump_from_obj(txn, obj, commit=False):
 
 
 def suite():
-    s = unittest.TestSuite()
-    s.addTest(TestBank())
-    return s
+    """Returns a test suite object."""
+    suite_obj = unittest.TestSuite()
+    suite_obj.addTest(TestBank())
+    return suite_obj
 
 
 if __name__ == '__main__':
