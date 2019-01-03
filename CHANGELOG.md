@@ -22,5 +22,5 @@ and this project adheres to [Semantic Versioning](http://semver.org/spec/v2.0.0.
 - Full compatibility with Dgraph v1.0.0
 
 [Unreleased]: https://github.com/dgraph-io/pydgraph/compare/v1.0.0...HEAD
-[v1.0.1]: https://github.com/dgraph-io/pydgraph/compare/v1.0.1
+[v1.0.1]: https://github.com/dgraph-io/pydgraph/tree/v1.0.1
 [v1.0.0]: https://github.com/dgraph-io/pydgraph/tree/v1.0.0
