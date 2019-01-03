@@ -45,15 +45,15 @@ class Txn(object):
     def __init__(self, client):
         self._dc = client
         self._ctx = api.TxnContext()
-        self._dc.set_lin_read(self._ctx)
 
         self._finished = False
         self._mutated = False
-        self._sequencing = api.LinRead.CLIENT_SIDE
 
     def sequencing(self, sequencing):
         """Sets sequencing."""
-        self._sequencing = sequencing
+        # This method is obsolete since sequencing is no longer used. This
+        # method is being kept for backwards-compatibility.
+        pass
 
     def query(self, query, variables=None, timeout=None, metadata=None,
               credentials=None):
@@ -70,10 +70,7 @@ class Txn(object):
             raise Exception(
                 'Transaction has already been committed or discarded')
 
-        lin_read = self._ctx.lin_read
-        lin_read.sequencing = self._sequencing
-        req = api.Request(query=query, start_ts=self._ctx.start_ts,
-                          lin_read=lin_read)
+        req = api.Request(query=query, start_ts=self._ctx.start_ts)
         if variables is not None:
             for key, value in variables.items():
                 if util.is_string(key) and util.is_string(value):
@@ -203,9 +200,6 @@ class Txn(object):
             # This condition will be true only if the server doesn't return a
             # txn context after a query or mutation.
             return
-
-        util.merge_lin_reads(self._ctx.lin_read, src.lin_read)
-        self._dc.merge_lin_reads(src.lin_read)
 
         if self._ctx.start_ts == 0:
             self._ctx.start_ts = src.start_ts
