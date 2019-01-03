@@ -277,9 +277,9 @@ stub2.close()
 ### Setting Metadata Headers
 Metadata headers such as authentication tokens can be set through the metadata of gRPC methods. Below is an example of how to set a header named "auth-token".
 ```python
-// The following piece of code shows how one can set metadata with
-// auth-token, to allow Alter operation, if the server requires it.
-// metadata is a list of arbritary key-value pairs.
+# The following piece of code shows how one can set metadata with
+# auth-token, to allow Alter operation, if the server requires it.
+# metadata is a list of arbritary key-value pairs.
 metadata = [("auth-token", "the-auth-token-value")]
 dg.alter(op, metadata=metadata)
 ```
