@@ -52,9 +52,9 @@ class DgraphClient(object):
         return self.txn().query(query, variables=variables, timeout=timeout,
                                 metadata=metadata, credentials=credentials)
 
-    def txn(self):
+    def txn(self, read_only=False):
         """Creates a transaction."""
-        return txn.Txn(self)
+        return txn.Txn(self, read_only=read_only)
 
     def set_lin_read(self, ctx):
         """Sets linread map in ctx to the one from this instace."""
