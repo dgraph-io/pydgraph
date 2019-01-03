@@ -43,11 +43,13 @@ class Txn(object):
     """
 
     def __init__(self, client, read_only=False):
-        self._dc = client
+        self._dg = client
+        self._dc = client.any_client()
         self._ctx = api.TxnContext()
 
         self._finished = False
         self._mutated = False
+        self._read_only = read_only
 
     def sequencing(self, sequencing):
         """Sets sequencing."""
@@ -59,9 +61,9 @@ class Txn(object):
               credentials=None):
         """Adds a query operation to the transaction."""
         req = self._common_query(query, variables=variables)
-        res = self._dc.any_client().query(req, timeout=timeout,
-                                          metadata=metadata,
-                                          credentials=credentials)
+        res = self._dc.query(req, timeout=timeout,
+                             metadata=metadata,
+                             credentials=credentials)
         self.merge_context(res.txn)
         return res
 
@@ -89,9 +91,9 @@ class Txn(object):
             commit_now=commit_now, ignore_index_conflict=ignore_index_conflict)
 
         try:
-            assigned = self._dc.any_client().mutate(mutation, timeout=timeout,
-                                                    metadata=metadata,
-                                                    credentials=credentials)
+            assigned = self._dc.mutate(mutation, timeout=timeout,
+                                       metadata=metadata,
+                                       credentials=credentials)
         except Exception as error:
             try:
                 self.discard(timeout=timeout, metadata=metadata,
@@ -153,9 +155,9 @@ class Txn(object):
             return
 
         try:
-            self._dc.any_client().commit_or_abort(self._ctx, timeout=timeout,
-                                                  metadata=metadata,
-                                                  credentials=credentials)
+            self._dc.commit_or_abort(self._ctx, timeout=timeout,
+                                     metadata=metadata,
+                                     credentials=credentials)
         except Exception as error:
             self._common_except_commit(error)
 
@@ -185,9 +187,9 @@ class Txn(object):
         if not self._common_discard():
             return
 
-        self._dc.any_client().commit_or_abort(self._ctx, timeout=timeout,
-                                              metadata=metadata,
-                                              credentials=credentials)
+        self._dc.commit_or_abort(self._ctx, timeout=timeout,
+                                 metadata=metadata,
+                                 credentials=credentials)
 
     def _common_discard(self):
         if self._finished:
@@ -213,4 +215,5 @@ class Txn(object):
             # This condition should never be true.
             raise Exception('StartTs mismatch')
 
-        self._ctx.keys.extend(src.keys[:])
+        self._ctx.keys.extend(src.keys)
+        self._ctx.preds.extend(src.preds)
