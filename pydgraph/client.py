@@ -38,7 +38,6 @@ class DgraphClient(object):
             raise ValueError('No clients provided in DgraphClient constructor')
 
         self._clients = clients[:]
-        self._lin_read = api.LinRead()
 
     def alter(self, operation, timeout=None, metadata=None, credentials=None):
         """Runs a modification via this client."""
@@ -55,14 +54,6 @@ class DgraphClient(object):
     def txn(self):
         """Creates a transaction."""
         return txn.Txn(self)
-
-    def set_lin_read(self, ctx):
-        """Sets linread map in ctx to the one from this instace."""
-        ctx.lin_read.MergeFrom(self._lin_read)
-
-    def merge_lin_reads(self, src):
-        """Merges linread map in this instance with src."""
-        util.merge_lin_reads(self._lin_read, src)
 
     def any_client(self):
         """Returns a random client."""

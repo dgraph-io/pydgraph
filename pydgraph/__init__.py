@@ -13,7 +13,7 @@
 # limitations under the License.
 
 from pydgraph.proto.api_pb2 import Operation, Payload, Request, Response, Mutation, Assigned, TxnContext, Check,\
-    Version, NQuad, Value, Facet, SchemaNode, LinRead, Latency
+    Version, NQuad, Value, Facet, SchemaNode, Latency
 from pydgraph.client_stub import *
 from pydgraph.client import *
 from pydgraph.txn import *
