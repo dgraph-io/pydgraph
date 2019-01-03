@@ -24,22 +24,6 @@ __version__ = VERSION
 __status__ = 'development'
 
 
-def merge_lin_reads(target, src):
-    """Merger src linread map into target linread map."""
-    if src is None:
-        return target
-
-    # cache for the loop
-    target_ids = target.ids
-    target_ids_get = target_ids.get
-
-    for key, src_value in src.ids.items():
-        if target_ids_get(key, 0) <= src_value:
-            target_ids[key] = src_value
-
-    return target
-
-
 def is_string(string):
     """Checks if argument is a string. Compatible with Python 2 and 3."""
     if sys.version_info[0] < 3:
