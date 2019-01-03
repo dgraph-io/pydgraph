@@ -92,7 +92,7 @@ client.alter(op)
 To create a transaction, call `DgraphClient#txn()` method, which returns a
 new `Txn` object. This operation incurs no network overhead.
 
-It is good practise to call `Txn#discard()` in a `finally` block after running
+It is good practice to call `Txn#discard()` in a `finally` block after running
 the transaction. Calling `Txn#discard()` after `Txn#commit()` is a no-op
 and you can call `Txn#discard()` multiple times with no additional side-effects.
 
@@ -105,6 +105,22 @@ finally:
   txn.discard()
   # ...
 ```
+
+To create a read-only transaction, call `DgraphClient#txn(read_only=True)`.
+Read-only transactions are ideal for transactions which only involve queries.
+Mutations and commits are not allowed.
+
+```python
+txn = client.txn(read_only=True)
+try:
+  # Do some queries here
+  # ...
+finally:
+  txn.discard()
+  # ...
+```
+
+`client.query()` uses a read-only transaction to execute the query.
 
 ### Run a mutation
 
