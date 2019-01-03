@@ -49,8 +49,9 @@ class DgraphClient(object):
     def query(self, query, variables=None, timeout=None, metadata=None,
               credentials=None):
         """Runs a query via this client."""
-        return self.txn().query(query, variables=variables, timeout=timeout,
-                                metadata=metadata, credentials=credentials)
+        txn = self.txn(read_only=True)
+        return txn.query(query, variables=variables, timeout=timeout,
+                         metadata=metadata, credentials=credentials)
 
     def txn(self, read_only=False):
         """Creates a transaction."""
