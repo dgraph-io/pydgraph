@@ -42,7 +42,7 @@ class Txn(object):
     after calling commit.
     """
 
-    def __init__(self, client):
+    def __init__(self, client, read_only=False):
         self._dc = client
         self._ctx = api.TxnContext()
 
@@ -70,7 +70,8 @@ class Txn(object):
             raise Exception(
                 'Transaction has already been committed or discarded')
 
-        req = api.Request(query=query, start_ts=self._ctx.start_ts)
+        req = api.Request(query=query, start_ts=self._ctx.start_ts,
+                          read_only=self._read_only)
         if variables is not None:
             for key, value in variables.items():
                 if util.is_string(key) and util.is_string(value):
@@ -110,6 +111,12 @@ class Txn(object):
     def _common_mutate(self, mutation=None, set_obj=None, del_obj=None,
                        set_nquads=None, del_nquads=None,
                        commit_now=None, ignore_index_conflict=None):
+        if self._read_only:
+            raise Exception(
+                'Readonly transaction cannot run mutations or be committed')
+        if self._finished:
+            raise Exception(
+                'Transaction has already been committed or discarded')
         if not mutation:
             mutation = api.Mutation()
         if set_obj:
@@ -124,10 +131,6 @@ class Txn(object):
             mutation.commit_now = True
         if ignore_index_conflict:
             mutation.ignore_index_conflict = True
-
-        if self._finished:
-            raise Exception(
-                'Transaction has already been committed or discarded')
 
         self._mutated = True
         mutation.start_ts = self._ctx.start_ts
@@ -157,6 +160,9 @@ class Txn(object):
             self._common_except_commit(error)
 
     def _common_commit(self):
+        if self._read_only:
+            raise Exception(
+                'Readonly transaction cannot run mutations or be committed')
         if self._finished:
             raise Exception(
                 'Transaction has already been committed or discarded')

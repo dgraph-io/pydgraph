@@ -230,6 +230,32 @@ class TestTxn(helper.ClientIntegrationTestCase):
         resp = self.client.query(query)
         self.assertEqual([{'name': 'Manish2'}], json.loads(resp.json).get('me'))
 
+    def test_read_only_txn(self):
+        """Tests read-only transactions. Read-only transactions should
+        not advance the start ts nor should allow mutations or commits."""
+
+        query = '{ me() {} }'
+
+        # Using client.query helper method
+        resp1 = self.client.query(query)
+        start_ts1 = resp1.txn.start_ts
+        resp2 = self.client.query(query)
+        start_ts2 = resp2.txn.start_ts
+        self.assertEqual(start_ts1, start_ts2)
+
+        # Using client.txn method
+        txn = self.client.txn(read_only=True)
+        resp1 = txn.query(query)
+        start_ts1 = resp1.txn.start_ts
+        resp2 = txn.query(query)
+        start_ts2 = resp2.txn.start_ts
+        self.assertEqual(start_ts1, start_ts2)
+
+        with self.assertRaises(Exception):
+            txn.mutate(set_obj={'name': 'Manish'})
+        with self.assertRaises(Exception):
+            txn.commit()
+
     def test_conflict(self):
         """Tests committing two transactions which conflict."""
 
