@@ -122,7 +122,6 @@ finally:
 
 `client.query()` uses a read-only transaction to execute the query.
 
-
 ### Run a mutation
 
 `Txn#mutate(mu=Mutation)` runs a mutation. It takes in a `Mutation` object,
