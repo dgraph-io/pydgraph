@@ -281,7 +281,7 @@ Metadata headers such as authentication tokens can be set through the metadata o
 // auth-token, to allow Alter operation, if the server requires it.
 // metadata is a list of arbritary key-value pairs.
 metadata = [("auth-token", "the-auth-token-value")]
-dg.Alter(op, metadata=metadata)
+dg.alter(op, metadata=metadata)
 ```
 
 ## Development
