@@ -22,31 +22,6 @@ import unittest
 import pydgraph
 
 
-def create_lin_read(src_ids):
-    """Creates a linread map using src_ids."""
-    lin_read = pydgraph.LinRead()
-    ids = lin_read.ids
-    for key, value in src_ids.items():
-        ids[key] = value
-
-    return lin_read
-
-
-def are_lin_reads_equal(lin_read1, lin_read2):
-    """Returns True if both linread maps are equal."""
-    ids1 = lin_read1.ids
-    ids2 = lin_read2.ids
-
-    if len(ids1) != len(ids2):
-        return False
-
-    for (key, value) in ids1.items():
-        if key not in ids2 or lin_read2.ids[key] != value:
-            return False
-
-    return True
-
-
 SERVER_ADDR = 'localhost:9180'
 
 
