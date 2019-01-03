@@ -232,8 +232,7 @@ class TestTxn(helper.ClientIntegrationTestCase):
 
     def test_read_only_txn(self):
         """Tests read-only transactions. Read-only transactions should
-        not advance the start ts nor should mutations or commits be
-        allowed."""
+        not advance the start ts nor should allow mutations or commits."""
 
         query = '{ me() {} }'
 
