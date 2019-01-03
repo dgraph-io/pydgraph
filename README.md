@@ -26,6 +26,7 @@ and understand how to run and work with Dgraph.
   - [Run a query](#run-a-query)
   - [Commit a transaction](#commit-a-transaction)
   - [Cleanup Resources](#cleanup-resources)
+  - [Setting Metadata Headers](#setting-metadata-headers)
 - [Development](#development)
   - [Building the source](#building-the-source)
   - [Running tests](#running-tests)
@@ -271,6 +272,16 @@ client = pydgraph.DgraphClient(stub1, stub2)
 # Cleanup resources by closing all client stubs.
 stub1.close()
 stub2.close()
+```
+
+### Setting Metadata Headers
+Metadata headers such as authentication tokens can be set through the metadata of gRPC methods. Below is an example of how to set a header named "auth-token".
+```python
+# The following piece of code shows how one can set metadata with
+# auth-token, to allow Alter operation, if the server requires it.
+# metadata is a list of arbritary key-value pairs.
+metadata = [("auth-token", "the-auth-token-value")]
+dg.alter(op, metadata=metadata)
 ```
 
 ## Development
