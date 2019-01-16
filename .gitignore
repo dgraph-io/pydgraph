@@ -31,3 +31,6 @@ MANIFEST
 # IntelliJ
 .idea
 pydgraph.iml
+
+# Python Virtual Environments
+venv
