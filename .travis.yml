@@ -1,9 +1,9 @@
 language: python
 python:
-  - "3.6"
+  - "3.7"
   - "2.7"
 sudo: required
-dist: trusty
+dist: xenial
 before_install:
   - scripts/install_dgraph.sh
 install:
