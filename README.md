@@ -27,6 +27,7 @@ and understand how to run and work with Dgraph.
   - [Commit a transaction](#commit-a-transaction)
   - [Cleanup Resources](#cleanup-resources)
   - [Setting Metadata Headers](#setting-metadata-headers)
+- [Examples](#examples)
 - [Development](#development)
   - [Building the source](#building-the-source)
   - [Running tests](#running-tests)
@@ -41,11 +42,11 @@ pip install pydgraph
 
 ## Quickstart
 
-Build and run the [simple] project in the `examples` folder, which
+Build and run the [simple][] project in the `examples` folder, which
 contains an end-to-end example of using the Dgraph python client. Follow the
 instructions in the README of that project.
 
-[simple]: https://github.com/dgraph-io/pydgraph/tree/master/examples/simple
+[simple]: ./examples/simple
 
 ## Using a client
 
@@ -299,6 +300,13 @@ Metadata headers such as authentication tokens can be set through the metadata o
 metadata = [("auth-token", "the-auth-token-value")]
 dg.alter(op, metadata=metadata)
 ```
+
+## Examples
+
+- [simple][]: Quickstart example of using pydgraph.
+- [tls][]: Example of using pydgraph with a Dgraph cluster secured with TLS.
+
+[tls]: ./examples/tls
 
 ## Development
 
