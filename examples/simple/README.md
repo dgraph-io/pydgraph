@@ -9,14 +9,14 @@ for Dgraph.
 
 ### Start Dgraph server
 
-You will need to install [Dgraph v1.0.0 or above][releases] and run it.
+You will need to install [Dgraph v1.0.10 or above][releases] and run it.
 
 [releases]: https://github.com/dgraph-io/dgraph/releases
 
 You can run the commands below to start a clean Dgraph server every time, for testing
 and exploration.
 
-First, create two separate directories for `dgraph zero` and `dgraph server`.
+First, create two separate directories for `dgraph zero` and `dgraph alpha`.
 
 ```sh
 mkdir -p dgraphdata/zero dgraphdata/data
@@ -27,18 +27,16 @@ Then start `dgraph zero`:
 ```sh
 cd dgraphdata/zero
 rm -r zw; dgraph zero
-# If running Dgraph version <= 1.0.2, use the following command instead:
-# rm -r zw; dgraph zero --port_offset -2000
 ```
 
-Finally, start the `dgraph server`:
+Finally, start the `dgraph alpha`:
 
 ```sh
 cd dgraphdata/data
-rm -r p w; dgraph server --memory_mb=1024 --zero localhost:5080
+rm -r p w; dgraph server --lru_mb=1024 --zero localhost:5080
 ```
 
-For more configuration options, and other details, refer to
+For more configuration options and other details, refer to
 [docs.dgraph.io](https://docs.dgraph.io)
 
 ## Install dependencies
