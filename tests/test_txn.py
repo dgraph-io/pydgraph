@@ -414,6 +414,8 @@ class TestTxn(helper.ClientIntegrationTestCase):
                          "Expected 0 nodes read from index")
 
     def test_non_string_variable(self):
+        """Tests sending a variable map with non-string values or keys results
+        in an Exception."""
         helper.drop_all(self.client)
         helper.set_schema(self.client, 'name: string @index(exact) .')
 
@@ -520,7 +522,7 @@ class TestSPStar(helper.ClientIntegrationTestCase):
             'uid': uid1,
             'friend': [{'name': 'Jan2', 'uid': uid2}]
         }], json.loads(resp.json).get('me'))
-        
+
         deleted2 = txn.mutate(del_obj={'uid': uid1, 'friend': None})
         self.assertEqual(0, len(deleted2.uids))
         resp = txn.query(query)
