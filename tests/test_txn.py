@@ -413,6 +413,23 @@ class TestTxn(helper.ClientIntegrationTestCase):
         self.assertEqual([], json.loads(resp.json).get('me'),
                          "Expected 0 nodes read from index")
 
+    def test_non_string_variable(self):
+        helper.drop_all(self.client)
+        helper.set_schema(self.client, 'name: string @index(exact) .')
+
+        txn = self.client.txn()
+        query = """
+            query node($a: string) {
+                node(func: eq(name, $a))
+                {
+                    expand(_all_)
+                }
+            }
+        """
+        variables = {"$a": 1234}
+        with self.assertRaises(Exception):
+            _ = txn.query(query, variables=variables)
+
 
 class TestSPStar(helper.ClientIntegrationTestCase):
     def setUp(self):
