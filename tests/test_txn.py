@@ -413,6 +413,25 @@ class TestTxn(helper.ClientIntegrationTestCase):
         self.assertEqual([], json.loads(resp.json).get('me'),
                          "Expected 0 nodes read from index")
 
+    def test_non_string_variable(self):
+        """Tests sending a variable map with non-string values or keys results
+        in an Exception."""
+        helper.drop_all(self.client)
+        helper.set_schema(self.client, 'name: string @index(exact) .')
+
+        txn = self.client.txn()
+        query = """
+            query node($a: string) {
+                node(func: eq(name, $a))
+                {
+                    expand(_all_)
+                }
+            }
+        """
+        variables = {"$a": 1234}
+        with self.assertRaises(Exception):
+            _ = txn.query(query, variables=variables)
+
 
 class TestSPStar(helper.ClientIntegrationTestCase):
     def setUp(self):
@@ -503,7 +522,7 @@ class TestSPStar(helper.ClientIntegrationTestCase):
             'uid': uid1,
             'friend': [{'name': 'Jan2', 'uid': uid2}]
         }], json.loads(resp.json).get('me'))
-        
+
         deleted2 = txn.mutate(del_obj={'uid': uid1, 'friend': None})
         self.assertEqual(0, len(deleted2.uids))
         resp = txn.query(query)

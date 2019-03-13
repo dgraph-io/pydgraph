@@ -78,6 +78,9 @@ class Txn(object):
             for key, value in variables.items():
                 if util.is_string(key) and util.is_string(value):
                     req.vars[key] = value
+                else:
+                    raise Exception(
+                        'Values and keys in variable map must be strings')
 
         return req
 
