@@ -7,6 +7,13 @@ and this project adheres to [Semantic Versioning](http://semver.org/spec/v2.0.0.
 
 ## [Unreleased]
 
+## [v1.0.2] - 2019-03-19
+
+### Added
+- During queries, passing a map with non-string keys or values as a variable
+  map will result in an error instead of continuing silently.
+- Fixed dependencies.
+
 ## [v1.0.1] - 2019-01-03
 
 ### Added
@@ -22,5 +29,6 @@ and this project adheres to [Semantic Versioning](http://semver.org/spec/v2.0.0.
 - Full compatibility with Dgraph v1.0.0
 
 [Unreleased]: https://github.com/dgraph-io/pydgraph/compare/v1.0.0...HEAD
-[v1.0.1]: https://github.com/dgraph-io/pydgraph/tree/v1.0.1
-[v1.0.0]: https://github.com/dgraph-io/pydgraph/tree/v1.0.0
+[v1.0.2]: https://github.com/dgraph-io/pydgraph/compare/v1.0.1...v1.0.2
+[v1.0.1]: https://github.com/dgraph-io/pydgraph/compare/v1.0.0...v1.0.1
+[v1.0.0]: https://github.com/dgraph-io/pydgraph/releases/tag/v1.0.0
