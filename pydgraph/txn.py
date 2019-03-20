@@ -42,7 +42,11 @@ class Txn(object):
     after calling commit.
     """
 
-    def __init__(self, client, read_only=False):
+    def __init__(self, client, read_only=False, best_effort=False):
+        if not read_only and best_effort:
+            raise Exception('Best effort transactions are only compatible with '
+                            'read-only transactions')
+
         self._dg = client
         self._dc = client.any_client()
         self._ctx = api.TxnContext()
@@ -50,6 +54,7 @@ class Txn(object):
         self._finished = False
         self._mutated = False
         self._read_only = read_only
+        self._best_effort = best_effort
 
     def sequencing(self, sequencing):
         """Sets sequencing."""
@@ -73,7 +78,7 @@ class Txn(object):
                 'Transaction has already been committed or discarded')
 
         req = api.Request(query=query, start_ts=self._ctx.start_ts,
-                          read_only=self._read_only)
+                          read_only=self._read_only, best_effort=self._best_effort)
         if variables is not None:
             for key, value in variables.items():
                 if util.is_string(key) and util.is_string(value):

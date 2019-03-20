@@ -256,6 +256,29 @@ class TestTxn(helper.ClientIntegrationTestCase):
         with self.assertRaises(Exception):
             txn.commit()
 
+    def test_best_effort_txn(self):
+        """Tests best-effort transactions."""
+
+        helper.drop_all(self.client)
+        helper.set_schema(self.client, 'name: string @index(exact) .')
+
+        txn = self.client.txn()
+        _ = txn.mutate(set_obj={'name': 'Manish'})
+        txn.commit()
+
+        query = '{ me(func: eq(name, Manish)) {name} }'
+        with self.assertRaises(Exception):
+            txn = self.client.txn(read_only=False, best_effort=True)
+
+        txn = self.client.txn(read_only=True, best_effort=True)
+        resp = txn.query(query)
+        self.assertEqual([{'name': 'Manish'}], json.loads(resp.json).get('me'))
+
+        with self.assertRaises(Exception):
+            txn.mutate(set_obj={'name': 'Manish'})
+        with self.assertRaises(Exception):
+            txn.commit()
+
     def test_conflict(self):
         """Tests committing two transactions which conflict."""
 
