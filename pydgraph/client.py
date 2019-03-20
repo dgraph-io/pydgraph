@@ -52,9 +52,9 @@ class DgraphClient(object):
         return txn.query(query, variables=variables, timeout=timeout,
                          metadata=metadata, credentials=credentials)
 
-    def txn(self, read_only=False):
+    def txn(self, read_only=False, best_effort=False):
         """Creates a transaction."""
-        return txn.Txn(self, read_only=read_only)
+        return txn.Txn(self, read_only=read_only, best_effort=best_effort)
 
     def any_client(self):
         """Returns a random client."""
