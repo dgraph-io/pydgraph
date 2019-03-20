@@ -262,7 +262,6 @@ class TestTxn(helper.ClientIntegrationTestCase):
         helper.drop_all(self.client)
         txn = self.client.txn()
         _ = txn.mutate(set_obj={'name': 'Manish'})
-        start_ts1 = txn.start_ts
         txn.commit()
 
         query = '{ me(func: eq(name, Manish)) {name} }'
@@ -271,9 +270,7 @@ class TestTxn(helper.ClientIntegrationTestCase):
 
         txn = self.client.txn(read_only=True, best_effort=True)
         resp = txn.query(query)
-        start_ts2 = resp2.txn.start_ts
         self.assertEqual([{'name': 'Manish'}], json.loads(resp.json).get('me'))
-        self.assertEqual(start_ts1, start_ts2)
 
         with self.assertRaises(Exception):
             txn.mutate(set_obj={'name': 'Manish'})
