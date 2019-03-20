@@ -123,6 +123,12 @@ finally:
 
 `client.query()` uses a read-only transaction to execute the query.
 
+To create a read-only transaction that executes best-effort queries, call
+`DgraphClient#txn(read_only=True, best_effort=True)`. Best-effort queries are
+faster than normal queries because they bypass the normal consensus protocol.
+For this same reason, best-effort queries cannot guarantee to return the latest
+data. Best-effort queries are only supported by read-only transactions.
+
 ### Run a mutation
 
 `Txn#mutate(mu=Mutation)` runs a mutation. It takes in a `Mutation` object,
