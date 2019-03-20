@@ -260,6 +260,8 @@ class TestTxn(helper.ClientIntegrationTestCase):
         """Tests best-effort transactions."""
 
         helper.drop_all(self.client)
+        helper.set_schema(self.client, 'name: string @index(exact) .')
+
         txn = self.client.txn()
         _ = txn.mutate(set_obj={'name': 'Manish'})
         txn.commit()
