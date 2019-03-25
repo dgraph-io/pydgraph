@@ -156,7 +156,7 @@ txn.mutate(set_obj=p)
 # txn.mutate(mu)
 
 # If you want to use N-Quads, use this instead:
-# txn.mutate(set_nquads='_:alice <name> "Alice"')
+# txn.mutate(set_nquads='_:alice <name> "Alice" .')
 ```
 
 ```python
