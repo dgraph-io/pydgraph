@@ -21,13 +21,13 @@ except ImportError:
     from distutils.core import setup
 
 try:
-    from pypandoc import convert
+    from pypandoc import convert_file
 except ImportError as e:
     # NOTE: error is thrown only for package build steps
     if 'sdist' in sys.argv or 'bdist_wheel' in sys.argv:
         raise e
 
-    def convert(f, _):
+    def convert_file(f, _):
         return open(f, 'r').read()
 
 from pydgraph.meta import VERSION
@@ -38,7 +38,7 @@ setup(
     name='pydgraph',
     version=VERSION,
     description='Official Dgraph client implementation for Python',
-    long_description=convert(README, 'rst'),
+    long_description=convert_file(README, 'rst'),
     license='Apache License, Version 2.0',
     author='Dgraph Labs',
     author_email='contact@dgraph.io',

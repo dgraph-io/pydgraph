@@ -461,7 +461,7 @@ class TestSPStar(helper.ClientIntegrationTestCase):
         super(TestSPStar, self).setUp()
 
         helper.drop_all(self.client)
-        helper.set_schema(self.client, 'friend: uid .')
+        helper.set_schema(self.client, 'friend: [uid] .')
 
     def test_sp_star(self):
         """Tests a Subject Predicate Star query."""
