@@ -16,6 +16,8 @@
 
 import random
 
+from google.protobuf import json_format
+
 from pydgraph import txn, util
 from pydgraph.meta import VERSION
 from pydgraph.proto import api_pb2 as api
@@ -33,11 +35,26 @@ class DgraphClient(object):
     multiple servers in a cluster).
     """
 
-    def __init__(self, *clients):
+    def __init__(self, *clients, jwt=None):
         if not clients:
             raise ValueError('No clients provided in DgraphClient constructor')
 
         self._clients = clients[:]
+        if jwt == None:
+            self._jwt = api.Jwt
+        else:
+            self._jwt = jwt
+
+    def login(self, userid, password, timeout=None, metadata=None,
+              credentials=None):
+        login_req = api.LoginRequest
+        login_req.userid = userid
+        login_req.password = password
+
+        response = self.any_client().login(login_req, timeout=timeout,
+                                           metadata=metadata,
+                                           credentials=credentials)
+        json_format.Parse(response.json, self._jwt)
 
     def alter(self, operation, timeout=None, metadata=None, credentials=None):
         """Runs a modification via this client."""

@@ -36,6 +36,10 @@ class DgraphClientStub(object):
 
         self.stub = api_grpc.DgraphStub(self.channel)
 
+    def login(self, login_req, timeout=None, metadata=None, credentials=None):
+        return self.stub.Login(login_req, timeout=timeout, metadata=metadata,
+                               credentials=credentials)
+
     def alter(self, operation, timeout=None, metadata=None, credentials=None):
         """Runs alter operation."""
         return self.stub.Alter(operation, timeout=timeout, metadata=metadata,
