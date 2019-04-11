@@ -35,11 +35,11 @@ class DgraphClient(object):
     multiple servers in a cluster).
     """
 
-    def __init__(self, *clients, jwt=None):
+    def __init__(self, clients, jwt=None):
         if not clients:
             raise ValueError('No clients provided in DgraphClient constructor')
 
-        self._clients = clients[:]
+        self._clients = clients
         if jwt == None:
             self._jwt = api.Jwt
         else:
