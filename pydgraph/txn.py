@@ -65,10 +65,22 @@ class Txn(object):
     def query(self, query, variables=None, timeout=None, metadata=None,
               credentials=None):
         """Adds a query operation to the transaction."""
+        new_metadata = self._dg.add_login_metadata(metadata)
         req = self._common_query(query, variables=variables)
-        res = self._dc.query(req, timeout=timeout,
-                             metadata=metadata,
-                             credentials=credentials)
+        try:
+            res = self._dc.query(req, timeout=timeout,
+                                 metadata=new_metadata,
+                                 credentials=credentials)
+        except Exception as error:
+            if util.is_jwt_expired(error):
+                self._dg.retry_login()
+                new_metadata = self._dg.add_login_metadata(metadata)
+                res = self._dc.query(req, timeout=timeout,
+                                     metadata=new_metadata,
+                                     credentials=credentials)
+            else:
+                raise error
+
         self.merge_context(res.txn)
         return res
 
@@ -98,11 +110,27 @@ class Txn(object):
             set_nquads=set_nquads, del_nquads=del_nquads,
             commit_now=commit_now, ignore_index_conflict=ignore_index_conflict)
 
+        new_metadata = self._dg.add_login_metadata(metadata)
+        mutate_error = None
+
         try:
             assigned = self._dc.mutate(mutation, timeout=timeout,
-                                       metadata=metadata,
+                                       metadata=new_metadata,
                                        credentials=credentials)
         except Exception as error:
+            if util.is_jwt_expired(error):
+                self._dg.retry_login()
+                new_metadata = self._dg.add_login_metadata(metadata)
+                try:
+                    assigned = self._dc.mutate(mutation, timeout=timeout,
+                                               metadata=new_metadata,
+                                               credentials=credentials)
+                except Exception as error:
+                    mutate_error = error
+            else:
+                mutate_error = error
+
+        if mutate_error is not None:
             try:
                 self.discard(timeout=timeout, metadata=metadata,
                              credentials=credentials)
@@ -162,11 +190,22 @@ class Txn(object):
         if not self._common_commit():
             return
 
+        new_metadata = self._dg.add_login_metadata(metadata)
         try:
             self._dc.commit_or_abort(self._ctx, timeout=timeout,
-                                     metadata=metadata,
+                                     metadata=new_metadata,
                                      credentials=credentials)
         except Exception as error:
+            if util.is_jwt_expired(error):
+                self._dg.retry_login()
+                new_metadata = self._dg.add_login_metadata(metadata)
+                try:
+                    self._dc.commit_or_abort(self._ctx, timeout=timeout,
+                                             metadata=new_metadata,
+                                             credentials=credentials)
+                except Exception as error:
+                    return self._common_except_commit(error)
+
             self._common_except_commit(error)
 
     def _common_commit(self):
@@ -195,9 +234,20 @@ class Txn(object):
         if not self._common_discard():
             return
 
-        self._dc.commit_or_abort(self._ctx, timeout=timeout,
-                                 metadata=metadata,
-                                 credentials=credentials)
+        new_metadata = self._dg.add_login_metadata(metadata)
+        try:
+            self._dc.commit_or_abort(self._ctx, timeout=timeout,
+                                     metadata=new_metadata,
+                                     credentials=credentials)
+        except Exception as error:
+            if util.is_jwt_expired(error):
+                self._dg.retry_login()
+                new_metadata = self._dg.add_login_metadata(metadata)
+                self._dc.commit_or_abort(self._ctx, timeout=timeout,
+                                         metadata=new_metadata,
+                                         credentials=credentials)
+            else:
+                raise error
 
     def _common_discard(self):
         if self._finished:

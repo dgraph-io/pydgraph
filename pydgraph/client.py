@@ -33,17 +33,13 @@ class DgraphClient(object):
     multiple servers in a cluster).
     """
 
-    def __init__(self, *clients, jwt=None):
+    def __init__(self, *clients):
         if not clients:
             raise ValueError('No clients provided in DgraphClient constructor')
 
         self._clients = clients[:]
-        self._jwt = jwt
-        if jwt is not None:
-            self._login_metadata = [("accessjwt", jwt.access_jwt),
-                                    ("refreshjwt", jwt.refresh_jwt)]
-        else:
-            self._login_metadata = []
+        self._jwt = api.Jwt()
+        self._login_metadata = []
 
     def login(self, userid, password, timeout=None, metadata=None,
               credentials=None):
@@ -59,20 +55,57 @@ class DgraphClient(object):
         self._login_metadata = [("accessjwt", self._jwt.access_jwt),
                                 ("refreshjwt", self._jwt.refresh_jwt)]
 
+    def retry_login(self, timeout=None, metadata=None, credentials=None):
+        if len(self._jwt.refresh_jwt) == 0:
+            raise ValueError('refresh jwt should not be empty')
+
+        login_req = api.LoginRequest()
+        login_req.refresh_token = self._jwt.refresh_jwt
+
+        response = self.any_client().login(login_req, timeout=timeout,
+                                           metadata=metadata,
+                                           credentials=credentials)
+        self._jwt = api.Jwt()
+        self._jwt.ParseFromString(response.json)
+        self._login_metadata = [("accessjwt", self._jwt.access_jwt),
+                                ("refreshjwt", self._jwt.refresh_jwt)]
+
     def alter(self, operation, timeout=None, metadata=None, credentials=None):
         """Runs a modification via this client."""
-        metadata = self.add_login_metadata(metadata)
-        return self.any_client().alter(operation, timeout=timeout,
-                                       metadata=metadata,
-                                       credentials=credentials)
+        new_metadata = self.add_login_metadata(metadata)
+
+        try:
+            return self.any_client().alter(operation, timeout=timeout,
+                                           metadata=new_metadata,
+                                           credentials=credentials)
+        except Exception as error:
+            if util.is_jwt_expired(error):
+                self.retry_login()
+                new_metadata = self.add_login_metadata(metadata)
+                return self.any_client().alter(operation, timeout=timeout,
+                                               metadata=new_metadata,
+                                               credentials=credentials)
+            else:
+                raise error
+
 
     def query(self, query, variables=None, timeout=None, metadata=None,
               credentials=None):
         """Runs a query via this client."""
-        metadata = self.add_login_metadata(metadata)
+        new_metadata = self.add_login_metadata(metadata)
         txn = self.txn(read_only=True)
-        return txn.query(query, variables=variables, timeout=timeout,
-                         metadata=metadata, credentials=credentials)
+
+        try:
+            return txn.query(query, variables=variables, timeout=timeout,
+                             metadata=new_metadata, credentials=credentials)
+        except Exception as error:
+            if util.is_jwt_expired(error):
+                self.retry_login()
+                new_metadata = self.add_login_metadata(metadata)
+                return txn.query(query, variables=variables, timeout=timeout,
+                                 metadata=new_metadata, credentials=credentials)
+            else:
+                raise error
 
     def txn(self, read_only=False, best_effort=False):
         """Creates a transaction."""

@@ -30,3 +30,7 @@ def is_string(string):
         return isinstance(string, basestring)
 
     return isinstance(string, str)
+
+
+def is_jwt_expired(exception):
+    return 'Token is expired' in str(exception)
