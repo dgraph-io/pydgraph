@@ -52,8 +52,7 @@ class DgraphClient(object):
                                            credentials=credentials)
         self._jwt = api.Jwt()
         self._jwt.ParseFromString(response.json)
-        self._login_metadata = [("accessjwt", self._jwt.access_jwt),
-                                ("refreshjwt", self._jwt.refresh_jwt)]
+        self._login_metadata = [("accessjwt", self._jwt.access_jwt)]
 
     def retry_login(self, timeout=None, metadata=None, credentials=None):
         if len(self._jwt.refresh_jwt) == 0:
@@ -67,8 +66,7 @@ class DgraphClient(object):
                                            credentials=credentials)
         self._jwt = api.Jwt()
         self._jwt.ParseFromString(response.json)
-        self._login_metadata = [("accessjwt", self._jwt.access_jwt),
-                                ("refreshjwt", self._jwt.refresh_jwt)]
+        self._login_metadata = [("accessjwt", self._jwt.access_jwt)]
 
     def alter(self, operation, timeout=None, metadata=None, credentials=None):
         """Runs a modification via this client."""
