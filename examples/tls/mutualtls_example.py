@@ -48,7 +48,7 @@ url: string .
         txn.discard()
     
     # Query
-    res = client.query('''
+    res = client.txn(read_only=True).query('''
 query dgraph($name: string) {
   data(func: eq(name, $name)) {
     uid
