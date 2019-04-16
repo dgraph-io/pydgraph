@@ -31,7 +31,7 @@ class TestEssentials(helper.ClientIntegrationTestCase):
         """Tests what happens when making a mutation on a txn after querying
         on the client."""
 
-        _ = self.client.query('{firsts(func: has(first)) { uid first }}')
+        _ = self.client.txn(read_only=True).query('{firsts(func: has(first)) { uid first }}')
 
         txn = self.client.txn()
         mutation = txn.mutate(set_nquads='_:node <first> "Node name first" .')
@@ -43,7 +43,7 @@ class TestEssentials(helper.ClientIntegrationTestCase):
         txn.commit()
 
         query = '{{node(func: uid({uid:s})) {{ uid }} }}'.format(uid=created)
-        reread = self.client.query(query)
+        reread = self.client.txn(read_only=True).query(query)
         self.assertEqual(created, json.loads(reread.json).get('node')[0]['uid'])
 
 

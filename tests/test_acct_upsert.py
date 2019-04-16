@@ -89,7 +89,7 @@ class TestAccountUpsert(helper.ClientIntegrationTestCase):
             }}
         }}""".format(' '.join(firsts))
         logging.debug(query)
-        result = json.loads(self.client.query(query).json)
+        result = json.loads(self.client.txn(read_only=True).query(query).json)
 
         account_set = set()
         for acct in result['all']:
