@@ -7,6 +7,16 @@ and this project adheres to [Semantic Versioning](http://semver.org/spec/v2.0.0.
 
 ## [Unreleased]
 
+## [v1.0.4] - 2019-04-16
+
+### Added
+- Support for ACL (Access Control List).
+
+### Removed
+- The query method from the client class has been deprecated. This was done in
+  order to match the rest of the clients and to make it explicit that creating a
+  transaction is required to query Dgraph.
+
 ## [v1.0.3] - 2019-03-20
 
 ### Added
