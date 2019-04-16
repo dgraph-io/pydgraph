@@ -46,7 +46,7 @@ url: string .
         txn.commit()
     finally:
         txn.discard()
-    
+
     # Query
     res = client.txn(read_only=True).query('''
 query dgraph($name: string) {
