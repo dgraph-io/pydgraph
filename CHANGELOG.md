@@ -7,7 +7,7 @@ and this project adheres to [Semantic Versioning](http://semver.org/spec/v2.0.0.
 
 ## [Unreleased]
 
-## [v1.0.4] - 2019-04-16
+## [v1.1] - 2019-04-16
 
 ### Added
 - Support for ACL (Access Control List).
