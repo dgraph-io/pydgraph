@@ -75,7 +75,7 @@ class TestTxn(helper.ClientIntegrationTestCase):
                 name
             }}
         }}""".format(uid=uid)
-        resp = self.client.query(query)
+        resp = self.client.txn(read_only=True).query(query)
         self.assertEqual([{'name': 'Manish'}], json.loads(resp.json).get('me'))
 
     def test_discard(self):
@@ -98,7 +98,7 @@ class TestTxn(helper.ClientIntegrationTestCase):
                 name
             }}
         }}""".format(uid=uid)
-        resp = self.client.query(query)
+        resp = self.client.txn(read_only=True).query(query)
         self.assertEqual([{'name': 'Manish'}], json.loads(resp.json).get('me'))
 
     def test_mutate_error(self):
@@ -143,7 +143,7 @@ class TestTxn(helper.ClientIntegrationTestCase):
             }}
         }}""".format(uid=uid)
 
-        resp = self.client.query(query)
+        resp = self.client.txn(read_only=True).query(query)
         self.assertEqual([], json.loads(resp.json).get('me'))
 
     def test_read_after_start_ts(self):
@@ -163,7 +163,7 @@ class TestTxn(helper.ClientIntegrationTestCase):
             }}
         }}""".format(uid=uid)
 
-        resp = self.client.query(query)
+        resp = self.client.txn(read_only=True).query(query)
         self.assertEqual([{'name': 'Manish'}], json.loads(resp.json).get('me'))
 
     def test_read_before_and_after_start_ts(self):
@@ -197,7 +197,7 @@ class TestTxn(helper.ClientIntegrationTestCase):
         # once txn3 is committed, other txns observe the update
         txn3.commit()
 
-        resp4 = self.client.query(query)
+        resp4 = self.client.txn(read_only=True).query(query)
         self.assertEqual([{'name': 'Manish2'}], json.loads(resp4.json).get('me'))
 
     def test_read_from_new_client(self):
@@ -218,7 +218,7 @@ class TestTxn(helper.ClientIntegrationTestCase):
             }}
         }}""".format(uid=uid)
 
-        resp2 = client2.query(query)
+        resp2 = client2.txn(read_only=True).query(query)
         self.assertEqual([{'name': 'Manish'}], json.loads(resp2.json).get('me'))
         self.assertTrue(resp2.txn.start_ts > 0)
 
@@ -227,7 +227,7 @@ class TestTxn(helper.ClientIntegrationTestCase):
         self.assertTrue(assigned.context.start_ts > 0)
         txn2.commit()
 
-        resp = self.client.query(query)
+        resp = self.client.txn(read_only=True).query(query)
         self.assertEqual([{'name': 'Manish2'}], json.loads(resp.json).get('me'))
 
     def test_read_only_txn(self):
@@ -236,14 +236,12 @@ class TestTxn(helper.ClientIntegrationTestCase):
 
         query = '{ me() {} }'
 
-        # Using client.query helper method
-        resp1 = self.client.query(query)
+        resp1 = self.client.txn(read_only=True).query(query)
         start_ts1 = resp1.txn.start_ts
-        resp2 = self.client.query(query)
+        resp2 = self.client.txn(read_only=True).query(query)
         start_ts2 = resp2.txn.start_ts
         self.assertEqual(start_ts1, start_ts2)
 
-        # Using client.txn method
         txn = self.client.txn(read_only=True)
         resp1 = txn.query(query)
         start_ts1 = resp1.txn.start_ts
@@ -361,7 +359,7 @@ class TestTxn(helper.ClientIntegrationTestCase):
             }}
         }}""".format(uid=uid)
 
-        resp4 = self.client.query(query)
+        resp4 = self.client.txn(read_only=True).query(query)
         self.assertEqual([{'name': 'Jan the man'}], json.loads(resp4.json).get('me'))
 
     def test_mutate_conflict(self):
@@ -408,7 +406,7 @@ class TestTxn(helper.ClientIntegrationTestCase):
             }
         }"""
 
-        resp = self.client.query(query)
+        resp = self.client.txn(read_only=True).query(query)
         self.assertEqual([{'uid': uid1}, {'uid': uid2}], json.loads(resp.json).get('me'))
 
     def test_read_index_key_same_txn(self):

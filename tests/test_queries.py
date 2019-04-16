@@ -57,7 +57,7 @@ class TestQueries(helper.ClientIntegrationTestCase):
             }
         }"""
 
-        response = self.client.query(query, variables={'$a': 'Alice'})
+        response = self.client.txn().query(query, variables={'$a': 'Alice'})
         self.assertEqual([{'name': 'Alice', 'follows': [{'name': 'Greg'}]}],
                          json.loads(response.json).get('me'))
         self.assertTrue(is_number(response.latency.parsing_ns),
