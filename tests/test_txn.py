@@ -236,14 +236,12 @@ class TestTxn(helper.ClientIntegrationTestCase):
 
         query = '{ me() {} }'
 
-        # Using client.query helper method
         resp1 = self.client.txn(read_only=True).query(query)
         start_ts1 = resp1.txn.start_ts
         resp2 = self.client.txn(read_only=True).query(query)
         start_ts2 = resp2.txn.start_ts
         self.assertEqual(start_ts1, start_ts2)
 
-        # Using client.txn method
         txn = self.client.txn(read_only=True)
         resp1 = txn.query(query)
         start_ts1 = resp1.txn.start_ts

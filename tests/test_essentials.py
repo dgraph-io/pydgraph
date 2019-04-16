@@ -28,8 +28,7 @@ class TestEssentials(helper.ClientIntegrationTestCase):
     """Tests mutation after query behavior."""
 
     def testMutationAfterQuery(self):
-        """Tests what happens when making a mutation on a txn after querying
-        on the client."""
+        """Tests what happens when making a mutation on a txn after querying."""
 
         _ = self.client.txn(read_only=True).query('{firsts(func: has(first)) { uid first }}')
 
