@@ -99,7 +99,7 @@ def delete_data(client):
             }   
         }"""
         variables1 = {'$a': 'Bob'}
-        res1 = client.query(query1, variables=variables1)
+        res1 = client.txn(read_only=True).query(query1, variables=variables1)
         ppl1 = json.loads(res1.json)
         for person in ppl1['all']:
             print('Query to find Uid for Bob :')
@@ -142,7 +142,7 @@ def query_data(client):
     }"""
 
     variables = {'$a': 'Alice'}
-    res = client.query(query, variables=variables)
+    res = client.txn(read_only=True).query(query, variables=variables)
     ppl = json.loads(res.json)
 
     # Print results.
@@ -178,7 +178,7 @@ def query_data01(client):
         }"""
 
     variables01 = {'$b': 'Bob'}
-    res01 = client.query(query01, variables=variables01)
+    res01 = client.txn(read_only=True).query(query01, variables=variables01)
     ppl01 = json.loads(res01.json)
 
     print('Number of people named "Bob": {}'.format(len(ppl01['all'])))

@@ -86,25 +86,6 @@ class DgraphClient(object):
             else:
                 raise error
 
-
-    def query(self, query, variables=None, timeout=None, metadata=None,
-              credentials=None):
-        """Runs a query via this client."""
-        new_metadata = self.add_login_metadata(metadata)
-        txn = self.txn(read_only=True)
-
-        try:
-            return txn.query(query, variables=variables, timeout=timeout,
-                             metadata=new_metadata, credentials=credentials)
-        except Exception as error:
-            if util.is_jwt_expired(error):
-                self.retry_login()
-                new_metadata = self.add_login_metadata(metadata)
-                return txn.query(query, variables=variables, timeout=timeout,
-                                 metadata=new_metadata, credentials=credentials)
-            else:
-                raise error
-
     def txn(self, read_only=False, best_effort=False):
         """Creates a transaction."""
         return txn.Txn(self, read_only=read_only, best_effort=best_effort)
