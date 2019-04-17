@@ -170,7 +170,7 @@ query1 = """query all($a: string)
   
 variables1 = {'$a': 'Bob'}
 
-res1 = client.txn(read_only=True).query(query1, variables=variables1)
+res1 = txn.query(query1, variables=variables1)
 
 ppl1 = json.loads(res1.json)
 
@@ -223,7 +223,7 @@ query = """query all($a: string) {
 }"""
 variables = {'$a': 'Alice'}
 
-res = client.txn(read_only=True).query(query, variables=variables)
+res = txn.query(query, variables=variables)
 # If not doing a mutation in the same transaction, simply use:
 # res = client.txn(read_only=True).query(query, variables=variables)
 
