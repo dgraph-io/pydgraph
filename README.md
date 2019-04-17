@@ -121,8 +121,6 @@ finally:
   # ...
 ```
 
-`client.query()` uses a read-only transaction to execute the query.
-
 To create a read-only transaction that executes best-effort queries, call
 `DgraphClient#txn(read_only=True, best_effort=True)`. Best-effort queries are
 faster than normal queries because they bypass the normal consensus protocol.
@@ -172,7 +170,7 @@ query1 = """query all($a: string)
   
 variables1 = {'$a': 'Bob'}
 
-res1 = client.query(query1, variables=variables1)
+res1 = client.txn(read_only=True).query(query1, variables=variables1)
 
 ppl1 = json.loads(res1.json)
 
@@ -225,9 +223,9 @@ query = """query all($a: string) {
 }"""
 variables = {'$a': 'Alice'}
 
-res = client.txn().query(query, variables=variables)
+res = client.txn(read_only=True).query(query, variables=variables)
 # If not doing a mutation in the same transaction, simply use:
-# res = client.query(query, variables=variables)
+# res = client.txn(read_only=True).query(query, variables=variables)
 
 ppl = json.loads(res.json);
 
