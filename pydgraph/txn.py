@@ -138,7 +138,7 @@ class Txn(object):
                 # Ignore error - user should see the original error.
                 pass
 
-            self._common_except_mutate(error)
+            self._common_except_mutate(mutate_error)
 
         if mutation.commit_now:
             self._finished = True
