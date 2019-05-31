@@ -70,5 +70,9 @@ class DgraphClientStub(object):
 
     def close(self):
         """Deletes channel and stub."""
+        try:
+            self.channel.close()
+        except:
+            pass
         del self.channel
         del self.stub
