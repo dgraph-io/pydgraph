@@ -93,10 +93,10 @@ def delete_data(client):
     try:
         query1 = """query all($a: string)
         {
-           all(func: eq(name, $a)) 
+           all(func: eq(name, $a))
             {
                uid
-            }   
+            }
         }"""
         variables1 = {'$a': 'Bob'}
         res1 = client.txn(read_only=True).query(query1, variables=variables1)
@@ -158,23 +158,23 @@ def query_data(client):
 #Query to check for deleted node
 def query_data01(client):
     query01 = """query all($b: string)
-        {   all(func: eq(name, $b)) 
-            {   uid, 
+        {   all(func: eq(name, $b))
+            {   uid,
                 name,
                 age
-                friend 
-                { 
+                friend
+                {
                     uid,
                     name,
-                    age 
+                    age
                 }
-                ~friend 
-                { 
+                ~friend
+                {
                     uid,
                     name,
-                    age 
+                    age
                 }
-            }   
+            }
         }"""
 
     variables01 = {'$b': 'Bob'}
