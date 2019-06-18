@@ -102,12 +102,12 @@ class Txn(object):
         return req
 
     def mutate(self, mutation=None, set_obj=None, del_obj=None, set_nquads=None,
-               del_nquads=None, commit_now=None, ignore_index_conflict=None,
+               del_nquads=None, query=None, commit_now=None, ignore_index_conflict=None,
                timeout=None, metadata=None, credentials=None):
         """Adds a mutate operation to the transaction."""
         mutation = self._common_mutate(
             mutation=mutation, set_obj=set_obj, del_obj=del_obj,
-            set_nquads=set_nquads, del_nquads=del_nquads,
+            set_nquads=set_nquads, del_nquads=del_nquads, query=query,
             commit_now=commit_now, ignore_index_conflict=ignore_index_conflict)
 
         new_metadata = self._dg.add_login_metadata(metadata)
@@ -147,7 +147,7 @@ class Txn(object):
         return assigned
 
     def _common_mutate(self, mutation=None, set_obj=None, del_obj=None,
-                       set_nquads=None, del_nquads=None,
+                       set_nquads=None, del_nquads=None, query=None,
                        commit_now=None, ignore_index_conflict=None):
         if self._read_only:
             raise Exception(
@@ -165,6 +165,8 @@ class Txn(object):
             mutation.set_nquads = set_nquads.encode('utf8')
         if del_nquads:
             mutation.del_nquads = del_nquads.encode('utf8')
+        if query:
+            mutation.query = query.encode('utf8')
         if commit_now:
             mutation.commit_now = True
         if ignore_index_conflict:
