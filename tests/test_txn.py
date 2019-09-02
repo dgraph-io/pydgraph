@@ -224,7 +224,7 @@ class TestTxn(helper.ClientIntegrationTestCase):
 
         txn2 = client2.txn()
         response = txn2.mutate(set_obj={'uid': uid, 'name': 'Manish2'})
-        self.assertTrue(response.context.start_ts > 0)
+        self.assertTrue(response.txn.start_ts > 0)
         txn2.commit()
 
         resp = self.client.txn(read_only=True).query(query)
@@ -266,7 +266,7 @@ class TestTxn(helper.ClientIntegrationTestCase):
 
         query = '{ me(func: has(name)) {name} }'
         with self.assertRaises(Exception):
-            txn = self.client.txn(read_only=False, best_effort=True)
+            self.client.txn(read_only=False, best_effort=True)
 
         txn = self.client.txn(read_only=True, best_effort=True)
         resp = txn.query(query)
@@ -434,8 +434,8 @@ class TestSPStar(helper.ClientIntegrationTestCase):
         """Tests a Subject Predicate Star query."""
 
         txn = self.client.txn()
-        response = txn.mutate(set_obj={'name': 'Manish', 'friend': [{'name': 'Jan'}]})
-        uid1 = response.uids['blank-0']
+        response = txn.mutate(set_obj={'uid': '_:manish', 'name': 'Manish', 'friend': [{'name': 'Jan'}]})
+        uid1 = response.uids['manish']
         self.assertEqual(2, len(response.uids), 'Expected 2 nodes to be created')
 
         txn.commit()
@@ -447,10 +447,10 @@ class TestSPStar(helper.ClientIntegrationTestCase):
         response3 = txn2.mutate(set_obj={
             'uid': uid1,
             'name': 'Manish',
-            'friend': [{'name': 'Jan2'}]
+            'friend': [{'uid': '_:jan2', 'name': 'Jan2'}]
         })
         self.assertEqual(1, len(response3.uids))
-        uid2 = response3.uids['blank-0']
+        uid2 = response3.uids['jan2']
 
         query = """{{
             me(func: uid("{uid:s}")) {{
@@ -472,9 +472,9 @@ class TestSPStar(helper.ClientIntegrationTestCase):
         """Second test of Subject Predicate Star"""
 
         txn = self.client.txn()
-        response = txn.mutate(set_obj={'name': 'Manish', 'friend': [{'name': 'Jan'}]})
+        response = txn.mutate(set_obj={'uid': '_:manish', 'name': 'Manish', 'friend': [{'uid': '_:jan', 'name': 'Jan'}]})
         self.assertEqual(2, len(response.uids))
-        uid1, uid2 = response.uids['blank-0'], response.uids['blank-1']
+        uid1, uid2 = response.uids['manish'], response.uids['jan']
 
         query = """{{
             me(func: uid("{uid:s}")) {{
@@ -502,10 +502,10 @@ class TestSPStar(helper.ClientIntegrationTestCase):
         response2 = txn.mutate(set_obj={
             'uid': uid1,
             'name': 'Manish',
-            'friend': [{'name': 'Jan2'}]
+            'friend': [{'uid': '_:jan2',  'name': 'Jan2'}]
         })
         self.assertEqual(1, len(response2.uids))
-        uid2 = response2.uids['blank-0']
+        uid2 = response2.uids['jan2']
 
         resp = txn.query(query)
         self.assertEqual([{

@@ -25,6 +25,7 @@ import multiprocessing
 import multiprocessing.dummy as mpd
 
 import pydgraph
+from pydgraph.proto import api_pb2 as api
 
 from . import helper
 
@@ -126,11 +127,15 @@ def upsert_account(addr, account, success_ctr, retry_ctr):
                 uid(u) <last> "{last}" .
                 uid(u) <age>  "{age}"^^<xs:int> .
             """.format(**account)
-            created = txn.mutate(query=query, set_nquads=nquads)
+            mutation = txn.create_mutation(set_nquads=nquads)
+            request = txn.create_request(query=query, mutations=[mutation], commit_now=True)
+            txn.do_request(request)
 
             updatequads = 'uid(u) <when> "{0:d}"^^<xs:int> .'.format(int(time.time()))
-            txn.mutate(query=query, set_nquads=updatequads)
-            txn.commit()
+            txn = client.txn()
+            mutation = txn.create_mutation(set_nquads=updatequads)
+            request = txn.create_request(query=query, mutations=[mutation], commit_now=True)
+            txn.do_request(request)
 
             with success_ctr.get_lock():
                 success_ctr.value += 1
