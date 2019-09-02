@@ -56,12 +56,6 @@ class Txn(object):
         self._read_only = read_only
         self._best_effort = best_effort
 
-    def sequencing(self, sequencing):
-        """Sets sequencing."""
-        # This method is obsolete since sequencing is no longer used. This
-        # method is being kept for backwards-compatibility.
-        pass
-
     def query(self, query, variables=None, timeout=None, metadata=None,
               credentials=None):
         """Adds a query operation to the transaction."""
