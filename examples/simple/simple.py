@@ -65,20 +65,20 @@ def create_data(client):
         }
 
         # Run mutation.
-        assigned = txn.mutate(set_obj=p)
+        response = txn.mutate(set_obj=p)
 
         # Commit transaction.
         txn.commit()
 
         # Get uid of the outermost object (person named "Alice").
-        # assigned.uids returns a map from blank node names to uids.
+        # response.uids returns a map from blank node names to uids.
         # For a json mutation, blank node names "blank-0", "blank-1", ... are used
         # for all the created nodes.
-        print('Created person named "Alice" with uid = {}\n'.format(assigned.uids['blank-0']))
+        print('Created person named "Alice" with uid = {}\n'.format(response.uids['blank-0']))
 
         print('All created nodes (map from blank node names to uids):')
-        for uid in assigned.uids:
-            print('{} => {}'.format(uid, assigned.uids[uid]))
+        for uid in response.uids:
+            print('{} => {}'.format(uid, response.uids[uid]))
     finally:
         # Clean up. Calling this after txn.commit() is a no-op
         # and hence safe.
@@ -86,7 +86,7 @@ def create_data(client):
         print('\n')
 
 
-#Deleting a data
+# Deleting a data
 def delete_data(client):
     # Create a new transaction.
     txn = client.txn()
@@ -111,9 +111,7 @@ def delete_data(client):
             print('Bob deleted')
             print('\n')
 
-
-        assigned = txn.mutate(del_obj= person)
-
+        txn.mutate(del_obj= person)
         txn.commit()
 
     finally:

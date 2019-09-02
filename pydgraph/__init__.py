@@ -12,8 +12,8 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 
-from pydgraph.proto.api_pb2 import Operation, Payload, Request, Response, Mutation, Assigned, TxnContext, Check,\
-    Version, NQuad, Value, Facet, SchemaNode, Latency
+from pydgraph.proto.api_pb2 import Operation, Payload, Request, Response, Mutation, TxnContext,\
+    Version, NQuad, Value, Facet, Latency
 from pydgraph.client_stub import *
 from pydgraph.client import *
 from pydgraph.txn import *

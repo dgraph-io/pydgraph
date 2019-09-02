@@ -108,7 +108,7 @@ class Txn(object):
         mutate_error = None
 
         try:
-            assigned = self._dc.mutate(mutation, timeout=timeout,
+            response = self._dc.mutate(mutation, timeout=timeout,
                                        metadata=new_metadata,
                                        credentials=credentials)
         except Exception as error:
@@ -116,7 +116,7 @@ class Txn(object):
                 self._dg.retry_login()
                 new_metadata = self._dg.add_login_metadata(metadata)
                 try:
-                    assigned = self._dc.mutate(mutation, timeout=timeout,
+                    response = self._dc.mutate(mutation, timeout=timeout,
                                                metadata=new_metadata,
                                                credentials=credentials)
                 except Exception as error:
@@ -137,8 +137,8 @@ class Txn(object):
         if mutation.commit_now:
             self._finished = True
 
-        self.merge_context(assigned.context)
-        return assigned
+        self.merge_context(response.context)
+        return response
 
     def _common_mutate(self, mutation=None, set_obj=None, del_obj=None,
                        set_nquads=None, del_nquads=None, query=None,
