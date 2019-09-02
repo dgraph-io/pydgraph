@@ -185,11 +185,6 @@ Sometimes, you only want to commit a mutation, without querying anything further
 In such cases, you can set the keyword argument `commit_now=True` to indicate
 that the mutation must be immediately committed.
 
-Keyword argument `ignore_index_conflict=True` can be used to not run conflict
-detection over the index, which would decrease the number of transaction
-conflicts and aborts. However, this would come at the cost of potentially
-inconsistent upsert operations.
-
 ### Run a query
 
 You can run a query by calling `Txn#query(string)`. You will need to pass in a

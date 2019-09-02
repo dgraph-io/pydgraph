@@ -378,37 +378,6 @@ class TestTxn(helper.ClientIntegrationTestCase):
         _ = txn.mutate(set_obj={'uid': uid, 'name': 'Manish2'})
         self.assertRaises(pydgraph.AbortedError, txn.commit)
 
-    def test_conflict_ignore(self):
-        """Tests a mutation with ignore index conflict."""
-
-        helper.set_schema(self.client, 'name: string @index(fulltext) .')
-
-        txn = self.client.txn()
-        assigned1 = txn.mutate(set_obj={'name': 'Manish'}, ignore_index_conflict=True)
-        self.assertEqual(1, len(assigned1.uids), 'Nothing was assigned')
-
-        for _, uid in assigned1.uids.items():
-            uid1 = uid
-
-        txn2 = self.client.txn()
-        assigned2 = txn2.mutate(set_obj={'name': 'Manish'}, ignore_index_conflict=True)
-        self.assertEqual(1, len(assigned2.uids), 'Nothing was assigned')
-
-        for _, uid in assigned2.uids.items():
-            uid2 = uid
-
-        txn.commit()
-        txn2.commit()
-
-        query = """{
-            me(func: eq(name, "Manish")) {
-                uid
-            }
-        }"""
-
-        resp = self.client.txn(read_only=True).query(query)
-        self.assertEqual([{'uid': uid1}, {'uid': uid2}], json.loads(resp.json).get('me'))
-
     def test_read_index_key_same_txn(self):
         """Tests reading an indexed field within a transaction. The read
         should return the results from before any writes of the same
@@ -418,7 +387,7 @@ class TestTxn(helper.ClientIntegrationTestCase):
         helper.set_schema(self.client, 'name: string @index(exact) .')
 
         txn = self.client.txn()
-        assigned = txn.mutate(set_obj={'name': 'Manish'}, ignore_index_conflict=True)
+        assigned = txn.mutate(set_obj={'name': 'Manish'})
         self.assertEqual(1, len(assigned.uids), 'Nothing was assigned')
 
         for _, uid in assigned.uids.items():

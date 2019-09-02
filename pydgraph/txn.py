@@ -102,13 +102,13 @@ class Txn(object):
         return req
 
     def mutate(self, mutation=None, set_obj=None, del_obj=None, set_nquads=None,
-               del_nquads=None, query=None, commit_now=None, ignore_index_conflict=None,
+               del_nquads=None, query=None, commit_now=None,
                timeout=None, metadata=None, credentials=None):
         """Adds a mutate operation to the transaction."""
         mutation = self._common_mutate(
             mutation=mutation, set_obj=set_obj, del_obj=del_obj,
             set_nquads=set_nquads, del_nquads=del_nquads, query=query,
-            commit_now=commit_now, ignore_index_conflict=ignore_index_conflict)
+            commit_now=commit_now)
 
         new_metadata = self._dg.add_login_metadata(metadata)
         mutate_error = None
@@ -148,7 +148,7 @@ class Txn(object):
 
     def _common_mutate(self, mutation=None, set_obj=None, del_obj=None,
                        set_nquads=None, del_nquads=None, query=None,
-                       commit_now=None, ignore_index_conflict=None):
+                       commit_now=None):
         if self._read_only:
             raise Exception(
                 'Readonly transaction cannot run mutations or be committed')
@@ -169,8 +169,6 @@ class Txn(object):
             mutation.query = query.encode('utf8')
         if commit_now:
             mutation.commit_now = True
-        if ignore_index_conflict:
-            mutation.ignore_index_conflict = True
 
         self._mutated = True
         mutation.start_ts = self._ctx.start_ts
