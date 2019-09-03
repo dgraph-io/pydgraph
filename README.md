@@ -1,4 +1,4 @@
-# pydgraph [![Build Status](https://img.shields.io/travis/dgraph-io/pydgraph/master.svg?style=flat)](https://travis-ci.org/dgraph-io/pydgraph) [![Coverage Status](https://img.shields.io/coveralls/github/dgraph-io/pydgraph/master.svg?style=flat)](https://coveralls.io/github/dgraph-io/pydgraph?branch=master)
+# pydgraph
 
 Official Dgraph client implementation for Python (Python >= v2.7 and >= v3.5),
 using [grpc].
@@ -19,12 +19,12 @@ and understand how to run and work with Dgraph.
 - [Install](#install)
 - [Quickstart](#quickstart)
 - [Using a client](#using-a-client)
-  - [Create a client](#create-a-client)
+  - [Creating a client](#creating-a-client)
   - [Alter the database](#alter-the-database)
-  - [Create a transaction](#create-a-transaction)
-  - [Run a mutation](#run-a-mutation)
-  - [Run a query](#run-a-query)
-  - [Commit a transaction](#commit-a-transaction)
+  - [Creating a transaction](#creating-a-transaction)
+  - [Running a mutation](#running-a-mutation)
+  - [Running a query](#running-a-query)
+  - [Committing a transaction](#committing-a-transaction)
   - [Cleanup Resources](#cleanup-resources)
   - [Setting Metadata Headers](#setting-metadata-headers)
 - [Examples](#examples)
@@ -50,7 +50,7 @@ instructions in the README of that project.
 
 ## Using a client
 
-### Create a client
+### Creating a client
 
 A `DgraphClient` object can be initialised by passing it a list of
 `DgraphClientStub` clients as variadic arguments. Connecting to multiple Dgraph
@@ -65,7 +65,7 @@ client_stub = pydgraph.DgraphClientStub('localhost:9080')
 client = pydgraph.DgraphClient(client_stub)
 ```
 
-### Alter the database
+### Altering the database
 
 To set the schema, create an `Operation` object, set the schema and pass it to
 `DgraphClient#alter(Operation)` method.
@@ -82,13 +82,12 @@ slate, without bringing the instance down.
 
 ```python
 # Drop all data including schema from the Dgraph instance. This is useful
-# for small examples such as this, since it puts Dgraph into a clean
-# state.
+# for small examples such as this, since it puts Dgraph into a clean state.
 op = pydgraph.Operation(drop_all=True)
 client.alter(op)
 ```
 
-### Create a transaction
+### Creating a transaction
 
 To create a transaction, call `DgraphClient#txn()` method, which returns a
 new `Txn` object. This operation incurs no network overhead.
@@ -127,12 +126,11 @@ faster than normal queries because they bypass the normal consensus protocol.
 For this same reason, best-effort queries cannot guarantee to return the latest
 data. Best-effort queries are only supported by read-only transactions.
 
-### Run a mutation
+### Running a mutation
 
 `Txn#mutate(mu=Mutation)` runs a mutation. It takes in a `Mutation` object,
 which provides two main ways to set data: JSON and RDF N-Quad. You can choose
-whichever way is convenient. Most users won't need to create a `Mutation`
-object themselves.
+whichever way is convenient.
 
 `Txn#mutate()` provides convenience keyword arguments `set_obj` and `del_obj`
 for setting JSON values and `set_nquads` and `del_nquads` for setting N-Quad
@@ -160,22 +158,21 @@ txn.mutate(set_obj=p)
 ```python
 # Delete data.
 
-query1 = """query all($a: string)
+query = """query all($a: string)
  {
-   all(func: eq(name, $a)) 
+   all(func: eq(name, $a))
     {
       uid
-    }   
+    }
   }"""
-  
-variables1 = {'$a': 'Bob'}
 
-res1 = txn.query(query1, variables=variables1)
+variables = {'$a': 'Bob'}
 
-ppl1 = json.loads(res1.json)
+res = txn.query(query, variables=variables)
+ppl = json.loads(res.json)
 
-#For mutation to delete node, use this: 
-txn.mutate(del_obj= person)
+# For mutation to delete node, use this:
+txn.mutate(del_obj=person)
 ```
 
 For a more complete example with multiple fields and relationships, look at the
@@ -185,28 +182,25 @@ Sometimes, you only want to commit a mutation, without querying anything further
 In such cases, you can set the keyword argument `commit_now=True` to indicate
 that the mutation must be immediately committed.
 
-### Run a query
+Mutation can be run using `txn.do_request` as well.
+
+```python
+mutation = txn.create_mutation(set_nquads='_:alice <name> "Alice" .')
+request = txn.create_request(mutations=[mutation], commit_now=True)
+txn.do_request(request)
+```
+
+### Running a query
 
 You can run a query by calling `Txn#query(string)`. You will need to pass in a
 GraphQL+- query string. If you want to pass an additional dictionary of any
 variables that you might want to set in the query, call
 `Txn#query(string, variables=d)` with the variables dictionary `d`.
 
-The response would contain the field `json`, which returns the response
-JSON.
+The response would contain the field `json`, which returns the response JSON.
 
-Let’s run the following query with a variable $a:
-
-```console
-query all($a: string) {
-  all(func: eq(name, $a))
-  {
-    name
-  }
-}
-```
-
-Run the query, deserialize the result from JSON and print it out:
+Let’s run a query with a variable `$a`, deserialize the result from JSON and
+print it out:
 
 ```python
 # Run query.
@@ -219,10 +213,11 @@ query = """query all($a: string) {
 variables = {'$a': 'Alice'}
 
 res = txn.query(query, variables=variables)
+
 # If not doing a mutation in the same transaction, simply use:
 # res = client.txn(read_only=True).query(query, variables=variables)
 
-ppl = json.loads(res.json);
+ppl = json.loads(res.json)
 
 # Print results.
 print('Number of people named "Alice": {}'.format(len(ppl['all'])))
@@ -237,7 +232,35 @@ Number of people named "Alice": 1
 Alice
 ```
 
-### Commit a transaction
+You can also use `txn.do_request` function to run the query.
+
+```python
+request = txn.create_request(query=query)
+txn.do_request(request)
+```
+
+### Running an Upsert: Query + Mutation
+
+`txn.do_request` function allows you to run upserts consisting of one query and one
+mutation. Query variables could be defined and can then be used in the mutation.
+
+To know more about upsert, we highly recommend going through the docs at
+https://docs.dgraph.io/mutations/#upsert-block.
+
+```python
+query = """{
+  u as var(func: eq(name, "Alice"))
+}"""
+nquad = """
+  uid(u) <age> "25" .
+"""
+cond = "@if(eq(len(u), 1))"
+mutation = txn.create_mutation(set_nquads=nquad, cond=cond)
+request = txn.create_request(query=query, mutations=[mutation], commit_now=True)
+txn.do_request(request)
+```
+
+### Committing a transaction
 
 A transaction can be committed using the `Txn#commit()` method. If your transaction
 consisted solely of calls to `Txn#query` or `Txn#queryWithVars`, and no calls to
@@ -248,7 +271,7 @@ data that was modified in this transaction. It is up to the user to retry
 transactions when they fail.
 
 ```python
-txn = client.txn();
+txn = client.txn()
 try:
   # ...
   # Perform any number of queries and mutations
@@ -303,9 +326,6 @@ dg.alter(op, metadata=metadata)
 ## Examples
 
 - [simple][]: Quickstart example of using pydgraph.
-- [tls][]: Example of using pydgraph with a Dgraph cluster secured with TLS.
-
-[tls]: ./examples/tls
 
 ## Development
 

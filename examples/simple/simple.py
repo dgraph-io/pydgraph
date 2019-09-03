@@ -6,7 +6,7 @@ import pydgraph
 
 # Create a client stub.
 def create_client_stub():
-    return pydgraph.DgraphClientStub('localhost:9180')
+    return pydgraph.DgraphClientStub('localhost:9080')
 
 
 # Create a client.
@@ -84,7 +84,7 @@ def create_data(client):
         # Clean up. Calling this after txn.commit() is a no-op
         # and hence safe.
         txn.discard()
-        print('\n')
+        print('')
 
 
 # Deleting a data
@@ -93,24 +93,24 @@ def delete_data(client):
     txn = client.txn()
     try:
         query1 = """query all($a: string)
-        {
-           all(func: eq(name, $a))
-            {
-               uid
-            }
-        }"""
+{
+    all(func: eq(name, $a))
+    {
+        uid
+    }
+}"""
         variables1 = {'$a': 'Bob'}
         res1 = client.txn(read_only=True).query(query1, variables=variables1)
         ppl1 = json.loads(res1.json)
         for person in ppl1['all']:
-            print('Query to find Uid for Bob :')
+            print('Query to find Uid for Bob:')
             print(query1)
-            print('\n')
-            print("Bob's UID : ")
+            print('')
+            print("Bob's UID:")
             print(person)
-            print('\n')
+            print('')
             print('Bob deleted')
-            print('\n')
+            print('')
 
         txn.mutate(del_obj= person)
         txn.commit()
@@ -122,23 +122,24 @@ def delete_data(client):
 # Query for data.
 def query_data(client):
     # Run query.
-    query = """query all($a: string) {
-        all(func: eq(name, $a)) {
-            uid
+    query = """query all($a: string)
+{
+    all(func: eq(name, $a)) {
+        uid
+        name
+        age
+        married
+        loc
+        dob
+        friend {
             name
             age
-            married
-            loc
-            dob
-            friend {
-                name
-                age
-            }
-            school {
-                name
-            }
         }
-    }"""
+        school {
+            name
+        }
+    }
+}"""
 
     variables = {'$a': 'Alice'}
     res = client.txn(read_only=True).query(query, variables=variables)
@@ -146,48 +147,45 @@ def query_data(client):
 
     # Print results.
     print('Number of people named "Alice": {}'.format(len(ppl['all'])))
-    print('\n')
     for person in ppl['all']:
-        print('Query for Alice : \n' +query)
-        print('\n')
-        print('Result :')
+        print('Query for Alice:' +query)
+        print('Result:')
         print(person)
-        print('\n')
+        print('')
 
 # Query to check for deleted node
-def query_data01(client):
-    query01 = """query all($b: string)
-        {   all(func: eq(name, $b))
-            {   uid,
-                name,
-                age
-                friend
-                {
-                    uid,
-                    name,
-                    age
-                }
-                ~friend
-                {
-                    uid,
-                    name,
-                    age
-                }
-            }
-        }"""
+def query_data(client):
+    query = """query all($b: string)
+{
+    all(func: eq(name, $b))
+    {
+        uid,
+        name,
+        age
+        friend {
+            uid,
+            name,
+            age
+        }
+        ~friend {
+            uid,
+            name,
+            age
+        }
+    }
+}"""
 
-    variables01 = {'$b': 'Bob'}
-    res01 = client.txn(read_only=True).query(query01, variables=variables01)
-    ppl01 = json.loads(res01.json)
+    variables = {'$b': 'Bob'}
+    res = client.txn(read_only=True).query(query, variables=variables)
+    ppl = json.loads(res.json)
 
-    print('Number of people named "Bob": {}'.format(len(ppl01['all'])))
-    print('\n')
-    for person in ppl01['all']:
-        print('Query for Bob :\n' + query01)
-        print('\n')
-        print('Result :')
+    print('Number of people named "Bob": {}'.format(len(ppl['all'])))
+    for person in ppl['all']:
+        print('Query for Bob :\n' + query)
+        print('')
+        print('Result:')
         print(person)
-        print('\n')
+        print('')
 
 
 def main():
@@ -197,10 +195,10 @@ def main():
     set_schema(client)
     create_data(client)
     query_data(client) # query for Alice
-    query_data01(client) # query for Bob
+    query_data(client) # query for Bob
     delete_data(client) # delete Bob
     query_data(client) # query for Alice
-    query_data01(client) # query for Bob
+    query_data(client) # query for Bob
 
     # Close the client stub.
     client_stub.close()
