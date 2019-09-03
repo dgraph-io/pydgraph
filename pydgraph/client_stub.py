@@ -46,14 +46,9 @@ class DgraphClientStub(object):
                                credentials=credentials)
 
     def query(self, req, timeout=None, metadata=None, credentials=None):
-        """Runs query operation."""
+        """Runs query or mutate operation."""
         return self.stub.Query(req, timeout=timeout, metadata=metadata,
                                credentials=credentials)
-
-    def mutate(self, mutation, timeout=None, metadata=None, credentials=None):
-        """Runs mutate operation."""
-        return self.stub.Mutate(mutation, timeout=timeout, metadata=metadata,
-                                credentials=credentials)
 
     def commit_or_abort(self, ctx, timeout=None, metadata=None,
                         credentials=None):

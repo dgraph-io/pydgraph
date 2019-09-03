@@ -56,81 +56,50 @@ class Txn(object):
         self._read_only = read_only
         self._best_effort = best_effort
 
-    def sequencing(self, sequencing):
-        """Sets sequencing."""
-        # This method is obsolete since sequencing is no longer used. This
-        # method is being kept for backwards-compatibility.
-        pass
+    def query(self, query, variables=None, timeout=None, metadata=None, credentials=None):
+        """Executes a query operation."""
+        req = self.create_request(query=query, variables=variables)
+        return self.do_request(req, timeout=timeout, metadata=metadata, credentials=credentials)
 
-    def query(self, query, variables=None, timeout=None, metadata=None,
-              credentials=None):
-        """Adds a query operation to the transaction."""
-        new_metadata = self._dg.add_login_metadata(metadata)
-        req = self._common_query(query, variables=variables)
-        try:
-            res = self._dc.query(req, timeout=timeout,
-                                 metadata=new_metadata,
-                                 credentials=credentials)
-        except Exception as error:
-            if util.is_jwt_expired(error):
-                self._dg.retry_login()
-                new_metadata = self._dg.add_login_metadata(metadata)
-                res = self._dc.query(req, timeout=timeout,
-                                     metadata=new_metadata,
-                                     credentials=credentials)
-            else:
-                raise error
-
-        self.merge_context(res.txn)
-        return res
-
-    def _common_query(self, query, variables=None):
-        if self._finished:
-            raise Exception(
-                'Transaction has already been committed or discarded')
-
-        req = api.Request(query=query, start_ts=self._ctx.start_ts,
-                          read_only=self._read_only, best_effort=self._best_effort)
-        if variables is not None:
-            for key, value in variables.items():
-                if util.is_string(key) and util.is_string(value):
-                    req.vars[key] = value
-                else:
-                    raise Exception(
-                        'Values and keys in variable map must be strings')
-
-        return req
-
-    def mutate(self, mutation=None, set_obj=None, del_obj=None, set_nquads=None,
-               del_nquads=None, query=None, commit_now=None, ignore_index_conflict=None,
+    def mutate(self, mutation=None, set_obj=None, del_obj=None,
+               set_nquads=None, del_nquads=None, cond=None, commit_now=None,
                timeout=None, metadata=None, credentials=None):
-        """Adds a mutate operation to the transaction."""
-        mutation = self._common_mutate(
-            mutation=mutation, set_obj=set_obj, del_obj=del_obj,
-            set_nquads=set_nquads, del_nquads=del_nquads, query=query,
-            commit_now=commit_now, ignore_index_conflict=ignore_index_conflict)
+        """Executes a mutate operation."""
+        mutation = self.create_mutation(mutation, set_obj, del_obj, set_nquads, del_nquads, cond)
+        commit_now = commit_now or mutation.commit_now
+        req = self.create_request(mutations=[mutation], commit_now=commit_now)
+        return self.do_request(req, timeout=timeout, metadata=metadata, credentials=credentials)
+
+    def do_request(self, request, timeout=None, metadata=None, credentials=None):
+        """Executes a query/mutate operation on the server."""
+        if self._finished:
+            raise Exception('Transaction has already been committed or discarded')
+
+        if len(request.mutations) > 0:
+            if self._read_only:
+                raise Exception('Readonly transaction cannot run mutations')
+            self._mutated = True
 
         new_metadata = self._dg.add_login_metadata(metadata)
-        mutate_error = None
-
+        query_error = None
         try:
-            assigned = self._dc.mutate(mutation, timeout=timeout,
-                                       metadata=new_metadata,
-                                       credentials=credentials)
+            response = self._dc.query(request, timeout=timeout,
+                                      metadata=new_metadata,
+                                      credentials=credentials)
         except Exception as error:
             if util.is_jwt_expired(error):
                 self._dg.retry_login()
                 new_metadata = self._dg.add_login_metadata(metadata)
                 try:
-                    assigned = self._dc.mutate(mutation, timeout=timeout,
-                                               metadata=new_metadata,
-                                               credentials=credentials)
+                    response = self._dc.query(request, timeout=timeout,
+                                              metadata=new_metadata,
+                                              credentials=credentials)
                 except Exception as error:
-                    mutate_error = error
+                    query_error = error
             else:
-                mutate_error = error
+                query_error = error
 
-        if mutate_error is not None:
+        if query_error is not None:
             try:
                 self.discard(timeout=timeout, metadata=metadata,
                              credentials=credentials)
@@ -138,23 +107,16 @@ class Txn(object):
                 # Ignore error - user should see the original error.
                 pass
 
-            self._common_except_mutate(mutate_error)
+            self._common_except_mutate(query_error)
 
-        if mutation.commit_now:
+        if request.commit_now:
             self._finished = True
 
-        self.merge_context(assigned.context)
-        return assigned
+        self.merge_context(response.txn)
+        return response
 
-    def _common_mutate(self, mutation=None, set_obj=None, del_obj=None,
-                       set_nquads=None, del_nquads=None, query=None,
-                       commit_now=None, ignore_index_conflict=None):
-        if self._read_only:
-            raise Exception(
-                'Readonly transaction cannot run mutations or be committed')
-        if self._finished:
-            raise Exception(
-                'Transaction has already been committed or discarded')
+    def create_mutation(self, mutation=None, set_obj=None, del_obj=None,
+                        set_nquads=None, del_nquads=None, cond=None):
         if not mutation:
             mutation = api.Mutation()
         if set_obj:
@@ -165,16 +127,27 @@ class Txn(object):
             mutation.set_nquads = set_nquads.encode('utf8')
         if del_nquads:
             mutation.del_nquads = del_nquads.encode('utf8')
-        if query:
-            mutation.query = query.encode('utf8')
-        if commit_now:
-            mutation.commit_now = True
-        if ignore_index_conflict:
-            mutation.ignore_index_conflict = True
-
-        self._mutated = True
-        mutation.start_ts = self._ctx.start_ts
+        if cond:
+            mutation.cond = cond.encode('utf8')
         return mutation
+
+    def create_request(self, query=None, variables=None, mutations=None, commit_now=None):
+        """Creates a request object"""
+        request = api.Request(start_ts = self._ctx.start_ts, commit_now=commit_now,
+                              read_only=self._read_only, best_effort=self._best_effort)
+
+        if variables is not None:
+            for key, value in variables.items():
+                if util.is_string(key) and util.is_string(value):
+                    request.vars[key] = value
+                else:
+                    raise Exception('Values and keys in variable map must be strings')
+        if query:
+            request.query = query.encode('utf8')
+        if mutations:
+            for mutation in mutations:
+                request.mutations.append(mutation)
+        return request
 
     @staticmethod
     def _common_except_mutate(error):
