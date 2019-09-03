@@ -6,7 +6,7 @@ import pydgraph
 
 # Create a client stub.
 def create_client_stub():
-    return pydgraph.DgraphClientStub('localhost:9080')
+    return pydgraph.DgraphClientStub('localhost:9180')
 
 
 # Create a client.
@@ -23,7 +23,7 @@ def drop_all(client):
 def set_schema(client):
     schema = """
     name: string @index(exact) .
-    friend: uid @reverse .
+    friend: [uid] @reverse .
     age: int .
     married: bool .
     loc: geo .
@@ -39,6 +39,7 @@ def create_data(client):
     try:
         # Create data.
         p = {
+            'uid': '_:alice',
             'name': 'Alice',
             'age': 26,
             'married': True,
@@ -49,10 +50,12 @@ def create_data(client):
             'dob': datetime.datetime(1980, 1, 1, 23, 0, 0, 0).isoformat(),
             'friend': [
                 {
+                    'uid': '_:bob',
                     'name': 'Bob',
                     'age': 24,
                 },
                 {
+                    'uid': '_:charlie',
                     'name': 'Charlie',
                     'age': 29,
                 }
@@ -65,20 +68,18 @@ def create_data(client):
         }
 
         # Run mutation.
-        assigned = txn.mutate(set_obj=p)
+        response = txn.mutate(set_obj=p)
 
         # Commit transaction.
         txn.commit()
 
         # Get uid of the outermost object (person named "Alice").
-        # assigned.uids returns a map from blank node names to uids.
-        # For a json mutation, blank node names "blank-0", "blank-1", ... are used
-        # for all the created nodes.
-        print('Created person named "Alice" with uid = {}\n'.format(assigned.uids['blank-0']))
+        # response.uids returns a map from blank node names to uids.
+        print('Created person named "Alice" with uid = {}\n'.format(response.uids['alice']))
 
-        print('All created nodes (map from blank node names to uids):')
-        for uid in assigned.uids:
-            print('{} => {}'.format(uid, assigned.uids[uid]))
+        print('All created nodes (map from node names to uids):')
+        for uid in response.uids:
+            print('{} => {}'.format(uid, response.uids[uid]))
     finally:
         # Clean up. Calling this after txn.commit() is a no-op
         # and hence safe.
@@ -86,7 +87,7 @@ def create_data(client):
         print('\n')
 
 
-#Deleting a data
+# Deleting a data
 def delete_data(client):
     # Create a new transaction.
     txn = client.txn()
@@ -111,9 +112,7 @@ def delete_data(client):
             print('Bob deleted')
             print('\n')
 
-
-        assigned = txn.mutate(del_obj= person)
-
+        txn.mutate(del_obj= person)
         txn.commit()
 
     finally:
@@ -155,7 +154,7 @@ def query_data(client):
         print(person)
         print('\n')
 
-#Query to check for deleted node
+# Query to check for deleted node
 def query_data01(client):
     query01 = """query all($b: string)
         {   all(func: eq(name, $b))

@@ -33,10 +33,10 @@ class TestTxn(helper.ClientIntegrationTestCase):
 
     def test_query_after_commit(self):
         txn = self.client.txn()
-        assigned = txn.mutate(set_obj={'name': 'Manish'})
-        self.assertEqual(1, len(assigned.uids), 'Nothing was assigned')
+        response = txn.mutate(set_obj={'name': 'Manish'})
+        self.assertEqual(1, len(response.uids), 'Nothing was assigned')
 
-        for _, uid in assigned.uids.items():
+        for _, uid in response.uids.items():
             uid = uid
 
         txn.commit()
@@ -52,8 +52,8 @@ class TestTxn(helper.ClientIntegrationTestCase):
 
     def test_mutate_after_commit(self):
         txn = self.client.txn()
-        assigned = txn.mutate(set_obj={'name': 'Manish'})
-        self.assertEqual(1, len(assigned.uids), 'Nothing was assigned')
+        response = txn.mutate(set_obj={'name': 'Manish'})
+        self.assertEqual(1, len(response.uids), 'Nothing was assigned')
 
         txn.commit()
 
@@ -62,10 +62,10 @@ class TestTxn(helper.ClientIntegrationTestCase):
 
     def test_commit_now(self):
         txn = self.client.txn()
-        assigned = txn.mutate(set_obj={'name': 'Manish'}, commit_now=True)
-        self.assertEqual(1, len(assigned.uids), 'Nothing was assigned')
+        response = txn.mutate(set_obj={'name': 'Manish'}, commit_now=True)
+        self.assertEqual(1, len(response.uids), 'Nothing was assigned')
 
-        for _, uid in assigned.uids.items():
+        for _, uid in response.uids.items():
             uid = uid
 
         self.assertRaises(Exception, txn.commit)
@@ -80,11 +80,11 @@ class TestTxn(helper.ClientIntegrationTestCase):
 
     def test_discard(self):
         txn = self.client.txn()
-        assigned = txn.mutate(set_obj={'name': 'Manish'})
-        self.assertEqual(1, len(assigned.uids), 'Nothing was assigned')
+        response = txn.mutate(set_obj={'name': 'Manish'})
+        self.assertEqual(1, len(response.uids), 'Nothing was assigned')
         txn.commit()
 
-        for _, uid in assigned.uids.items():
+        for _, uid in response.uids.items():
             uid = uid
 
         txn2 = self.client.txn()
@@ -113,10 +113,10 @@ class TestTxn(helper.ClientIntegrationTestCase):
         """Tests read after write when readTs == startTs"""
 
         txn = self.client.txn()
-        assigned = txn.mutate(set_obj={'name': 'Manish'})
-        self.assertEqual(1, len(assigned.uids), 'Nothing was assigned')
+        response = txn.mutate(set_obj={'name': 'Manish'})
+        self.assertEqual(1, len(response.uids), 'Nothing was assigned')
 
-        for _, uid in assigned.uids.items():
+        for _, uid in response.uids.items():
             uid = uid
 
         query = """{{
@@ -131,10 +131,10 @@ class TestTxn(helper.ClientIntegrationTestCase):
         """Tests read before write when readTs < startTs"""
 
         txn = self.client.txn()
-        assigned = txn.mutate(set_obj={'name': 'Manish'})
-        self.assertEqual(1, len(assigned.uids), 'Nothing was assigned')
+        response = txn.mutate(set_obj={'name': 'Manish'})
+        self.assertEqual(1, len(response.uids), 'Nothing was assigned')
 
-        for _, uid in assigned.uids.items():
+        for _, uid in response.uids.items():
             uid = uid
 
         query = """{{
@@ -150,10 +150,10 @@ class TestTxn(helper.ClientIntegrationTestCase):
         """Tests read after committing a write when readTs > startTs"""
 
         txn = self.client.txn()
-        assigned = txn.mutate(set_obj={'name': 'Manish'})
-        self.assertEqual(1, len(assigned.uids), 'Nothing was assigned')
+        response = txn.mutate(set_obj={'name': 'Manish'})
+        self.assertEqual(1, len(response.uids), 'Nothing was assigned')
 
-        for _, uid in assigned.uids.items():
+        for _, uid in response.uids.items():
             uid = uid
         txn.commit()
 
@@ -171,10 +171,10 @@ class TestTxn(helper.ClientIntegrationTestCase):
         readTs1 < startTs and readTs2 > startTs"""
 
         txn = self.client.txn()
-        assigned = txn.mutate(set_obj={'name': 'Manish'})
-        self.assertEqual(1, len(assigned.uids), 'Nothing was assigned')
+        response = txn.mutate(set_obj={'name': 'Manish'})
+        self.assertEqual(1, len(response.uids), 'Nothing was assigned')
 
-        for _, uid in assigned.uids.items():
+        for _, uid in response.uids.items():
             uid = uid
         txn.commit()
 
@@ -204,10 +204,10 @@ class TestTxn(helper.ClientIntegrationTestCase):
         """Tests committed reads from a new client with startTs == 0."""
 
         txn = self.client.txn()
-        assigned = txn.mutate(set_obj={'name': 'Manish'})
-        self.assertEqual(1, len(assigned.uids), 'Nothing was assigned')
+        response = txn.mutate(set_obj={'name': 'Manish'})
+        self.assertEqual(1, len(response.uids), 'Nothing was assigned')
 
-        for _, uid in assigned.uids.items():
+        for _, uid in response.uids.items():
             uid = uid
         txn.commit()
 
@@ -223,8 +223,8 @@ class TestTxn(helper.ClientIntegrationTestCase):
         self.assertTrue(resp2.txn.start_ts > 0)
 
         txn2 = client2.txn()
-        assigned = txn2.mutate(set_obj={'uid': uid, 'name': 'Manish2'})
-        self.assertTrue(assigned.context.start_ts > 0)
+        response = txn2.mutate(set_obj={'uid': uid, 'name': 'Manish2'})
+        self.assertTrue(response.txn.start_ts > 0)
         txn2.commit()
 
         resp = self.client.txn(read_only=True).query(query)
@@ -266,7 +266,7 @@ class TestTxn(helper.ClientIntegrationTestCase):
 
         query = '{ me(func: has(name)) {name} }'
         with self.assertRaises(Exception):
-            txn = self.client.txn(read_only=False, best_effort=True)
+            self.client.txn(read_only=False, best_effort=True)
 
         txn = self.client.txn(read_only=True, best_effort=True)
         resp = txn.query(query)
@@ -283,10 +283,10 @@ class TestTxn(helper.ClientIntegrationTestCase):
         helper.drop_all(self.client)
 
         txn = self.client.txn()
-        assigned = txn.mutate(set_obj={'name': 'Manish'})
-        self.assertEqual(1, len(assigned.uids), 'Nothing was assigned')
+        response = txn.mutate(set_obj={'name': 'Manish'})
+        self.assertEqual(1, len(response.uids), 'Nothing was assigned')
 
-        for _, uid in assigned.uids.items():
+        for _, uid in response.uids.items():
             uid = uid
 
         txn2 = self.client.txn()
@@ -310,10 +310,10 @@ class TestTxn(helper.ClientIntegrationTestCase):
         committed."""
 
         txn = self.client.txn()
-        assigned = txn.mutate(set_obj={'name': 'Manish'})
-        self.assertEqual(1, len(assigned.uids), 'Nothing was assigned')
+        response = txn.mutate(set_obj={'name': 'Manish'})
+        self.assertEqual(1, len(response.uids), 'Nothing was assigned')
 
-        for _, uid in assigned.uids.items():
+        for _, uid in response.uids.items():
             uid = uid
 
         txn2 = self.client.txn()
@@ -337,10 +337,10 @@ class TestTxn(helper.ClientIntegrationTestCase):
 
     def test_commit_conflict(self):
         txn = self.client.txn()
-        assigned = txn.mutate(set_obj={'name': 'Manish'})
-        self.assertEqual(1, len(assigned.uids), 'Nothing was assigned')
+        response = txn.mutate(set_obj={'name': 'Manish'})
+        self.assertEqual(1, len(response.uids), 'Nothing was assigned')
 
-        for _, uid in assigned.uids.items():
+        for _, uid in response.uids.items():
             uid = uid
 
         txn2 = self.client.txn()
@@ -364,10 +364,10 @@ class TestTxn(helper.ClientIntegrationTestCase):
 
     def test_mutate_conflict(self):
         txn = self.client.txn()
-        assigned = txn.mutate(set_obj={'name': 'Manish'})
-        self.assertEqual(1, len(assigned.uids), 'Nothing was assigned')
+        response = txn.mutate(set_obj={'name': 'Manish'})
+        self.assertEqual(1, len(response.uids), 'Nothing was assigned')
 
-        for _, uid in assigned.uids.items():
+        for _, uid in response.uids.items():
             uid = uid
 
         txn2 = self.client.txn()
@@ -378,37 +378,6 @@ class TestTxn(helper.ClientIntegrationTestCase):
         _ = txn.mutate(set_obj={'uid': uid, 'name': 'Manish2'})
         self.assertRaises(pydgraph.AbortedError, txn.commit)
 
-    def test_conflict_ignore(self):
-        """Tests a mutation with ignore index conflict."""
-
-        helper.set_schema(self.client, 'name: string @index(fulltext) .')
-
-        txn = self.client.txn()
-        assigned1 = txn.mutate(set_obj={'name': 'Manish'}, ignore_index_conflict=True)
-        self.assertEqual(1, len(assigned1.uids), 'Nothing was assigned')
-
-        for _, uid in assigned1.uids.items():
-            uid1 = uid
-
-        txn2 = self.client.txn()
-        assigned2 = txn2.mutate(set_obj={'name': 'Manish'}, ignore_index_conflict=True)
-        self.assertEqual(1, len(assigned2.uids), 'Nothing was assigned')
-
-        for _, uid in assigned2.uids.items():
-            uid2 = uid
-
-        txn.commit()
-        txn2.commit()
-
-        query = """{
-            me(func: eq(name, "Manish")) {
-                uid
-            }
-        }"""
-
-        resp = self.client.txn(read_only=True).query(query)
-        self.assertEqual([{'uid': uid1}, {'uid': uid2}], json.loads(resp.json).get('me'))
-
     def test_read_index_key_same_txn(self):
         """Tests reading an indexed field within a transaction. The read
         should return the results from before any writes of the same
@@ -418,10 +387,10 @@ class TestTxn(helper.ClientIntegrationTestCase):
         helper.set_schema(self.client, 'name: string @index(exact) .')
 
         txn = self.client.txn()
-        assigned = txn.mutate(set_obj={'name': 'Manish'}, ignore_index_conflict=True)
-        self.assertEqual(1, len(assigned.uids), 'Nothing was assigned')
+        response = txn.mutate(set_obj={'name': 'Manish'})
+        self.assertEqual(1, len(response.uids), 'Nothing was assigned')
 
-        for _, uid in assigned.uids.items():
+        for _, uid in response.uids.items():
             uid = uid
 
         query = """{
@@ -465,23 +434,23 @@ class TestSPStar(helper.ClientIntegrationTestCase):
         """Tests a Subject Predicate Star query."""
 
         txn = self.client.txn()
-        assigned = txn.mutate(set_obj={'name': 'Manish', 'friend': [{'name': 'Jan'}]})
-        uid1 = assigned.uids['blank-0']
-        self.assertEqual(2, len(assigned.uids), 'Expected 2 nodes to be created')
+        response = txn.mutate(set_obj={'uid': '_:manish', 'name': 'Manish', 'friend': [{'name': 'Jan'}]})
+        uid1 = response.uids['manish']
+        self.assertEqual(2, len(response.uids), 'Expected 2 nodes to be created')
 
         txn.commit()
 
         txn2 = self.client.txn()
-        assigned2 = txn2.mutate(del_obj={'uid': uid1, 'friend': None})
-        self.assertEqual(0, len(assigned2.uids))
+        response2 = txn2.mutate(del_obj={'uid': uid1, 'friend': None})
+        self.assertEqual(0, len(response2.uids))
 
-        assigned3 = txn2.mutate(set_obj={
+        response3 = txn2.mutate(set_obj={
             'uid': uid1,
             'name': 'Manish',
-            'friend': [{'name': 'Jan2'}]
+            'friend': [{'uid': '_:jan2', 'name': 'Jan2'}]
         })
-        self.assertEqual(1, len(assigned3.uids))
-        uid2 = assigned3.uids['blank-0']
+        self.assertEqual(1, len(response3.uids))
+        uid2 = response3.uids['jan2']
 
         query = """{{
             me(func: uid("{uid:s}")) {{
@@ -503,9 +472,9 @@ class TestSPStar(helper.ClientIntegrationTestCase):
         """Second test of Subject Predicate Star"""
 
         txn = self.client.txn()
-        assigned = txn.mutate(set_obj={'name': 'Manish', 'friend': [{'name': 'Jan'}]})
-        self.assertEqual(2, len(assigned.uids))
-        uid1, uid2 = assigned.uids['blank-0'], assigned.uids['blank-1']
+        response = txn.mutate(set_obj={'uid': '_:manish', 'name': 'Manish', 'friend': [{'uid': '_:jan', 'name': 'Jan'}]})
+        self.assertEqual(2, len(response.uids))
+        uid1, uid2 = response.uids['manish'], response.uids['jan']
 
         query = """{{
             me(func: uid("{uid:s}")) {{
@@ -530,13 +499,13 @@ class TestSPStar(helper.ClientIntegrationTestCase):
         self.assertEqual([{'uid': uid1}], json.loads(resp.json).get('me'))
 
         # add an edge to Jan2
-        assigned2 = txn.mutate(set_obj={
+        response2 = txn.mutate(set_obj={
             'uid': uid1,
             'name': 'Manish',
-            'friend': [{'name': 'Jan2'}]
+            'friend': [{'uid': '_:jan2',  'name': 'Jan2'}]
         })
-        self.assertEqual(1, len(assigned2.uids))
-        uid2 = assigned2.uids['blank-0']
+        self.assertEqual(1, len(response2.uids))
+        uid2 = response2.uids['jan2']
 
         resp = txn.query(query)
         self.assertEqual([{
