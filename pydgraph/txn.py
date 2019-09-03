@@ -61,11 +61,6 @@ class Txn(object):
         req = self.create_request(query=query, variables=variables)
         return self.do_request(req, timeout=timeout, metadata=metadata, credentials=credentials)
 
-    def mutate(self, mutation, timeout=None, metadata=None, credentials=None):
-        """Executes a mutate operation."""
-        req = self.create_request(mutations=[mutation], commit_now=mutation.commit_now)
-        return self.do_request(req, timeout=timeout, metadata=metadata, credentials=credentials)
-
     def mutate(self, mutation=None, set_obj=None, del_obj=None,
                set_nquads=None, del_nquads=None, cond=None, commit_now=None,
                timeout=None, metadata=None, credentials=None):
