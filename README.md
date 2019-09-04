@@ -241,10 +241,11 @@ txn.do_request(request)
 
 ### Running an Upsert: Query + Mutation
 
-`txn.do_request` function allows you to run upserts consisting of one query and one
-mutation. Query variables could be defined and can then be used in the mutation.
+The `txn.do_request` function allows you to run upserts consisting of one query and 
+one mutation. Query variables could be defined and can then be used in the mutation.
+You can also use the `txn.do_request` function to perform just a query or a mutation.
 
-To know more about upsert, we highly recommend going through the docs at
+To know more about upsert, we highly recommend going through the docs at 
 https://docs.dgraph.io/mutations/#upsert-block.
 
 ```python
