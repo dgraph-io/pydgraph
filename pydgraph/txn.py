@@ -145,8 +145,7 @@ class Txn(object):
         if query:
             request.query = query.encode('utf8')
         if mutations:
-            for mutation in mutations:
-                request.mutations.append(mutation)
+            request.mutations.extend(mutations)
         return request
 
     @staticmethod
