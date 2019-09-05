@@ -7,6 +7,11 @@ and this project adheres to [Semantic Versioning](http://semver.org/spec/v2.0.0.
 
 ## [Unreleased]
 
+## [v2.0.0] - 2019-09-05
+
+### Added
+- Update internal grpc API to talk to dgraph v1.1.0
+
 ## [v1.2.0] - 2019-06-24
 
 ### Added
@@ -60,6 +65,7 @@ and this project adheres to [Semantic Versioning](http://semver.org/spec/v2.0.0.
 - Full compatibility with Dgraph v1.0.0
 
 [Unreleased]: https://github.com/dgraph-io/pydgraph/compare/v1.0.0...HEAD
+[v2.0.0] https://github.com/dgraph-io/pydgraph/compare/v1.2.0...v2.0.0
 [v1.2.0] https://github.com/dgraph-io/pydgraph/compare/v1.1.2...v1.2.0
 [v1.1.2]: https://github.com/dgraph-io/pydgraph/compare/v1.1.1...v1.1.2
 [v1.1.1]: https://github.com/dgraph-io/pydgraph/compare/v1.1...v1.1.1
