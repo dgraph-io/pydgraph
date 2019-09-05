@@ -1,78 +1,42 @@
-# Simple example project
+# Simple Example Project
 
-Simple project demonstrating the use of [pydgraph], the official python client
-for Dgraph.
+Simple project demonstrating the use of [pydgraph], the official python client for Dgraph.
 
 [pydgraph]:https://github.com/dgraph-io/pydgraph
 
 ## Running
 
-### Start Dgraph server
+### Start Dgraph
 
-You will need to install [Dgraph v1.0.10 or above][releases] and run it.
+Store the following content in `docker-compose.yml`. Then, run `docker-compose up` to
+set up the Dgraph cluster:
 
-[releases]: https://github.com/dgraph-io/dgraph/releases
-
-You can run the commands below to start a clean Dgraph server every time, for testing
-and exploration.
-
-First, create two separate directories for `dgraph zero` and `dgraph alpha`.
-
-```sh
-mkdir -p dgraphdata/zero dgraphdata/data
+```
+version: "3.2"
+services:
+  zero:
+    image: dgraph/dgraph:v1.1.0
+    restart: on-failure
+    command: dgraph zero --my=zero:5080
+  server:
+    image: dgraph/dgraph:v1.1.0
+    ports:
+      - 8080:8080
+      - 9080:9080
+    restart: on-failure
+    command: dgraph alpha --my=server:7080 --lru_mb=2048 --zero=zero:5080
 ```
 
-Then start `dgraph zero`:
-
-```sh
-cd dgraphdata/zero
-rm -r zw; dgraph zero
-```
-
-Finally, start the `dgraph alpha`:
-
-```sh
-cd dgraphdata/data
-rm -r p w; dgraph server --lru_mb=1024 --zero localhost:5080
-```
-
-For more configuration options and other details, refer to
-[docs.dgraph.io](https://docs.dgraph.io)
-
-## Install dependencies
+## Install the Dependencies
 
 ```sh
 pip install -r requirements.txt
 ```
 
-## Run the sample code
+## Run the Sample Code
 
 ```sh
 python simple.py
-```
-
-Your output should look something like this (uid values may be different):
-
-```console
-Created person named "Alice" with uid = 0x7569
-
-All created nodes (map from blank node names to uids):
-blank-0: 0x7569
-blank-1: 0x756a
-blank-2: 0x756b
-blank-3: 0x756c
-
-Number of people named "Alice": 1
-{ uid: '0x7569',
-  name: 'Alice',
-  age: 26,
-  married: true,
-  loc: { type: 'Point', coordinates: [ 1.1, 2 ] },
-  dob: '1980-02-01T17:30:00Z',
-  friend: [ { name: 'Bob', age: 24 }, { name: 'Charlie', age: 29 } ],
-  school: [ { name: 'Crown Public School' } ] }
-
-DONE!
 ```
 
 You can explore the source code in the `simple.py` file.
