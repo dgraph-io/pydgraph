@@ -25,7 +25,6 @@ import multiprocessing
 import multiprocessing.dummy as mpd
 
 import pydgraph
-from pydgraph.proto import api_pb2 as api
 
 from . import helper
 
