@@ -92,7 +92,7 @@ def delete_data(client):
         ppl1 = json.loads(res1.json)
         for person in ppl1['all']:
             print("Bob's UID: " + person['uid'])
-        print(txn.mutate(del_obj=person))
+        txn.mutate(del_obj=person)
         print('Bob deleted')
         txn.commit()
 
