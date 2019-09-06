@@ -29,6 +29,13 @@ except ImportError as e:
 
     def convert_file(f, _):
         return open(f, 'r').read()
+except ModuleNotFoundError as e:
+    # NOTE: error is thrown only for package build steps
+    if 'sdist' in sys.argv or 'bdist_wheel' in sys.argv:
+        raise e
+
+    def convert_file(f, _):
+        return open(f, 'r').read()
 
 from pydgraph.meta import VERSION
 
