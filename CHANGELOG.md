@@ -7,6 +7,11 @@ and this project adheres to [Semantic Versioning](http://semver.org/spec/v2.0.0.
 
 ## [Unreleased]
 
+## [v2.0.2] - 2019-09-10
+
+### Added
+- Do not throw errors in build steps if pypandoc is not found.
+
 ## [v2.0.1] - 2019-09-06
 
 ### Added
