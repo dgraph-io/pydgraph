@@ -40,6 +40,9 @@ Install using pip:
 pip install pydgraph
 ```
 
+**NOTE**: Dgraph 1.1.x and 1.0.x have incompatible APIs. 1.1.x is supported by
+versions of pydgraph >=2 while 1.0.x is supported by versions <= 1.2.0.
+
 ## Quickstart
 
 Build and run the [simple][] project in the `examples` folder, which
