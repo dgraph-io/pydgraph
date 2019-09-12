@@ -59,3 +59,5 @@ class ClientIntegrationTestCase(unittest.TestCase):
 
         self.client = create_client(self.TEST_SERVER_ADDR)
         self.client.login("groot", "password")
+
+

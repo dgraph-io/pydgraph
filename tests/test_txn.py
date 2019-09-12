@@ -64,7 +64,7 @@ class TestTxn(helper.ClientIntegrationTestCase):
         txn = self.client.txn()
         response = txn.mutate(set_obj={'name': 'Manish'}, commit_now=True)
         self.assertEqual(1, len(response.uids), 'Nothing was assigned')
-
+        import pdb; pdb.set_trace()
         for _, uid in response.uids.items():
             uid = uid
 
