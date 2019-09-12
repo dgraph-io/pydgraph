@@ -64,7 +64,6 @@ class TestTxn(helper.ClientIntegrationTestCase):
         txn = self.client.txn()
         response = txn.mutate(set_obj={'name': 'Manish'}, commit_now=True)
         self.assertEqual(1, len(response.uids), 'Nothing was assigned')
-        import pdb; pdb.set_trace()
         for _, uid in response.uids.items():
             uid = uid
 
@@ -421,6 +420,13 @@ class TestTxn(helper.ClientIntegrationTestCase):
         variables = {"$a": 1234}
         with self.assertRaises(Exception):
             _ = txn.query(query, variables=variables)
+
+    def test_finished(self):
+        txn = self.client.txn()
+        txn.mutate(set_nquads='_:animesh <name> "Animesh" .', commit_now=True)
+
+        with self.assertRaises(Exception):
+            txn.mutate(set_nquads='_:aman <name> "Aman" .', commit_now=True)
 
 
 class TestSPStar(helper.ClientIntegrationTestCase):

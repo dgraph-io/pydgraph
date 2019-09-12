@@ -12,7 +12,7 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 
-"""Tests to verify upsert block."""
+"""Tests to verify ACL."""
 import subprocess
 import time
 
@@ -33,7 +33,6 @@ class TestACL(helper.ClientIntegrationTestCase):
 
     def setUp(self):
         super(TestACL, self).setUp()
-
         helper.drop_all(self.client)
         helper.set_schema(self.client, 'name: string .')
 
@@ -114,7 +113,7 @@ class TestACL(helper.ClientIntegrationTestCase):
                 """
 
         try:
-            _ = txn.query(query)
+            txn.query(query)
             if not expected:
                 self.fail("Acl test failed: Read successful without permission")
         except Exception as e:
@@ -125,7 +124,7 @@ class TestACL(helper.ClientIntegrationTestCase):
         txn = self.alice_client.txn()
 
         try:
-            _ = txn.mutate(set_nquads='_:aman <name> "Aman" .', commit_now=True)
+            txn.mutate(set_nquads='_:aman <name> "Aman" .', commit_now=True)
             if not expected:
                 self.fail("Acl test failed: Write successful without permission")
         except Exception as e:
