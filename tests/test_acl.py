@@ -35,7 +35,6 @@ class TestACL(helper.ClientIntegrationTestCase):
         super(TestACL, self).setUp()
         helper.drop_all(self.client)
         helper.set_schema(self.client, 'name: string .')
-
         self.insert_sample_data()
         self.add_user()
         self.add_group()
@@ -68,13 +67,12 @@ class TestACL(helper.ClientIntegrationTestCase):
     def change_permission(self, permission):
         bash_command = "dgraph acl -a " + self.server_addr + " mod -g " + self.group_id + \
                        " -p name -m " + str(permission) + " -x password"
-
         self.run_command(bash_command)
 
     def insert_sample_data(self):
         txn = self.client.txn()
         try:
-            _ = txn.mutate(set_nquads='_:animesh <name> "Animesh" .', commit_now=True)
+            txn.mutate(set_nquads='_:animesh <name> "Animesh" .', commit_now=True)
         except Exception as e:
             txn.discard()
             self.fail("Acl test failed: " + str(e))
@@ -82,23 +80,20 @@ class TestACL(helper.ClientIntegrationTestCase):
     def add_user(self):
         bash_command = "dgraph acl -a " + self.server_addr + " add -u " + self.user_id + \
                        " -p " + self.user_password + " -x password"
-
         self.run_command(bash_command)
 
     def add_group(self):
         bash_command = "dgraph acl -a " + self.server_addr + " add -g " + self.group_id + " -x password"
-
         self.run_command(bash_command)
 
     def add_user_to_group(self):
         bash_command = "dgraph acl -a " + self.server_addr + " mod -u " + \
                        self.user_id + " -l " + self.group_id + " -x password"
-
         self.run_command(bash_command)
 
     def run_command(self, bash_command):
         try:
-            _ = subprocess.check_output(bash_command.split())
+            subprocess.check_output(bash_command.split())
         except subprocess.CalledProcessError as e:
             self.fail("Acl test failed: Unable to execute command " + bash_command + "\n" + str(e))
 

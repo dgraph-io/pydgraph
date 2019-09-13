@@ -29,13 +29,13 @@ class TestTypeSystem(helper.ClientIntegrationTestCase):
         helper.drop_all(self.client)
 
         schema = """
-            type Person {
-              name: string
-              age: int
-            }
-            name: string @index(term, exact) .
-            age: int .
-        """
+                    type Person {
+                      name: string
+                      age: int
+                    }
+                    name: string @index(term, exact) .
+                    age: int .
+                """
 
         helper.set_schema(self.client, schema)
 
@@ -43,10 +43,10 @@ class TestTypeSystem(helper.ClientIntegrationTestCase):
         txn = self.client.txn()
 
         rdfs = """
-            _:animesh <name> "Animesh" .
-            _:animesh <age> "24" .
-            _:animesh <dgraph.type> "Person" .
-        """
+                   _:animesh <name> "Animesh" .
+                   _:animesh <age> "24" .
+                   _:animesh <dgraph.type> "Person" .
+               """
 
         try:
             txn.mutate(set_nquads=rdfs)
@@ -55,11 +55,12 @@ class TestTypeSystem(helper.ClientIntegrationTestCase):
             self.fail("Type system test failed: " + str(e))
 
         query = """
-        {
-          me(func: type(Person)) {
-            expand(_all_)
-          }
-        }"""
+                {
+                  me(func: type(Person)) {
+                    expand(_all_)
+                  }
+                }
+                """
 
         try:
             response = txn.query(query)
@@ -73,19 +74,19 @@ class TestTypeSystem(helper.ClientIntegrationTestCase):
         """It tries to delete all predicates of a node without having any type"""
 
         rdfs = """
-            _:animesh <name> "Animesh" .
-            _:animesh <age> "24" .
-        """
+                   _:animesh <name> "Animesh" .
+                   _:animesh <age> "24" .
+               """
 
         self.insert_delete_and_check(rdfs, 1)
 
     def test_type_deletion(self):
 
         rdfs = """
-            _:animesh <name> "Animesh" .
-            _:animesh <age> "24" .
-            _:animesh <dgraph.type> "Person" .
-        """
+                   _:animesh <name> "Animesh" .
+                   _:animesh <age> "24" .
+                   _:animesh <dgraph.type> "Person" .
+               """
 
         self.insert_delete_and_check(rdfs, 0)
 
@@ -100,9 +101,10 @@ class TestTypeSystem(helper.ClientIntegrationTestCase):
         txn = self.client.txn()
 
         query = """
-        {
-          u as var(func: eq(name, "Animesh"))
-        }"""
+                {
+                  u as var(func: eq(name, "Animesh"))
+                }
+                """
 
         mutation = txn.create_mutation(del_nquads='uid(u) * * .')
         request = txn.create_request(mutations=[mutation], query=query, commit_now=True)
@@ -115,11 +117,12 @@ class TestTypeSystem(helper.ClientIntegrationTestCase):
         txn = self.client.txn()
 
         query = """
-        {
-          me(func: eq(name, "Animesh")) {
-            name
-          }
-        }"""
+                {
+                  me(func: eq(name, "Animesh")) {
+                    name
+                  }
+                }
+                """
 
         try:
             response = txn.query(query=query)

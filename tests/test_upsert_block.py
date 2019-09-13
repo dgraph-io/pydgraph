@@ -35,7 +35,6 @@ class TestUpsertBlock(helper.ClientIntegrationTestCase):
         txn = self.client.txn()
         mutation = txn.create_mutation(set_nquads='_:animesh <name> "Animesh" .')
         request = txn.create_request(mutations=[mutation], commit_now=True)
-
         try:
             txn.do_request(request)
         except Exception as e:
@@ -59,11 +58,12 @@ class TestUpsertBlock(helper.ClientIntegrationTestCase):
         mutation = txn.create_mutation(set_nquads='uid(u) <name> "Animesh" .')
 
         query = """
-        {
-          me(func: eq(name, "Animesh")) {
-            u as uid
-          }
-        }"""
+                {
+                  me(func: eq(name, "Animesh")) {
+                    u as uid
+                  }
+                }
+                """
 
         request = txn.create_request(mutations=[mutation], query=query, commit_now=True)
         try:
@@ -77,12 +77,13 @@ class TestUpsertBlock(helper.ClientIntegrationTestCase):
         txn = self.client.txn()
 
         query = """
-        {
-          me(func: eq(name, "Animesh")) {
-            name
-            uid
-          }
-        }"""
+                {
+                  me(func: eq(name, "Animesh")) {
+                    name
+                    uid
+                  }
+                }
+                """
 
         request = txn.create_request(query=query)
         try:
@@ -109,9 +110,10 @@ class TestUpsertBlock(helper.ClientIntegrationTestCase):
         txn = self.client.txn()
 
         query = """
-        {
-          u as var(func: eq(name, "Animesh"))
-        }"""
+                {
+                  u as var(func: eq(name, "Animesh"))
+                }
+                """
 
         mutation = txn.create_mutation(cond="@if(gt(len(u), 0))", set_nquads='uid(u) <name> "Ashish" .')
         request = txn.create_request(mutations=[mutation], query=query, commit_now=True)
@@ -124,10 +126,10 @@ class TestUpsertBlock(helper.ClientIntegrationTestCase):
 
     def test_bulk_set(self):
         rdfs = """
-            _:animesh <name> "Animesh" .
-            _:aman <name> "Aman" .
-            _:ashish <name> "Ashish" .
-        """
+                   _:animesh <name> "Animesh" .
+                   _:aman <name> "Aman" .
+                   _:ashish <name> "Ashish" .
+               """
 
         txn = self.client.txn()
         try:
@@ -139,12 +141,12 @@ class TestUpsertBlock(helper.ClientIntegrationTestCase):
         txn = self.client.txn()
 
         query = """
-        {
-            me(func: has(name)) {
-                u as uid
-            }
-        }
-        """
+                {
+                    me(func: has(name)) {
+                        u as uid
+                    }
+                }
+                """
 
         mutation = txn.create_mutation(set_nquads='uid(u) <name> "Random" .')
         request = txn.create_request(mutations=[mutation], query=query, commit_now=True)
@@ -157,12 +159,12 @@ class TestUpsertBlock(helper.ClientIntegrationTestCase):
         txn = self.client.txn()
 
         query = """
-        {
-            me(func: eq(name, "Animesh")) {
-                uid
-            }
-        }
-        """
+                {
+                    me(func: eq(name, "Animesh")) {
+                        uid
+                    }
+                }
+                """
 
         try:
             response = txn.query(query)
@@ -194,11 +196,12 @@ class TestUpsertBlock(helper.ClientIntegrationTestCase):
         txn = self.client.txn()
 
         query = """
-        {
-          me(func: eq(name, "Animesh")) {
-            uid
-          }
-        }"""
+                {
+                  me(func: eq(name, "Animesh")) {
+                    uid
+                  }
+                }
+                """
 
         try:
             response = txn.query(query)
@@ -210,11 +213,12 @@ class TestUpsertBlock(helper.ClientIntegrationTestCase):
             self.fail("Upsert block test failed: " + str(e))
 
         query = """
-        {
-          me(func: eq(name, "Ashish")) {
-            uid
-          }
-        }"""
+                {
+                  me(func: eq(name, "Ashish")) {
+                    uid
+                  }
+                }
+                """
 
         try:
             response = txn.query(query)
