@@ -35,11 +35,7 @@ class TestUpsertBlock(helper.ClientIntegrationTestCase):
         txn = self.client.txn()
         mutation = txn.create_mutation(set_nquads='_:animesh <name> "Animesh" .')
         request = txn.create_request(mutations=[mutation], commit_now=True)
-        try:
-            txn.do_request(request)
-        except Exception as e:
-            txn.discard()
-            self.fail("Upsert block test failed: " + str(e))
+        txn.do_request(request)
 
     def test_upsert_block_multiple_mutation(self):
         txn = self.client.txn()
@@ -66,11 +62,7 @@ class TestUpsertBlock(helper.ClientIntegrationTestCase):
                 """
 
         request = txn.create_request(mutations=[mutation], query=query, commit_now=True)
-        try:
-            txn.do_request(request)
-        except Exception as e:
-            txn.discard()
-            self.fail("Upsert block test failed: " + str(e))
+        txn.do_request(request)
 
     def test_one_query(self):
         self.insert_sample_data()
@@ -86,14 +78,10 @@ class TestUpsertBlock(helper.ClientIntegrationTestCase):
                 """
 
         request = txn.create_request(query=query)
-        try:
-            response = txn.do_request(request)
-            data = json.loads(response.json)
-            if len(data["me"]) <= 0:
-                self.fail("Upsert block test failed: No data found in query")
-        except Exception as e:
-            txn.discard()
-            self.fail("Upsert block test failed: " + str(e))
+        response = txn.do_request(request)
+        data = json.loads(response.json)
+        if len(data["me"]) <= 0:
+            self.fail("Upsert block test failed: No data found in query")
 
     def test_no_query_no_mutation(self):
         txn = self.client.txn()
@@ -117,12 +105,8 @@ class TestUpsertBlock(helper.ClientIntegrationTestCase):
 
         mutation = txn.create_mutation(cond="@if(gt(len(u), 0))", set_nquads='uid(u) <name> "Ashish" .')
         request = txn.create_request(mutations=[mutation], query=query, commit_now=True)
-        try:
-            txn.do_request(request)
-            self.was_upsert_successful()
-        except Exception as e:
-            txn.discard()
-            self.fail("Upsert block test failed: " + str(e))
+        txn.do_request(request)
+        self.was_upsert_successful()
 
     def test_bulk_set(self):
         rdfs = """
@@ -132,13 +116,7 @@ class TestUpsertBlock(helper.ClientIntegrationTestCase):
                """
 
         txn = self.client.txn()
-        try:
-            txn.mutate(set_nquads=rdfs, commit_now=True)
-        except Exception as e:
-            txn.discard()
-            self.fail("Upsert block test failed: " + str(e))
-
-        txn = self.client.txn()
+        txn.mutate(set_nquads=rdfs, commit_now=True)
 
         query = """
                 {
@@ -148,15 +126,10 @@ class TestUpsertBlock(helper.ClientIntegrationTestCase):
                 }
                 """
 
+        txn = self.client.txn()
         mutation = txn.create_mutation(set_nquads='uid(u) <name> "Random" .')
         request = txn.create_request(mutations=[mutation], query=query, commit_now=True)
-        try:
-            txn.do_request(request)
-        except Exception as e:
-            txn.discard()
-            self.fail("Upsert block test failed: " + str(e))
-
-        txn = self.client.txn()
+        txn.do_request(request)
 
         query = """
                 {
@@ -166,35 +139,22 @@ class TestUpsertBlock(helper.ClientIntegrationTestCase):
                 }
                 """
 
-        try:
-            response = txn.query(query)
-            data = json.loads(response.json)['me']
-            if len(data) > 0:
-                self.fail("Upsert block test failed: Couldn't do bulk set")
-        except Exception as e:
-            txn.discard()
-            self.fail("Upsert block test failed: " + str(e))
+        txn = self.client.txn()
+        response = txn.query(query)
+        data = json.loads(response.json)['me']
+        if len(data) > 0:
+            self.fail("Upsert block test failed: Couldn't do bulk set")
 
     def test_json(self):
         txn = self.client.txn()
         data = {"uid": "_:animesh", "name": "Pathak"}
-        try:
-            txn.mutate(set_obj=data, commit_now=True)
-        except Exception as e:
-            txn.discard()
-            self.fail("Upsert block test failed: " + str(e))
+        txn.mutate(set_obj=data, commit_now=True)
 
     def insert_sample_data(self):
         txn = self.client.txn()
-        try:
-            txn.mutate(set_nquads='_:animesh <name> "Animesh" .', commit_now=True)
-        except Exception as e:
-            txn.discard()
-            self.fail("Upsert block test failed: " + str(e))
+        txn.mutate(set_nquads='_:animesh <name> "Animesh" .', commit_now=True)
 
     def was_upsert_successful(self):
-        txn = self.client.txn()
-
         query = """
                 {
                   me(func: eq(name, "Animesh")) {
@@ -203,14 +163,11 @@ class TestUpsertBlock(helper.ClientIntegrationTestCase):
                 }
                 """
 
-        try:
-            response = txn.query(query)
-            data = json.loads(response.json)
-            if len(data["me"]) != 0:
-                self.fail("Upsert block test failed: Couldn't delete data.")
-        except Exception as e:
-            txn.discard()
-            self.fail("Upsert block test failed: " + str(e))
+        txn = self.client.txn()
+        response = txn.query(query)
+        data = json.loads(response.json)
+        if len(data["me"]) != 0:
+            self.fail("Upsert block test failed: Couldn't delete data.")
 
         query = """
                 {
@@ -220,14 +177,11 @@ class TestUpsertBlock(helper.ClientIntegrationTestCase):
                 }
                 """
 
-        try:
-            response = txn.query(query)
-            data = json.loads(response.json)
-            if len(data["me"]) != 1:
-                self.fail("Upsert block test failed: Couldn't update data.")
-        except Exception as e:
-            txn.discard()
-            self.fail("Upsert block test failed: " + str(e))
+        txn = self.client.txn()
+        response = txn.query(query)
+        data = json.loads(response.json)
+        if len(data["me"]) != 1:
+            self.fail("Upsert block test failed: Couldn't update data.")
 
 
 def suite():

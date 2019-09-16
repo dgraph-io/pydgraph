@@ -71,11 +71,7 @@ class TestACL(helper.ClientIntegrationTestCase):
 
     def insert_sample_data(self):
         txn = self.client.txn()
-        try:
-            txn.mutate(set_nquads='_:animesh <name> "Animesh" .', commit_now=True)
-        except Exception as e:
-            txn.discard()
-            self.fail("Acl test failed: " + str(e))
+        txn.mutate(set_nquads='_:animesh <name> "Animesh" .', commit_now=True)
 
     def add_user(self):
         bash_command = "dgraph acl -a " + self.server_addr + " add -u " + self.user_id + \
