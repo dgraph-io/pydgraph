@@ -56,6 +56,20 @@ class Txn(object):
         self._read_only = read_only
         self._best_effort = best_effort
 
+
+
+    
+    def upsert(self, query, variables=None, mutation=None, set_obj=None, del_obj=None,
+               set_nquads=None, del_nquads=None, cond=None, commit_now=None,
+               timeout=None, metadata=None, credentials=None):
+        """Executes a mutate operation."""
+        mutation = self.create_mutation(mutation, set_obj, del_obj, set_nquads, del_nquads, cond)
+        commit_now = commit_now or mutation.commit_now
+        req = self.create_request(query=query, variables=variables, mutations=[mutation], commit_now=commit_now)
+        return self.do_request(req, timeout=timeout, metadata=metadata, credentials=credentials)
+
+       
+
     def query(self, query, variables=None, timeout=None, metadata=None, credentials=None):
         """Executes a query operation."""
         req = self.create_request(query=query, variables=variables)
