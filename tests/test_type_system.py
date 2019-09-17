@@ -39,30 +39,6 @@ class TestTypeSystem(helper.ClientIntegrationTestCase):
 
         helper.set_schema(self.client, schema)
 
-    def test_type_function(self):
-        txn = self.client.txn()
-
-        rdfs = """
-                   _:animesh <name> "Animesh" .
-                   _:animesh <age> "24" .
-                   _:animesh <dgraph.type> "Person" .
-               """
-
-        txn.mutate(set_nquads=rdfs)
-
-        query = """
-                {
-                  me(func: type(Person)) {
-                    expand(_all_)
-                  }
-                }
-                """
-
-        response = txn.query(query)
-        data = json.loads(response.json)
-        if len(data["me"]) != 1:
-            self.fail("Type system test failed: No Person type node found")
-
     def test_type_deletion_failure(self):
         """It tries to delete all predicates of a node without having any type"""
 
