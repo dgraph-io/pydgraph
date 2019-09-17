@@ -126,15 +126,11 @@ def upsert_account(addr, account, success_ctr, retry_ctr):
                 uid(u) <last> "{last}" .
                 uid(u) <age>  "{age}"^^<xs:int> .
             """.format(**account)
-            mutation = txn.create_mutation(set_nquads=nquads)
-            request = txn.create_request(query=query, mutations=[mutation], commit_now=True)
-            txn.do_request(request)
+            txn.upsert(query=query, set_nquads=nquads, commit_now=True)
 
             updatequads = 'uid(u) <when> "{0:d}"^^<xs:int> .'.format(int(time.time()))
             txn = client.txn()
-            mutation = txn.create_mutation(set_nquads=updatequads)
-            request = txn.create_request(query=query, mutations=[mutation], commit_now=True)
-            txn.do_request(request)
+            txn.upsert(query=query, set_nquads=updatequads, commit_now=True)
 
             with success_ctr.get_lock():
                 success_ctr.value += 1

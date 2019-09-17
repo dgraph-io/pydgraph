@@ -258,9 +258,7 @@ nquad = """
   uid(u) <age> "25" .
 """
 cond = "@if(eq(len(u), 1))"
-mutation = txn.create_mutation(set_nquads=nquad, cond=cond)
-request = txn.create_request(query=query, mutations=[mutation], commit_now=True)
-txn.do_request(request)
+txn.upsert(query=query, set_nquads=nquad, cond=cond, commit_now=True)
 ```
 
 ### Committing a transaction
