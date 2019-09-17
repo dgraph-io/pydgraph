@@ -55,10 +55,15 @@ class TestAccountUpsert(helper.ClientIntegrationTestCase):
 
     def test_account_upsert(self):
         """Run upserts concurrently."""
-        self.do_upserts(self.accounts, CONCURRENCY)
+        self.do_upserts(self.accounts, CONCURRENCY, upsert_account)
         self.assert_changes(FIRSTS, self.accounts)
 
-    def do_upserts(self, account_list, concurrency):
+    def test_account_upsert_block(self):
+        """Run upserts concurrently using upsert block."""
+        self.do_upserts(self.accounts, CONCURRENCY, upsert_account_upsert_block)
+        self.assert_changes(FIRSTS, self.accounts)
+
+    def do_upserts(self, account_list, concurrency, upsert_func):
         """Runs the upsert command for the accounts in `account_list`. Execution
         happens in concurrent processes."""
 
@@ -66,8 +71,8 @@ class TestAccountUpsert(helper.ClientIntegrationTestCase):
         retry_ctr = multiprocessing.Value('i', 0, lock=True)
 
         def _updater(acct):
-            upsert_account(addr=self.TEST_SERVER_ADDR, account=acct,
-                           success_ctr=success_ctr, retry_ctr=retry_ctr)
+            upsert_func(addr=self.TEST_SERVER_ADDR, account=acct,
+                        success_ctr=success_ctr, retry_ctr=retry_ctr)
 
         pool = mpd.Pool(concurrency)
         results = [
@@ -145,6 +150,52 @@ def upsert_account(addr, account, success_ctr, retry_ctr):
                 uid, int(time.time()))
             txn.mutate(set_nquads=updatequads)
             txn.commit()
+
+            with success_ctr.get_lock():
+                success_ctr.value += 1
+
+            # txn successful, break the loop
+            return
+        except pydgraph.AbortedError:
+            with retry_ctr.get_lock():
+                retry_ctr.value += 1
+            # txn failed, retry the loop
+        finally:
+            txn.discard()
+
+
+def upsert_account_upsert_block(addr, account, success_ctr, retry_ctr):
+    """Runs upsert operation."""
+    client = helper.create_client(addr)
+    query = """{{
+        acct(func:eq(first, "{first}")) @filter(eq(last, "{last}") AND eq(age, {age})) {{
+            u as uid
+        }}
+    }}""".format(**account)
+
+    last_update_time = time.time() - 10000
+    while True:
+        if time.time() > last_update_time + 10000:
+            logging.debug('Success: %d Retries: %d', success_ctr.value,
+                          retry_ctr.value)
+            last_update_time = time.time()
+
+        txn = client.txn()
+        try:
+            nquads = """
+                uid(u) <first> "{first}" .
+                uid(u) <last> "{last}" .
+                uid(u) <age>  "{age}"^^<xs:int> .
+            """.format(**account)
+            mutation = txn.create_mutation(set_nquads=nquads)
+            request = txn.create_request(query=query, mutations=[mutation], commit_now=True)
+            txn.do_request(request)
+
+            updatequads = 'uid(u) <when> "{0:d}"^^<xs:int> .'.format(int(time.time()))
+            txn = client.txn()
+            mutation = txn.create_mutation(set_nquads=updatequads)
+            request = txn.create_request(query=query, mutations=[mutation], commit_now=True)
+            txn.do_request(request)
 
             with success_ctr.get_lock():
                 success_ctr.value += 1
