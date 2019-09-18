@@ -18,13 +18,15 @@ and understand how to run and work with Dgraph.
 
 - [Install](#install)
 - [Quickstart](#quickstart)
-- [Using a client](#using-a-client)
-  - [Creating a client](#creating-a-client)
-  - [Altering the database](#altering-the-database)
-  - [Creating a transaction](#creating-a-transaction)
-  - [Running a mutation](#running-a-mutation)
-  - [Running a query](#running-a-query)
-  - [Committing a transaction](#committing-a-transaction)
+- [Using a Client](#using-a-client)
+  - [Creating a Client](#creating-a-client)
+  - [Altering the Database](#altering-the-database)
+  - [Creating a Transaction](#creating-a-transaction)
+  - [Running a Mutation](#running-a-mutation)
+  - [Committing a Transaction](#committing-a-transaction)
+  * [Running a Query](#running-a-query)
+  * [Running an Upsert: Query + Mutation](#running-an-upsert-query--mutation)
+  * [Running a Conditional Upsert](#running-a-conditional-upsert)
   - [Cleaning up Resources](#cleaning-up-resources)
   - [Setting Metadata Headers](#setting-metadata-headers)
 - [Examples](#examples)
@@ -53,7 +55,7 @@ instructions in the README of that project.
 
 ## Using a client
 
-### Creating a client
+### Creating a Client
 
 You can initialize a `DgraphClient` object by passing it a list of
 `DgraphClientStub` clients as variadic arguments. Connecting to multiple Dgraph
@@ -68,7 +70,7 @@ client_stub = pydgraph.DgraphClientStub('localhost:9080')
 client = pydgraph.DgraphClient(client_stub)
 ```
 
-### Altering the database
+### Altering the Database
 
 To set the schema, create an `Operation` object, set the schema and pass it to
 `DgraphClient#alter(Operation)` method.
@@ -90,7 +92,7 @@ op = pydgraph.Operation(drop_all=True)
 client.alter(op)
 ```
 
-### Creating a transaction
+### Creating a Transaction
 
 To create a transaction, call `DgraphClient#txn()` method, which returns a
 new `Txn` object. This operation incurs no network overhead.
@@ -129,7 +131,7 @@ faster than normal queries because they bypass the normal consensus protocol.
 For this same reason, best-effort queries cannot guarantee to return the latest
 data. Best-effort queries are only supported by read-only transactions.
 
-### Running a mutation
+### Running a Mutation
 
 `Txn#mutate(mu=Mutation)` runs a mutation. It takes in a `Mutation` object,
 which provides two main ways to set data: JSON and RDF N-Quad. You can choose
@@ -193,7 +195,36 @@ request = txn.create_request(mutations=[mutation], commit_now=True)
 txn.do_request(request)
 ```
 
-### Running a query
+### Committing a Transaction
+
+A transaction can be committed using the `Txn#commit()` method. If your transaction
+consisted solely of calls to `Txn#query` or `Txn#queryWithVars`, and no calls to
+`Txn#mutate`, then calling `Txn#commit()` is not necessary.
+
+An error is raised if another transaction(s) modify the same data concurrently that was
+modified in the current transaction. It is up to the user to retry transactions
+when they fail.
+
+```python
+txn = client.txn()
+try:
+  # ...
+  # Perform any number of queries and mutations
+  # ...
+  # and finally...
+  txn.commit()
+except Exception as e:
+  if isinstance(e, pydgraph.AbortedError):
+    # Retry or handle exception.
+  else:
+    raise e
+finally:
+  # Clean up. Calling this after txn.commit() is a no-op
+  # and hence safe.
+  txn.discard()
+```
+
+### Running a Query
 
 You can run a query by calling `Txn#query(string)`. You will need to pass in a
 GraphQL+- query string. If you want to pass an additional dictionary of any
@@ -263,33 +294,23 @@ request = txn.create_request(query=query, mutations=[mutation], commit_now=True)
 txn.do_request(request)
 ```
 
-### Committing a transaction
+### Running a Conditional Upsert
 
-A transaction can be committed using the `Txn#commit()` method. If your transaction
-consisted solely of calls to `Txn#query` or `Txn#queryWithVars`, and no calls to
-`Txn#mutate`, then calling `Txn#commit()` is not necessary.
+The upsert block also allows specifying a conditional mutation block using an `@if` directive. The mutation is executed
+only when the specified condition is true. If the condition is false, the mutation is silently ignored.
 
-An error is raised if another transaction(s) modify the same data concurrently that was
-modified in the current transaction. It is up to the user to retry transactions
-when they fail.
+See more about Conditional Upsert [Here](https://docs.dgraph.io/mutations/#conditional-upsert).
 
 ```python
-txn = client.txn()
-try:
-  # ...
-  # Perform any number of queries and mutations
-  # ...
-  # and finally...
-  txn.commit()
-except Exception as e:
-  if isinstance(e, pydgraph.AbortedError):
-    # Retry or handle exception.
-  else:
-    raise e
-finally:
-  # Clean up. Calling this after txn.commit() is a no-op
-  # and hence safe.
-  txn.discard()
+query = """
+        {
+          user as var(func: eq(email, "wrong_email@dgraph.io"))
+        }
+        """
+mutation = txn.create_mutation(cond="@if(eq(len(user), 1))",
+                               set_nquads="uid(user) <email> \"correct_email@dgraph.io\" .")
+request = txn.create_request(mutations=[mutation], query=query, commit_now=True)
+txn.do_request(request)
 ```
 
 ### Cleaning Up Resources
