@@ -6,7 +6,7 @@ import pydgraph
 
 # Create a client stub.
 def create_client_stub():
-    return pydgraph.DgraphClientStub('localhost:9080')
+    return pydgraph.DgraphClientStub('localhost:9180')
 
 
 # Create a client.
@@ -28,6 +28,15 @@ def set_schema(client):
     married: bool .
     loc: geo .
     dob: datetime .
+
+    type Person {
+        name: string
+        friend: [uid]
+        age: int
+        married: bool
+        loc: geo
+        dob: datetime
+    }
     """
     return client.alter(pydgraph.Operation(schema=schema))
 
@@ -40,6 +49,7 @@ def create_data(client):
         # Create data.
         p = {
             'uid': '_:alice',
+            'dgraph.type': 'Person',
             'name': 'Alice',
             'age': 26,
             'married': True,
@@ -51,6 +61,7 @@ def create_data(client):
             'friend': [
                 {
                     'uid': '_:bob',
+                    'dgraph.type': 'Person',
                     'name': 'Bob',
                     'age': 24,
                 }
@@ -92,8 +103,8 @@ def delete_data(client):
         ppl1 = json.loads(res1.json)
         for person in ppl1['all']:
             print("Bob's UID: " + person['uid'])
-        txn.mutate(del_obj=person)
-        print('Bob deleted')
+            txn.mutate(del_obj=person)
+            print('Bob deleted')
         txn.commit()
 
     finally:
@@ -128,6 +139,7 @@ def query_alice(client):
     # Print results.
     print('Number of people named "Alice": {}'.format(len(ppl['all'])))
 
+
 # Query to check for deleted node
 def query_bob(client):
     query = """query all($b: string) {
@@ -155,17 +167,18 @@ def query_bob(client):
     # Print results.
     print('Number of people named "Bob": {}'.format(len(ppl['all'])))
 
+
 def main():
     client_stub = create_client_stub()
     client = create_client(client_stub)
     drop_all(client)
     set_schema(client)
     create_data(client)
-    query_alice(client) # query for Alice
-    query_bob(client) # query for Bob
-    delete_data(client) # delete Bob
-    query_alice(client) # query for Alice
-    query_bob(client) # query for Bob
+    query_alice(client)  # query for Alice
+    query_bob(client)  # query for Bob
+    delete_data(client)  # delete Bob
+    query_alice(client)  # query for Alice
+    query_bob(client)  # query for Bob
 
     # Close the client stub.
     client_stub.close()
