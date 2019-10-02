@@ -30,8 +30,8 @@ class TestTypeSystem(helper.ClientIntegrationTestCase):
 
         schema = """
                     type Person {
-                      name: string
-                      age: int
+                      name
+                      age
                     }
                     name: string @index(term, exact) .
                     age: int .
