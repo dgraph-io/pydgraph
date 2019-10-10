@@ -6,7 +6,7 @@ import pydgraph
 
 # Create a client stub.
 def create_client_stub():
-    return pydgraph.DgraphClientStub('localhost:9180')
+    return pydgraph.DgraphClientStub('localhost:9080')
 
 
 # Create a client.
