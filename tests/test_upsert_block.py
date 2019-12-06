@@ -42,12 +42,7 @@ class TestUpsertBlock(helper.ClientIntegrationTestCase):
         mutation1 = txn.create_mutation(set_nquads='_:animesh <name> "Animesh" .')
         mutation2 = txn.create_mutation(set_nquads='_:aman <name> "Aman" .')
         request = txn.create_request(mutations=[mutation1, mutation2], commit_now=True)
-        try:
-            txn.do_request(request)
-            self.fail("Upsert block test failed: Multiple mutations succeeded")
-        except Exception as e:
-            txn.discard()
-            self.assertTrue("Only 1 mutation per request is supported" in str(e))
+        txn.do_request(request)
 
     def test_one_mutation_one_query(self):
         txn = self.client.txn()
@@ -91,7 +86,7 @@ class TestUpsertBlock(helper.ClientIntegrationTestCase):
             self.fail("Upsert block test failed: Empty query succeeded")
         except Exception as e:
             txn.discard()
-            self.assertTrue("Empty query" in str(e))
+            self.assertTrue("empty request" in str(e))
 
     def test_conditional_upsert(self):
         self.insert_sample_data()
