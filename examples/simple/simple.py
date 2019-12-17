@@ -30,12 +30,12 @@ def set_schema(client):
     dob: datetime .
 
     type Person {
-        name: string
-        friend: [uid]
-        age: int
-        married: bool
-        loc: geo
-        dob: datetime
+        name
+        friend
+        age
+        married
+        loc
+        dob
     }
     """
     return client.alter(pydgraph.Operation(schema=schema))
