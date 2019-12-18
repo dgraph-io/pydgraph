@@ -286,10 +286,10 @@ query = """{
   u as var(func: eq(name, "Alice"))
 }"""
 nquad = """
+  uid(u) <name> "Alice" .
   uid(u) <age> "25" .
 """
-cond = "@if(eq(len(u), 1))"
-mutation = txn.create_mutation(set_nquads=nquad, cond=cond)
+mutation = txn.create_mutation(set_nquads=nquad)
 request = txn.create_request(query=query, mutations=[mutation], commit_now=True)
 txn.do_request(request)
 ```
@@ -303,12 +303,15 @@ See more about Conditional Upsert [Here](https://docs.dgraph.io/mutations/#condi
 
 ```python
 query = """
-        {
-          user as var(func: eq(email, "wrong_email@dgraph.io"))
-        }
-        """
-mutation = txn.create_mutation(cond="@if(eq(len(user), 1))",
-                               set_nquads="uid(user) <email> \"correct_email@dgraph.io\" .")
+  {
+    user as var(func: eq(email, "wrong_email@dgraph.io"))
+  }
+"""
+cond = "@if(eq(len(user), 1))"
+nquads = """
+  uid(user) <email> "correct_email@dgraph.io" .
+"""
+mutation = txn.create_mutation(cond=cond, set_nquads=nquads)
 request = txn.create_request(mutations=[mutation], query=query, commit_now=True)
 txn.do_request(request)
 ```
