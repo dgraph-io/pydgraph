@@ -17,6 +17,7 @@ and understand how to run and work with Dgraph.
 ## Table of contents
 
 - [Install](#install)
+- [Supported Versions](#supported-versions)
 - [Quickstart](#quickstart)
 - [Using a Client](#using-a-client)
   - [Creating a Client](#creating-a-client)
@@ -42,8 +43,16 @@ Install using pip:
 pip install pydgraph
 ```
 
-**NOTE**: Dgraph 1.1.x and 1.0.x have incompatible APIs. 1.1.x is supported by
-versions of pydgraph >=2 while 1.0.x is supported by versions <= 1.2.0.
+## Supported Versions
+
+Depending on the version of Dgraph that you are connecting to, you will have to
+use a different version of this client.
+
+| Dgraph version |   pydgraph version   |
+|:--------------:|:--------------------:|
+|     1.0.X      |      <= *1.2.0*      |
+|     1.1.X      |      >= *2.0.0*      |
+|     1.2.X      |      >= *2.0.0*      |
 
 ## Quickstart
 
