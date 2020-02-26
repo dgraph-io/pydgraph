@@ -1,0 +1,3 @@
+grpcio==1.23.0
+pydgraph==2.0.2
+grpc==0.3-19
