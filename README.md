@@ -359,6 +359,19 @@ metadata = [("auth-token", "the-auth-token-value")]
 dg.alter(op, metadata=metadata)
 ```
 
+### Setting a timeout.
+
+A timeout value representing the number of seconds can be passed to the `login`,
+`alter`, `query`, and `mutate` methods using the `timeout` keyword argument.
+
+For example, the following alters the schema with a timeout of ten seconds:
+`dg.alter(op, timeout=10)`
+
+### Passing credentials
+
+A `CallCredentials` object can be passed to the `login`, `alter`, `query`, and
+`mutate` methods using the `credentials` keyword argument.
+
 ## Examples
 
 - [simple][]: Quickstart example of using pydgraph.
