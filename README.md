@@ -369,7 +369,7 @@ For example, the following alters the schema with a timeout of ten seconds:
 
 ### Passing credentials
 
-A `CallCredential` object can be passed to the `login`, `alter`, `query`, and
+A `CallCredentials` object can be passed to the `login`, `alter`, `query`, and
 `mutate` methods using the `credentials` keyword argument.
 
 ## Examples
