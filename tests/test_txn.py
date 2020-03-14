@@ -30,6 +30,7 @@ class TestTxn(helper.ClientIntegrationTestCase):
 
         helper.drop_all(self.client)
         helper.set_schema(self.client, 'name: string @index(fulltext) @upsert .')
+        pydgraph.util.wait_for_indexing(self.client, "name", ["fulltext"], False, False)
 
     def test_query_after_commit(self):
         txn = self.client.txn()
@@ -258,6 +259,7 @@ class TestTxn(helper.ClientIntegrationTestCase):
 
         helper.drop_all(self.client)
         helper.set_schema(self.client, 'name: string @index(exact) .')
+        pydgraph.util.wait_for_indexing(self.client, "name", ["exact"], False, False)
 
         txn = self.client.txn()
         _ = txn.mutate(set_obj={'name': 'Manish'})
@@ -384,6 +386,7 @@ class TestTxn(helper.ClientIntegrationTestCase):
 
         helper.drop_all(self.client)
         helper.set_schema(self.client, 'name: string @index(exact) .')
+        pydgraph.util.wait_for_indexing(self.client, "name", ["exact"], False, False)
 
         txn = self.client.txn()
         response = txn.mutate(set_obj={'name': 'Manish'})
@@ -407,6 +410,7 @@ class TestTxn(helper.ClientIntegrationTestCase):
         in an Exception."""
         helper.drop_all(self.client)
         helper.set_schema(self.client, 'name: string @index(exact) .')
+        pydgraph.util.wait_for_indexing(self.client, "name", ["exact"], False, False)
 
         txn = self.client.txn()
         query = """

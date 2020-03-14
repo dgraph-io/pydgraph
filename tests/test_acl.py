@@ -23,7 +23,7 @@ import logging
 import unittest
 
 from . import helper
-
+import pydgraph
 
 class TestACL(helper.ClientIntegrationTestCase):
     user_id = 'alice'
@@ -126,6 +126,7 @@ class TestACL(helper.ClientIntegrationTestCase):
     def try_altering(self, expected):
         try:
             helper.set_schema(self.alice_client, 'name: string @index(exact, term) .')
+            pydgraph.util.wait_for_indexing(self.alice_client, "name", ["exact", "term"], False, False)
             if not expected:
                 self.fail("Acl test failed: Alter successful without permission")
         except Exception as e:
