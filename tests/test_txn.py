@@ -212,6 +212,7 @@ class TestTxn(helper.ClientIntegrationTestCase):
         txn.commit()
 
         client2 = helper.create_client(self.TEST_SERVER_ADDR)
+        client2.login("groot", "password")
         query = """{{
             me(func: uid("{uid:s}")) {{
                 name
