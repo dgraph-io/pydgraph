@@ -15,11 +15,11 @@ set up the Dgraph cluster:
 version: "3.2"
 services:
   zero:
-    image: dgraph/dgraph:v1.1.0
+    image: dgraph/dgraph:latest
     restart: on-failure
     command: dgraph zero --my=zero:5080
   server:
-    image: dgraph/dgraph:v1.1.0
+    image: dgraph/dgraph:latest
     ports:
       - 8080:8080
       - 9080:9080

@@ -90,6 +90,14 @@ op = pydgraph.Operation(schema=schema)
 client.alter(op)
 ```
 
+Starting Dgraph version `20.3.0`, indexes are computed in the background.
+This requires that you wait for indexing to complete before running queries.
+You could do that using following code.
+
+```python
+pydgraph.util.wait_for_indexing(client, "name", ["exact"], False, False)
+```
+
 `Operation` contains other fields as well, including drop predicate and drop all.
 Drop all is useful if you wish to discard all the data, and start from a clean
 slate, without bringing the instance down.
