@@ -52,6 +52,8 @@ class TestAccountUpsert(helper.ClientIntegrationTestCase):
             age:    int      @index(int)  @upsert .
             when:   int                   .
         """)
+        pydgraph.util.wait_for_indexing(self.client, "first", ["term"], False, False)
+        pydgraph.util.wait_for_indexing(self.client, "last", ["hash"], False, False)
 
     def test_account_upsert(self):
         """Run upserts concurrently."""
@@ -111,6 +113,7 @@ class TestAccountUpsert(helper.ClientIntegrationTestCase):
 def upsert_account(addr, account, success_ctr, retry_ctr):
     """Runs upsert operation."""
     client = helper.create_client(addr)
+    client.login("groot", "password")
     query = """{{
         acct(func:eq(first, "{first}")) @filter(eq(last, "{last}") AND eq(age, {age})) {{
             uid
@@ -167,6 +170,7 @@ def upsert_account(addr, account, success_ctr, retry_ctr):
 def upsert_account_upsert_block(addr, account, success_ctr, retry_ctr):
     """Runs upsert operation."""
     client = helper.create_client(addr)
+    client.login("groot", "password")
     query = """{{
         acct(func:eq(first, "{first}")) @filter(eq(last, "{last}") AND eq(age, {age})) {{
             u as uid

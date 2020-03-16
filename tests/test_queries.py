@@ -35,6 +35,7 @@ class TestQueries(helper.ClientIntegrationTestCase):
 
         helper.drop_all(self.client)
         helper.set_schema(self.client, 'name: string @index(term) .')
+        pydgraph.util.wait_for_indexing(self.client, "name", ["term"], False, False)
 
     def test_mutation_and_query(self):
         """Runs mutation and verifies queries see the results."""
