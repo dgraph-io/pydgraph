@@ -20,15 +20,6 @@ try:
 except ImportError:
     from distutils.core import setup
 
-try:
-    from pypandoc import convert_file
-except ImportError as e:
-    def convert_file(f, _):
-        return open(f, 'r').read()
-except ModuleNotFoundError as e:
-    def convert_file(f, _):
-        return open(f, 'r').read()
-
 from pydgraph.meta import VERSION
 
 README = os.path.join(os.path.dirname(__file__), 'README.md')
@@ -37,7 +28,8 @@ setup(
     name='pydgraph',
     version=VERSION,
     description='Official Dgraph client implementation for Python',
-    long_description=convert_file(README, 'rst'),
+    long_description=open(README, 'r').read(),
+    long_description_content_type='text/markdown',
     license='Apache License, Version 2.0',
     author='Dgraph Labs',
     author_email='contact@dgraph.io',
