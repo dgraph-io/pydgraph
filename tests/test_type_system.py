@@ -22,7 +22,6 @@ import unittest
 
 from tests import helper
 
-
 class TestTypeSystem(helper.ClientIntegrationTestCase):
     def setUp(self):
         super(TestTypeSystem, self).setUp()
