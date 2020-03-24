@@ -34,7 +34,6 @@ url: string .
 '''
     op = pydgraph.Operation(schema=schema)
     client.alter(op)
-    pydgraph.util.wait_for_indexing(client, "name", ["exact"], False, False)
 
     # Mutate
     dgraph = {
