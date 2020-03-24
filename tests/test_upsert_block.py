@@ -21,7 +21,7 @@ import logging
 import json
 
 from . import helper
-import pydgraph
+
 
 class TestUpsertBlock(helper.ClientIntegrationTestCase):
     """Tests for Upsert Block"""
@@ -30,7 +30,6 @@ class TestUpsertBlock(helper.ClientIntegrationTestCase):
         super(TestUpsertBlock, self).setUp()
         helper.drop_all(self.client)
         helper.set_schema(self.client, 'name: string @index(term) @upsert .')
-        pydgraph.util.wait_for_indexing(self.client, "name", ["term"], False, False)
 
     def test_upsert_block_one_mutation(self):
         txn = self.client.txn()
