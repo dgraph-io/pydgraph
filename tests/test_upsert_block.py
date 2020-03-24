@@ -22,7 +22,6 @@ import json
 
 from . import helper
 
-
 class TestUpsertBlock(helper.ClientIntegrationTestCase):
     """Tests for Upsert Block"""
 
