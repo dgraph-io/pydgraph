@@ -90,6 +90,17 @@ op = pydgraph.Operation(schema=schema)
 client.alter(op)
 ```
 
+Starting Dgraph version 20.03.0, indexes can be computed in the background.
+You can set `run_in_background` field of the `pydgraph.Operation` to `True`
+before passing it to the `Alter` function. You can find more details
+[here](https://docs.dgraph.io/master/query-language/#indexes-in-background).
+
+```python
+schema = 'name: string @index(exact) .'
+op = pydgraph.Operation(schema=schema, run_in_background=True)
+client.alter(op)
+```
+
 `Operation` contains other fields as well, including drop predicate and drop all.
 Drop all is useful if you wish to discard all the data, and start from a clean
 slate, without bringing the instance down.
