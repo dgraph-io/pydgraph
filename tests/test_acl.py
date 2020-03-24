@@ -23,7 +23,7 @@ import logging
 import unittest
 
 from . import helper
-import pydgraph
+
 
 class TestACL(helper.ClientIntegrationTestCase):
     user_id = 'alice'
@@ -68,8 +68,6 @@ class TestACL(helper.ClientIntegrationTestCase):
         bash_command = "dgraph acl -a " + self.server_addr + " mod -g " + self.group_id + \
                        " -p name -m " + str(permission) + " -x password"
         self.run_command(bash_command)
-        # wait for ACL cache to be refreshed.
-        time.sleep(6)
 
     def insert_sample_data(self):
         txn = self.client.txn()
@@ -128,12 +126,11 @@ class TestACL(helper.ClientIntegrationTestCase):
     def try_altering(self, expected):
         try:
             helper.set_schema(self.alice_client, 'name: string @index(exact, term) .')
-            pydgraph.util.wait_for_indexing(self.alice_client, "name", ["exact", "term"], False, False)
             if not expected:
                 self.fail("Acl test failed: Alter successful without permission")
         except Exception as e:
             if expected:
-                self.fail("Acl test failed: Alter failed for alterable predicate.\n" + str(e))
+                self.fail("Acl test failed: Alter failed for altreble predicate.\n" + str(e))
 
 
 def suite():

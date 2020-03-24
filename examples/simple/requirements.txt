@@ -1,1 +1,1 @@
-pydgraph>=2.0.2
+pydgraph>=1.0a1.0

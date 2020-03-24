@@ -16,7 +16,7 @@ def create_client(client_stub):
 
 # Drop All - discard all data and start from a clean slate.
 def drop_all(client):
-    client.alter(pydgraph.Operation(drop_all=True))
+    return client.alter(pydgraph.Operation(drop_all=True))
 
 
 # Set schema.
@@ -38,9 +38,7 @@ def set_schema(client):
         dob
     }
     """
-    client.alter(pydgraph.Operation(schema=schema))
-    pydgraph.util.wait_for_indexing(client, "name", ["exact"], False, False)
-    pydgraph.util.wait_for_indexing(client, "friend", [], False, True)
+    return client.alter(pydgraph.Operation(schema=schema))
 
 
 # Create data using JSON.

@@ -17,7 +17,6 @@
 __author__ = 'Garvit Pahal <garvit@dgraph.io>'
 __maintainer__ = 'Martin Martinez Rivera <martinmr@dgraph.io>'
 
-import time
 import unittest
 
 import pydgraph
@@ -59,11 +58,4 @@ class ClientIntegrationTestCase(unittest.TestCase):
         """Sets up the client."""
 
         self.client = create_client(self.TEST_SERVER_ADDR)
-        while True:
-            try:
-                self.client.login("groot", "password")
-                break
-            except Exception as e:
-                if not "user not found" in str(e):
-                    raise e
-            time.sleep(0.1)
+        self.client.login("groot", "password")

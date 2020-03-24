@@ -20,8 +20,8 @@ import json
 import logging
 import unittest
 
-from . import helper
-import pydgraph
+from tests import helper
+
 
 class TestTypeSystem(helper.ClientIntegrationTestCase):
     def setUp(self):
@@ -38,7 +38,6 @@ class TestTypeSystem(helper.ClientIntegrationTestCase):
                 """
 
         helper.set_schema(self.client, schema)
-        pydgraph.util.wait_for_indexing(self.client, "name", ["term", "exact"], False, False)
 
     def test_type_deletion_failure(self):
         """It tries to delete all predicates of a node without having any type"""
