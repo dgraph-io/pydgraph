@@ -6,6 +6,15 @@ The format is based on [Keep a Changelog](http://keepachangelog.com/en/1.0.0/)
 and this project adheres to [Semantic Versioning](http://semver.org/spec/v2.0.0.html).
 
 ## [Unreleased]
+===================
+
+## [v20.03.0] - 2020-03-31
+
+Starting with this release, the release number has changed to match the Dgraph release
+to make it easier to identify which version of Dgraph a client version supports.
+
+### Added
+- Use RunInBackground flag for computing indexes in background.
 
 ## [v2.0.3] - 2020-03-24
 
