@@ -36,6 +36,18 @@ class TestQueries(helper.ClientIntegrationTestCase):
         helper.drop_all(self.client)
         helper.set_schema(self.client, 'name: string @index(term) .')
 
+    def test_check_version(self):
+        """Verifies the check_version method correctly returns the cluster version"""
+        success = 0
+        for i in range(3):
+            try:
+                tag = self.client.check_version()
+                self.assertGreater(len(tag), 0)
+                success += 1
+            except Exception as e:
+                continue
+        self.assertGreater(success, 0)
+
     def test_mutation_and_query(self):
         """Runs mutation and verifies queries see the results."""
 
