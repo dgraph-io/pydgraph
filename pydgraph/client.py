@@ -41,6 +41,28 @@ class DgraphClient(object):
         self._jwt = api.Jwt()
         self._login_metadata = []
 
+    def check_version(self, timeout=None, metadata=None, credentials=None):
+        """Returns the version of Dgraph if the server is ready to accept requests."""
+
+        new_metadata = self.add_login_metadata(metadata)
+        check_req = api.Check()
+
+        try:
+            response = self.any_client().check_version(check_req, timeout=timeout,
+                                                       metadata=new_metadata,
+                                                       credentials=credentials)
+            return response.tag
+        except Exception as error:
+            if util.is_jwt_expired(error):
+                self.retry_login()
+                new_metadata = self.add_login_metadata(metadata)
+                response = self.any_client().check_version(check_req, timeout=timeout,
+                                                   metadata=new_metadata,
+                                                   credentials=credentials)
+                return response.tag
+            else:
+                raise error
+
     def login(self, userid, password, timeout=None, metadata=None,
               credentials=None):
         login_req = api.LoginRequest()
