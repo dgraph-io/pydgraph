@@ -91,7 +91,7 @@ class DgraphClient(object):
         return txn.Txn(self, read_only=read_only, best_effort=best_effort)
 
     def any_client(self):
-        """Returns a random client."""
+        """Returns a random gRPC client so that requests are distributed evenly among them."""
         return random.choice(self._clients)
 
     def add_login_metadata(self, metadata):
