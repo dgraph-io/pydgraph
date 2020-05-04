@@ -61,6 +61,11 @@ class Txn(object):
         req = self.create_request(query=query, variables=variables)
         return self.do_request(req, timeout=timeout, metadata=metadata, credentials=credentials)
 
+    def async_query(self, query, variables=None, timeout=None, metadata=None, credentials=None):
+        """Async version of query."""
+        req = self.create_request(query=query, variables=variables)
+        return self.async_do_request(req, timeout=timeout, metadata=metadata, credentials=credentials)
+
     def mutate(self, mutation=None, set_obj=None, del_obj=None,
                set_nquads=None, del_nquads=None, cond=None, commit_now=None,
                timeout=None, metadata=None, credentials=None):
@@ -69,6 +74,16 @@ class Txn(object):
         commit_now = commit_now or mutation.commit_now
         req = self.create_request(mutations=[mutation], commit_now=commit_now)
         return self.do_request(req, timeout=timeout, metadata=metadata, credentials=credentials)
+
+    def async_mutate(self, mutation=None, set_obj=None, del_obj=None,
+                     set_nquads=None, del_nquads=None, cond=None, commit_now=None,
+                     timeout=None, metadata=None, credentials=None):
+        """Async version of mutate."""
+        mutation = self.create_mutation(mutation, set_obj, del_obj, set_nquads, del_nquads, cond)
+        commit_now = commit_now or mutation.commit_now
+        req = self.create_request(mutations=[mutation], commit_now=commit_now)
+        return self.async_do_request(req, timeout=timeout, metadata=metadata,
+                                     credentials=credentials)
 
     def do_request(self, request, timeout=None, metadata=None, credentials=None):
         """Executes a query/mutate operation on the server."""
@@ -113,6 +128,39 @@ class Txn(object):
             self._finished = True
 
         self.merge_context(response.txn)
+        return response
+
+    def async_do_request(self, request, timeout=None, metadata=None, credentials=None):
+        """Async version of do_request."""
+        if self._finished:
+            raise Exception('Transaction has already been committed or discarded')
+
+        if len(request.mutations) > 0:
+            if self._read_only:
+                raise Exception('Readonly transaction cannot run mutations')
+            self._mutated = True
+
+        new_metadata = self._dg.add_login_metadata(metadata)
+        return self._dc.query.future(request, timeout=timeout,
+                                     metadata=new_metadata,
+                                     credentials=credentials)
+
+    def handle_future(txn, future):
+        """Method to call when getting the result of a """
+        try:
+            response = future.result()
+        except Exception as error:
+            try:
+                txn.discard(timeout=timeout, metadata=metadata, credentials=credentials)
+            except:
+                # Ignore error - user should see the original error.
+                pass
+            txn._common_except_mutate(query_error)
+
+        if request.commit_now:
+            txn._finished = True
+
+        txn.merge_context(response.txn)
         return response
 
     def create_mutation(self, mutation=None, set_obj=None, del_obj=None,
