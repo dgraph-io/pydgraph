@@ -141,12 +141,24 @@ class Txn(object):
             self._mutated = True
 
         new_metadata = self._dg.add_login_metadata(metadata)
-        return self._dc.query.future(request, timeout=timeout,
-                                     metadata=new_metadata,
-                                     credentials=credentials)
+        return self._dc.async_query(request, timeout=timeout,
+                                    metadata=new_metadata,
+                                    credentials=credentials)
 
-    def handle_future(txn, future):
-        """Method to call when getting the result of a """
+    @staticmethod
+    def handle_query_future(future):
+        """Method to call when getting the result of a future returned by async_query"""
+        try:
+            response = future.result()
+        except Exception as error:
+            txn._common_except_mutate(error)
+
+        return response
+
+
+    @staticmethod
+    def handle_mutate_future(txn, future, commit_now):
+        """Method to call when getting the result of a future returned by async_mutate"""
         try:
             response = future.result()
         except Exception as error:
@@ -155,9 +167,9 @@ class Txn(object):
             except:
                 # Ignore error - user should see the original error.
                 pass
-            txn._common_except_mutate(query_error)
+            txn._common_except_mutate(error)
 
-        if request.commit_now:
+        if commit_now:
             txn._finished = True
 
         txn.merge_context(response.txn)

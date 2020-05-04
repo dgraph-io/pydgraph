@@ -110,9 +110,10 @@ class DgraphClient(object):
 
     def async_alter(self, operation, timeout=None, metadata=None, credentials=None):
         """The async version of alter."""
-        return self.any_client().alter.future(operation, timeout=timeout,
-                                              metadata=new_metadata,
-                                              credentials=credentials)
+        new_metadata = self.add_login_metadata(metadata)
+        return self.any_client().async_alter(operation, timeout=timeout,
+                                             metadata=new_metadata,
+                                             credentials=credentials)
 
     def txn(self, read_only=False, best_effort=False):
         """Creates a transaction."""
