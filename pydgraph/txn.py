@@ -150,11 +150,14 @@ class Txn(object):
 
     @staticmethod
     def _common_except_mutate(error):
-        if isinstance(error, grpc._channel._Rendezvous):
+        print(type(error), isinstance(error, grpc._channel._InactiveRpcError))
+        if isinstance(error, grpc._channel._Rendezvous) or isinstance(error, grpc._channel._InactiveRpcError):
             error.details()
             status_code = error.code()
+            print(status_code)
             if (status_code == grpc.StatusCode.ABORTED or
-                    status_code == grpc.StatusCode.FAILED_PRECONDITION):
+                    status_code == grpc.StatusCode.FAILED_PRECONDITION or
+                    status_code == grpc.StatusCode.UNKNOWN):
                 raise errors.AbortedError()
 
         raise error
@@ -195,7 +198,7 @@ class Txn(object):
 
     @staticmethod
     def _common_except_commit(error):
-        if isinstance(error, grpc._channel._Rendezvous):
+        if isinstance(error, grpc._channel._Rendezvous) or isinstance(error, grpc._channel._InactiveRpcError):
             error.details()
             status_code = error.code()
             if status_code == grpc.StatusCode.ABORTED:
