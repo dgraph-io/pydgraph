@@ -8,7 +8,6 @@ using [grpc].
 This client follows the [Dgraph Go client][goclient] closely.
 
 [goclient]: https://github.com/dgraph-io/dgo
-
 Before using this client, we highly recommend that you go through [docs.dgraph.io],
 and understand how to run and work with Dgraph.
 
@@ -382,6 +381,54 @@ For example, the following alters the schema with a timeout of ten seconds:
 
 A `CallCredentials` object can be passed to the `login`, `alter`, `query`, and
 `mutate` methods using the `credentials` keyword argument.
+
+### Async methods.
+
+The `alter` method in the client has an asyncronous version called
+`async_alter`. The async methods return a future. You can use this future by
+retrieving the result with the `result` method on the future object. Below is a
+short example:
+
+```
+alter_future = self.client.async_alter(pydgraph.Operation(
+	schema="name: string @index(term) ."))
+response = alter_future.result()
+```
+
+The `query` and `mutate` methods int the `Txn` class also have async versions
+called `async_query` and `async_mutation` respectively. These functions work
+just like `async_alter`.
+
+However, retrieving the result is a little different because some extra
+processing needs to be done. You can use the `handle_query_future` and
+`handle_mutate_future` static methods in the `Txn` class to retrieve the result.
+A short example is given below:
+
+```
+txn = client.txn()
+query = "query body here"
+future = txn.async_query()
+response = pydgraph.Txn.handle_query_future(future)
+```
+
+A working example can be found in the `test_asycn.py` test file.
+
+Keep in mind that due to the nature of async calls, the async functions cannot
+retry the request if the login is invalid. You will have to check for this error
+and retry the login (with the function `retry_login` in both the `Txn` and
+`Client` classes). A short example is given below:
+
+```python
+client = DgraphClient(client_stubs) # client_stubs is a list of gRPC stubs.
+alter_future = client.async_alter()
+try:
+    response = alter_future.result()
+except Exception as e:
+	# You can use this function in the util package to check for JWT
+    # expired errors.
+    if pydgraph.util.is_jwt_expired(e):
+        # retry your request here.
+```
 
 ## Examples
 

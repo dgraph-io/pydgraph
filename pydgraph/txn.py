@@ -309,3 +309,6 @@ class Txn(object):
 
         self._ctx.keys.extend(src.keys)
         self._ctx.preds.extend(src.preds)
+
+    def retry_login(self):
+        self._dg.retry_login()
