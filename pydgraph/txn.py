@@ -158,6 +158,7 @@ class Txn(object):
 
         if util.is_connection_error(error):
             raise errors.ConnectionError(error)
+
         raise error
 
     def commit(self, timeout=None, metadata=None, credentials=None):
