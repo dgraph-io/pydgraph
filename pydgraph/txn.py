@@ -73,11 +73,11 @@ class Txn(object):
     def do_request(self, request, timeout=None, metadata=None, credentials=None):
         """Executes a query/mutate operation on the server."""
         if self._finished:
-            raise Exception('Transaction has already been committed or discarded')
+            raise errors.TransactionError('Transaction has already been committed or discarded')
 
         if len(request.mutations) > 0:
             if self._read_only:
-                raise Exception('Readonly transaction cannot run mutations')
+                raise errors.TransactionError('Readonly transaction cannot run mutations')
             self._mutated = True
 
         new_metadata = self._dg.add_login_metadata(metadata)
@@ -141,7 +141,7 @@ class Txn(object):
                 if util.is_string(key) and util.is_string(value):
                     request.vars[key] = value
                 else:
-                    raise Exception('Values and keys in variable map must be strings')
+                    raise errors.TransactionError('Values and keys in variable map must be strings')
         if query:
             request.query = query.encode('utf8')
         if mutations:
@@ -150,12 +150,14 @@ class Txn(object):
 
     @staticmethod
     def _common_except_mutate(error):
-        if isinstance(error, grpc._channel._Rendezvous):
-            error.details()
-            status_code = error.code()
-            if (status_code == grpc.StatusCode.ABORTED or
-                    status_code == grpc.StatusCode.FAILED_PRECONDITION):
-                raise errors.AbortedError()
+        if util.is_aborted_error(error):
+            raise errors.AbortedError()
+
+        if util.is_retriable_error(error):
+            raise errors.RetriableError(error)
+
+        if util.is_connection_error(error):
+            raise errors.ConnectionError(error)
 
         raise error
 
@@ -184,10 +186,10 @@ class Txn(object):
 
     def _common_commit(self):
         if self._read_only:
-            raise Exception(
+            raise errors.TransactionError(
                 'Readonly transaction cannot run mutations or be committed')
         if self._finished:
-            raise Exception(
+            raise errors.TransactionError(
                 'Transaction has already been committed or discarded')
 
         self._finished = True
@@ -195,11 +197,8 @@ class Txn(object):
 
     @staticmethod
     def _common_except_commit(error):
-        if isinstance(error, grpc._channel._Rendezvous):
-            error.details()
-            status_code = error.code()
-            if status_code == grpc.StatusCode.ABORTED:
-                raise errors.AbortedError()
+        if util.is_aborted_error(error):
+            raise errors.AbortedError()
 
         raise error
 
@@ -245,7 +244,7 @@ class Txn(object):
             self._ctx.start_ts = src.start_ts
         elif self._ctx.start_ts != src.start_ts:
             # This condition should never be true.
-            raise Exception('StartTs mismatch')
+            raise errors.TransactionError('StartTs mismatch')
 
         self._ctx.keys.extend(src.keys)
         self._ctx.preds.extend(src.preds)
