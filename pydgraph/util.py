@@ -36,6 +36,7 @@ def is_jwt_expired(exception):
     return 'Token is expired' in str(exception)
 
 def is_aborted_error(error):
+    """Returns true if the error is due to an aborted transaction."""
     if isinstance(error, grpc._channel._Rendezvous) or \
        isinstance(error, grpc._channel._InactiveRpcError):
         status_code = error.code()
@@ -45,9 +46,11 @@ def is_aborted_error(error):
     return False
 
 def is_retriable_error(error):
+    """Returns true if the error is retriable (e.g server is not ready yet)."""
     msg = str(error)
     return 'Please retry' in msg or 'opIndexing is already running' in msg
 
 def is_connection_error(error):
+    """Returns true if the error is caused connection issues."""
     msg = str(error)
     return 'Unhealthy connection' in msg or 'No connection exists' in msg

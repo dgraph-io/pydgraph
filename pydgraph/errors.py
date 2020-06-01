@@ -47,6 +47,7 @@ class ConnectionError(Exception):
         return str(self.exception)
 
 class TransactionError(Exception):
+    """Error thrown when the transaction is invalid (e.g trying to mutate in read-only mode)."""
     def __init__(self, msg):
         super(TransactionError, self).__init__(msg)
 
