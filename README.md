@@ -421,6 +421,7 @@ The required change is outlined below as a diff.
 To run the tests in your local machine, you can run the script
 `scripts/local-tests.sh`. This script assumes Dgraph and dgo (Go client) are
 already built on the local machine and that their code is in `$GOPATH/src`.
+It also requires that docker and docker-compose are installed in your machine.
 
 The script will take care of bringing up a Dgraph cluster and bringing it down
 after the tests are executed. The script uses the port 9180 by default to
