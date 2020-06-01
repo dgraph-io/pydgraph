@@ -412,8 +412,8 @@ The generated file `api_pb2_grpc.py` needs to be changed in recent versions of p
 The required change is outlined below as a diff.
 
 ```
--from . import api_pb2 as api__pb2
-+import api_pb2 as api__pb2
+-import api_pb2 as api__pb2
++from . import api_pb2 as api__pb2
 ```
 
 ### Running tests
