@@ -14,6 +14,6 @@ pip install coveralls
 pushd $(dirname $SRCDIR)
 source $GOPATH/src/github.com/dgraph-io/dgraph/contrib/scripts/functions.sh
 restartCluster
-coverage run --source=pydgraph --omit=pydgraph/proto/* setup.py test
+coverage run --source=pydgraph --omit=pydgraph/proto/* setup.py test || stopCluster
 stopCluster
 popd
