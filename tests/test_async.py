@@ -33,7 +33,7 @@ class TestAsync(helper.ClientIntegrationTestCase):
         """Runs mutation and queries asyncronously."""
         alter_future = self.client.async_alter(pydgraph.Operation(
             schema="name: string @index(term) ."))
-        response = alter_future.result()
+        response = pydgraph.DgraphClient.handle_alter_future(alter_future)
 
         txn = self.client.txn()
         mutate_future = txn.async_mutate(pydgraph.Mutation(commit_now=True), set_nquads="""

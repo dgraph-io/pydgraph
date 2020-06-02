@@ -385,24 +385,22 @@ A `CallCredentials` object can be passed to the `login`, `alter`, `query`, and
 ### Async methods.
 
 The `alter` method in the client has an asyncronous version called
-`async_alter`. The async methods return a future. You can use this future by
-retrieving the result with the `result` method on the future object. Below is a
-short example:
+`async_alter`. The async methods return a future. You can directly call the
+`result` method on the future. However. The DgraphClient class provides a static
+method `handle_alter_future` to handle any possible exception.
 
 ```
 alter_future = self.client.async_alter(pydgraph.Operation(
 	schema="name: string @index(term) ."))
-response = alter_future.result()
+response = pydgraph.DgraphClient.handle_alter_future(alter_future)
 ```
 
 The `query` and `mutate` methods int the `Txn` class also have async versions
 called `async_query` and `async_mutation` respectively. These functions work
 just like `async_alter`.
 
-However, retrieving the result is a little different because some extra
-processing needs to be done. You can use the `handle_query_future` and
-`handle_mutate_future` static methods in the `Txn` class to retrieve the result.
-A short example is given below:
+You can use the `handle_query_future` and `handle_mutate_future` static methods
+in the `Txn` class to retrieve the result. A short example is given below:
 
 ```
 txn = client.txn()
