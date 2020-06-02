@@ -102,11 +102,24 @@ class DgraphClient(object):
             if util.is_jwt_expired(error):
                 self.retry_login()
                 new_metadata = self.add_login_metadata(metadata)
-                return self.any_client().alter(operation, timeout=timeout,
-                                               metadata=new_metadata,
-                                               credentials=credentials)
+                try:
+                    return self.any_client().alter(operation, timeout=timeout,
+                                                   metadata=new_metadata,
+                                                   credentials=credentials)
+                except Exception as error:
+                    self._common_except_alter(error)
             else:
-                raise error
+                self._common_except_alter(error)
+
+    @staticmethod
+    def _common_except_alter(error):
+        if util.is_retriable_error(error):
+            raise errors.RetriableError(error)
+
+        if util.is_connection_error(error):
+            raise errors.ConnectionError(error)
+
+        raise error
 
     def async_alter(self, operation, timeout=None, metadata=None, credentials=None):
         """The async version of alter."""
@@ -114,6 +127,13 @@ class DgraphClient(object):
         return self.any_client().async_alter(operation, timeout=timeout,
                                              metadata=new_metadata,
                                              credentials=credentials)
+
+    @staticmethod
+    def handle_alter_future(future):
+        try:
+            return future.result()
+        except Exception as error:
+            DgraphClient._common_except_alter(error)
 
     def txn(self, read_only=False, best_effort=False):
         """Creates a transaction."""
