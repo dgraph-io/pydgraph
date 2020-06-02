@@ -45,10 +45,21 @@ class DgraphClientStub(object):
         return self.stub.Alter(operation, timeout=timeout, metadata=metadata,
                                credentials=credentials)
 
+    def async_alter(self, operation, timeout=None, metadata=None, credentials=None):
+        """Async version of alter."""
+        return self.stub.Alter.future(operation, timeout=timeout, metadata=metadata,
+                                      credentials=credentials)
+
+
     def query(self, req, timeout=None, metadata=None, credentials=None):
         """Runs query or mutate operation."""
         return self.stub.Query(req, timeout=timeout, metadata=metadata,
                                credentials=credentials)
+
+    def async_query(self, req, timeout=None, metadata=None, credentials=None):
+        """Async version of query."""
+        return self.stub.Query.future(req, timeout=timeout, metadata=metadata,
+                                      credentials=credentials)
 
     def commit_or_abort(self, ctx, timeout=None, metadata=None,
                         credentials=None):
