@@ -429,6 +429,42 @@ class TestTxn(helper.ClientIntegrationTestCase):
         with self.assertRaises(Exception):
             txn.mutate(set_nquads='_:aman <name> "Aman" .', commit_now=True)
 
+    def test_mutate_facet(self):
+        """Tests mutations that include facets work as expected."""
+        helper.drop_all(self.client)
+        helper.set_schema(self.client, """
+name: string .
+friend: uid .
+""")
+
+        nquads = """
+_:a <name> "aaa" (close_friend=true) .
+_:b <name> "bbb" .
+_:a <friend> _:b (close_friend=true).
+"""
+
+        txn = self.client.txn()
+        _ = txn.mutate(set_nquads=nquads, commit_now=True)
+
+        query = """
+{
+  q1(func: has(name), orderasc: name) {
+    name @facets(close_friend)
+  }
+
+  q2(func: has(friend)) {
+    friend @facets(close_friend) {
+      name
+    }
+  }
+}
+"""
+        txn = self.client.txn()
+        resp = txn.query(query)
+        self.assertEqual([{'name': 'aaa', 'name|close_friend': True}, {'name': 'bbb'}],
+                         json.loads(resp.json).get('q1'))
+        self.assertEqual([{'friend': {'name': 'bbb', 'friend|close_friend': True}}],
+                         json.loads(resp.json).get('q2'))
 
 class TestSPStar(helper.ClientIntegrationTestCase):
     def setUp(self):
