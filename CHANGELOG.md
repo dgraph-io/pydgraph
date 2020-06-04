@@ -8,6 +8,14 @@ and this project adheres to [Semantic Versioning](http://semver.org/spec/v2.0.0.
 ## [Unreleased]
 ===================
 
+## [v20.03.1] - 2020-06-03
+
+### Added
+- Added more exception classes for specific types of errors (e.g retriable
+errors). Existing applications might want to update their error handling code to
+take advantage of these new error classes.
+- Added async versions of alter, query, and mutate functions.
+
 ## [v20.03.0] - 2020-03-31
 
 Starting with this release, the release number has changed to match the Dgraph release
