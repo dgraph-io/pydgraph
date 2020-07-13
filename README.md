@@ -7,7 +7,7 @@ using [grpc].
 
 This client follows the [Dgraph Go client][goclient] closely.
 
-**Use [Discuss Issues](https://discuss.dgraph.io/tags/c/issues/35/pydgraph) for reporting issues about this repository.**
+**Use [Discuss Issues](https://discuss.dgraph.io/c/issues/35/clients/46) for reporting issues about this repository.**
 
 [goclient]: https://github.com/dgraph-io/dgo
 Before using this client, we highly recommend that you go through [docs.dgraph.io],
