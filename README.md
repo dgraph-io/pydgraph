@@ -234,11 +234,8 @@ try:
   # ...
   # and finally...
   txn.commit()
-except Exception as e:
-  if isinstance(e, pydgraph.AbortedError):
-    # Retry or handle exception.
-  else:
-    raise e
+except pydgraph.AbortedError:
+  # Retry or handle exception.
 finally:
   # Clean up. Calling this after txn.commit() is a no-op
   # and hence safe.
