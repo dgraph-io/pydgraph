@@ -384,6 +384,24 @@ For example, the following alters the schema with a timeout of ten seconds:
 A `CallCredentials` object can be passed to the `login`, `alter`, `query`, and
 `mutate` methods using the `credentials` keyword argument.
 
+### Authenticating to a reverse TLS proxy
+
+If the Dgraph instance is behind a reverse TLS proxy, credentials can also be
+passed through the methods available in the gRPC library. Note that in this case
+every request will need to include the credentials. In the example below, we are
+trying to add authentication to a proxy that requires an API key. This value is
+expected to be included in the metadata using the key "authorization".
+
+```
+creds = grpc.ssl_channel_credentials()
+call_credentials = grpc.metadata_call_credentials(
+    lambda context, callback: callback((("authorization", "<api-key>"),), None))
+composite_credentials = grpc.composite_channel_credentials(creds, call_credentials)
+client_stub = pydgraph.DgraphClientStub(
+    '{host}:{port}'.format(host=GRPC_HOST, port=GRPC_PORT), composite_credentials)
+client = pydgraph.DgraphClient(client_stub)
+```
+
 ### Async methods.
 
 The `alter` method in the client has an asyncronous version called
