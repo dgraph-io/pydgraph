@@ -44,7 +44,6 @@ class SlashGraphQLClient(object):
         url_parts = url.split(".", 1)
         HOST = url_parts[0] + ".grpc." + url_parts[1]
         PORT = "443"
-        print HOST
         creds = grpc.ssl_channel_credentials()
         call_credentials = grpc.metadata_call_credentials(lambda context, callback: callback((("authorization", self._APIKey),), None))
         composite_credentials = grpc.composite_channel_credentials(creds, call_credentials)
