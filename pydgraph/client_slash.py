@@ -36,6 +36,7 @@ class SlashGraphQLClient(object):
 
         self._slash_end_point = slash_end_point
         self._api_key = api_key
+        self._port = "443"
 
     def get_stub(self):
         """Returns Dgraph Client stub for the Slash GraphQL endpoint"""
@@ -43,9 +44,8 @@ class SlashGraphQLClient(object):
         url = url.replace("https://", "")
         url_parts = url.split(".", 1)
         host = url_parts[0] + ".grpc." + url_parts[1]
-        PORT = "443"
         creds = grpc.ssl_channel_credentials()
         call_credentials = grpc.metadata_call_credentials(lambda context, callback: callback((("authorization", self._api_key),), None))
         composite_credentials = grpc.composite_channel_credentials(creds, call_credentials)
-        client_stub = pydgraph.DgraphClientStub('{host}:{port}'.format(host=host, port=PORT), composite_credentials, options=(('grpc.enable_http_proxy', 0),))
+        client_stub = pydgraph.DgraphClientStub('{host}:{port}'.format(host=host, port=self._port), composite_credentials, options=(('grpc.enable_http_proxy', 0),))
         return client_stub
