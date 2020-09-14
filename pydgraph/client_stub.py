@@ -19,6 +19,8 @@ import grpc
 from pydgraph.meta import VERSION
 from pydgraph.proto import api_pb2_grpc as api_grpc
 
+from urlparse import urlparse
+
 __author__ = 'Garvit Pahal <garvit@dgraph.io>'
 __maintainer__ = 'Martin Martinez Rivera <martinmr@dgraph.io>'
 __version__ = VERSION
@@ -49,7 +51,6 @@ class DgraphClientStub(object):
         """Async version of alter."""
         return self.stub.Alter.future(operation, timeout=timeout, metadata=metadata,
                                       credentials=credentials)
-
 
     def query(self, req, timeout=None, metadata=None, credentials=None):
         """Runs query or mutate operation."""
@@ -82,3 +83,18 @@ class DgraphClientStub(object):
             pass
         del self.channel
         del self.stub
+
+    @staticmethod
+    def from_slash_endpoint(slash_end_point, api_key):
+        """Returns Dgraph Client stub for the Slash GraphQL endpoint"""
+        url = urlparse(slash_end_point)
+        url_parts = url.netloc.split(".", 1)
+        host = url_parts[0] + ".grpc." + url_parts[1]
+        creds = grpc.ssl_channel_credentials()
+        call_credentials = grpc.metadata_call_credentials(
+            lambda context, callback: callback((("authorization", api_key),), None))
+        composite_credentials = grpc.composite_channel_credentials(
+            creds, call_credentials)
+        client_stub = DgraphClientStub('{host}:{port}'.format(
+            host=host, port="443"), composite_credentials, options=(('grpc.enable_http_proxy', 0),))
+        return client_stub
