@@ -19,7 +19,7 @@ import grpc
 from pydgraph.meta import VERSION
 from pydgraph.proto import api_pb2_grpc as api_grpc
 
-from urlparse import urlparse
+from urllib.parse import urlparse
 
 __author__ = 'Garvit Pahal <garvit@dgraph.io>'
 __maintainer__ = 'Martin Martinez Rivera <martinmr@dgraph.io>'
