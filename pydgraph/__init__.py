@@ -16,6 +16,5 @@ from pydgraph.proto.api_pb2 import Operation, Payload, Request, Response, Mutati
     Check, Version, NQuad, Value, Facet, Latency
 from pydgraph.client_stub import *
 from pydgraph.client import *
-from pydgraph.client_slash import *
 from pydgraph.txn import *
 from pydgraph.errors import *
