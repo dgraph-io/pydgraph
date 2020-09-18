@@ -8,6 +8,12 @@ and this project adheres to [Semantic Versioning](http://semver.org/spec/v2.0.0.
 ## [Unreleased]
 ===================
 
+## [v20.07.0] - 2020-09-18
+
+### Added
+- Support for Slash GraphQl
+- Fixed missing import in the client.
+
 ## [v20.03.1] - 2020-06-03
 
 ### Added
