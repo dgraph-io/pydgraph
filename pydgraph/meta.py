@@ -14,4 +14,4 @@
 
 """Metadata about this package."""
 
-VERSION = '20.03.1'
+VERSION = '20.07.0'
