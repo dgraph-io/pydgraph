@@ -16,7 +16,7 @@
 
 import random
 
-from pydgraph import txn, util
+from pydgraph import errors, txn, util
 from pydgraph.meta import VERSION
 from pydgraph.proto import api_pb2 as api
 
