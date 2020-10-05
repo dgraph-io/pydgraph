@@ -1,7 +1,6 @@
 # pydgraph
 
-Official Dgraph client implementation for Python (Python >= v2.7 and >= v3.5),
-using [grpc].
+Official Dgraph client implementation for Python (Python >= v2.7 and >= v3.5), using [gRPC][grpc].
 
 [grpc]: https://grpc.io/
 
@@ -42,6 +41,14 @@ Install using pip:
 
 ```sh
 pip install pydgraph
+```
+
+### Install Notes
+
+To avoid issues when adding composite credentials or when using client authorization, please install gRPC version 1.19.0: 
+
+```sh
+pip install grpcio==1.19.0
 ```
 
 ## Supported Versions
