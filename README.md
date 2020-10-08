@@ -323,7 +323,7 @@ txn.do_request(request)
 The upsert block also allows specifying a conditional mutation block using an `@if` directive. The mutation is executed
 only when the specified condition is true. If the condition is false, the mutation is silently ignored.
 
-See more about Conditional Upsert [Here](https://docs.dgraph.io/mutations/#conditional-upsert).
+See more about Conditional Upserts [here](https://docs.dgraph.io/mutations/#conditional-upsert).
 
 ```python
 query = """
