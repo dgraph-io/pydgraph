@@ -102,13 +102,13 @@ to make it easier to identify which version of Dgraph a client version supports.
 ### Added
 - Full compatibility with Dgraph v1.0.0
 
-[Unreleased]: https://github.com/dgraph-io/pydgraph/compare/v1.0.0...HEAD
-[v2.0.0] https://github.com/dgraph-io/pydgraph/compare/v1.2.0...v2.0.0
-[v1.2.0] https://github.com/dgraph-io/pydgraph/compare/v1.1.2...v1.2.0
-[v1.1.2]: https://github.com/dgraph-io/pydgraph/compare/v1.1.1...v1.1.2
-[v1.1.1]: https://github.com/dgraph-io/pydgraph/compare/v1.1...v1.1.1
-[v1.1]: https://github.com/dgraph-io/pydgraph/compare/v1.0.3...v1.1
-[v1.0.3]: https://github.com/dgraph-io/pydgraph/compare/v1.0.2...v1.0.3
-[v1.0.2]: https://github.com/dgraph-io/pydgraph/compare/v1.0.1...v1.0.2
-[v1.0.1]: https://github.com/dgraph-io/pydgraph/compare/v1.0.0...v1.0.1
-[v1.0.0]: https://github.com/dgraph-io/pydgraph/releases/tag/v1.0.0
+[Unreleased]:https://github.com/dgraph-io/pydgraph/compare/v1.0.0...HEAD
+[v2.0.0]:https://github.com/dgraph-io/pydgraph/compare/v1.2.0...v2.0.0
+[v1.2.0]:https://github.com/dgraph-io/pydgraph/compare/v1.1.2...v1.2.0
+[v1.1.2]:https://github.com/dgraph-io/pydgraph/compare/v1.1.1...v1.1.2
+[v1.1.1]:https://github.com/dgraph-io/pydgraph/compare/v1.1...v1.1.1
+[v1.1]:https://github.com/dgraph-io/pydgraph/compare/v1.0.3...v1.1
+[v1.0.3]:https://github.com/dgraph-io/pydgraph/compare/v1.0.2...v1.0.3
+[v1.0.2]:https://github.com/dgraph-io/pydgraph/compare/v1.0.1...v1.0.2
+[v1.0.1]:https://github.com/dgraph-io/pydgraph/compare/v1.0.0...v1.0.1
+[v1.0.0]:https://github.com/dgraph-io/pydgraph/releases/tag/v1.0.0
