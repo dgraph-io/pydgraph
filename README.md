@@ -376,7 +376,7 @@ metadata = [("auth-token", "the-auth-token-value")]
 dg.alter(op, metadata=metadata)
 ```
 
-### Setting a timeout.
+### Setting a timeout
 
 A timeout value representing the number of seconds can be passed to the `login`,
 `alter`, `query`, and `mutate` methods using the `timeout` keyword argument.
@@ -407,7 +407,7 @@ client_stub = pydgraph.DgraphClientStub(
 client = pydgraph.DgraphClient(client_stub)
 ```
 
-### Async methods.
+### Async methods
 
 The `alter` method in the client has an asyncronous version called
 `async_alter`. The async methods return a future. You can directly call the
