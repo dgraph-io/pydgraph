@@ -64,9 +64,9 @@ use a different version of this client.
 
 ## Quickstart
 
-Build and run the [simple][] project in the `examples` folder, which
-contains an end-to-end example of using the Dgraph python client. Follow the
-instructions in the README of that project.
+Build and run the [simple project][simple] in the `examples` folder, which
+contains an end-to-end example of using the Dgraph python client. For additional details, follow the
+instructions in the project's [README](./examples/simple/README.md).
 
 [simple]: ./examples/simple
 
@@ -98,8 +98,8 @@ op = pydgraph.Operation(schema=schema)
 client.alter(op)
 ```
 
-Starting Dgraph version 20.03.0, indexes can be computed in the background.
-You can set `run_in_background` field of the `pydgraph.Operation` to `True`
+Starting with Dgraph version 20.03.0, indexes can be computed in the background.
+You can set the `run_in_background` field of `pydgraph.Operation` to `True`
 before passing it to the `Alter` function. You can find more details
 [here](https://docs.dgraph.io/master/query-language/#indexes-in-background).
 
@@ -109,8 +109,8 @@ op = pydgraph.Operation(schema=schema, run_in_background=True)
 client.alter(op)
 ```
 
-`Operation` contains other fields as well, including drop predicate and drop all.
-Drop all is useful if you wish to discard all the data, and start from a clean
+`Operation` contains other fields as well, including the `drop` predicate and `drop all`.
+Drop all is useful if you wish to discard all the data, and start with a clean
 slate, without bringing the instance down.
 
 ```python
@@ -122,7 +122,7 @@ client.alter(op)
 
 ### Creating a Transaction
 
-To create a transaction, call `DgraphClient#txn()` method, which returns a
+To create a transaction, call the `DgraphClient#txn()` method, which returns a
 new `Txn` object. This operation incurs no network overhead.
 
 It is good practice to call `Txn#discard()` in a `finally` block after running
@@ -209,7 +209,7 @@ txn.mutate(del_obj=person)
 ```
 
 For a complete example with multiple fields and relationships, look at the
-[simple] project in the `examples` folder.
+[simple project][simple] in the `examples` folder.
 
 Sometimes, you only want to commit a mutation, without querying anything further.
 In such cases, you can set the keyword argument `commit_now=True` to indicate
@@ -226,7 +226,7 @@ txn.do_request(request)
 ### Committing a Transaction
 
 A transaction can be committed using the `Txn#commit()` method. If your transaction
-consisted solely of calls to `Txn#query` or `Txn#queryWithVars`, and no calls to
+consist solely of `Txn#query` or `Txn#queryWithVars` calls, and no calls to
 `Txn#mutate`, then calling `Txn#commit()` is not necessary.
 
 An error is raised if another transaction(s) modify the same data concurrently that was
@@ -252,11 +252,11 @@ finally:
 ### Running a Query
 
 You can run a query by calling `Txn#query(string)`. You will need to pass in a
-GraphQL+- query string. If you want to pass an additional dictionary of any
+[DQL](https://dgraph.io/docs/query-language/) query string. If you want to pass an additional dictionary of any
 variables that you might want to set in the query, call
 `Txn#query(string, variables=d)` with the variables dictionary `d`.
 
-The response would contain the field `json`, which returns the response JSON.
+The query response contains the `json` field, which returns the JSON response.
 
 Let’s run a query with a variable `$a`, deserialize the result from JSON and
 print it out:
@@ -303,8 +303,7 @@ txn.do_request(request)
 The `txn.do_request` function allows you to run upserts consisting of one query and
 one mutation. Query variables could be defined and can then be used in the mutation.
 
-To know more about upsert, we highly recommend going through the docs at
-https://docs.dgraph.io/mutations/#upsert-block.
+To know more about upsert, we highly recommend going through the [mutations docs](https://docs.dgraph.io/mutations/#upsert-block).
 
 ```python
 query = """{
@@ -366,7 +365,9 @@ stub2.close()
 ```
 
 ### Setting Metadata Headers
+
 Metadata headers such as authentication tokens can be set through the metadata of gRPC methods. Below is an example of how to set a header named "auth-token".
+
 ```python
 # The following piece of code shows how one can set metadata with
 # auth-token, to allow Alter operation, if the server requires it.
@@ -396,7 +397,7 @@ every request will need to include the credentials. In the example below, we are
 trying to add authentication to a proxy that requires an API key. This value is
 expected to be included in the metadata using the key "authorization".
 
-```
+```python
 creds = grpc.ssl_channel_credentials()
 call_credentials = grpc.metadata_call_credentials(
     lambda context, callback: callback((("authorization", "<api-key>"),), None))
@@ -413,7 +414,7 @@ The `alter` method in the client has an asyncronous version called
 `result` method on the future. However. The DgraphClient class provides a static
 method `handle_alter_future` to handle any possible exception.
 
-```
+```python
 alter_future = self.client.async_alter(pydgraph.Operation(
 	schema="name: string @index(term) ."))
 response = pydgraph.DgraphClient.handle_alter_future(alter_future)
@@ -426,7 +427,7 @@ just like `async_alter`.
 You can use the `handle_query_future` and `handle_mutate_future` static methods
 in the `Txn` class to retrieve the result. A short example is given below:
 
-```
+```python
 txn = client.txn()
 query = "query body here"
 future = txn.async_query()
