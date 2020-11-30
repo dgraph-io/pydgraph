@@ -300,12 +300,14 @@ txn.do_request(request)
 
 ### Running an Upsert: Query + Mutation
 
-The `txn.do_request` function allows you to use upsert blocks consisting of one
-query block and one mutation block. Query variables can be defined and can then
-be used in the mutation.
+The `txn.do_request` function allows you to use upsert blocks. An upsert block
+contains one query block and one or more mutation blocks, so it lets you perform
+queries and mutations in a single request. Variables defined in the query block
+can be used in the mutation blocks using the `uid` and `val` functions
+implemented by DQL.
 
 To learn more about upsert blocks, see the
-[Upsert Block docs](https://dgraph.io/docs/mutations/upsert-block/).
+[Upsert Block documentation](https://dgraph.io/docs/mutations/upsert-block/).
 
 ```python
 query = """{
