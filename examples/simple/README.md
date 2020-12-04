@@ -11,7 +11,7 @@ Simple project demonstrating the use of [pydgraph], the official python client f
 Store the following content in `docker-compose.yml`. Then, run `docker-compose up` to
 set up the Dgraph cluster:
 
-```
+```yml
 version: "3.2"
 services:
   zero:
