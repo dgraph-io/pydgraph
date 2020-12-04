@@ -409,7 +409,7 @@ client = pydgraph.DgraphClient(client_stub)
 
 ### Async methods
 
-The `alter` method in the client has an asyncronous version called
+The `alter` method in the client has an asynchronous version called
 `async_alter`. The async methods return a future. You can directly call the
 `result` method on the future. However. The DgraphClient class provides a static
 method `handle_alter_future` to handle any possible exception.
