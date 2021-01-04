@@ -56,9 +56,9 @@ class Txn(object):
         self._read_only = read_only
         self._best_effort = best_effort
 
-    def query(self, query, variables=None, timeout=None, metadata=None, credentials=None):
+    def query(self, query, variables=None, timeout=None, metadata=None, credentials=None, resp_format="json"):
         """Executes a query operation."""
-        req = self.create_request(query=query, variables=variables)
+        req = self.create_request(query=query, variables=variables, resp_format=resp_format)
         return self.do_request(req, timeout=timeout, metadata=metadata, credentials=credentials)
 
     def async_query(self, query, variables=None, timeout=None, metadata=None, credentials=None):
@@ -191,7 +191,7 @@ class Txn(object):
             mutation.cond = cond.encode('utf8')
         return mutation
 
-    def create_request(self, query=None, variables=None, mutations=None, commit_now=None):
+    def create_request(self, query=None, variables=None, mutations=None, commit_now=None, resp_format="json"):
         """Creates a request object"""
         request = api.Request(start_ts = self._ctx.start_ts, commit_now=commit_now,
                               read_only=self._read_only, best_effort=self._best_effort)
