@@ -192,12 +192,12 @@ class Txn(object):
         return mutation
 
     def create_request(self, query=None, variables=None, mutations=None, commit_now=None, resp_format="JSON"):
-        switch(resp_format) {
-        case "RDF":
-            resp_format = api.Request.RespFormat.RDF
-        default:
+        if resp_format=="JSON":
             resp_format = api.Request.RespFormat.JSON
-        };
+        elif resp_format =="RDF":
+            resp_format = api.Request.RespFormat.RDF
+        else: raise errors.TransactionError('Response format should be either RDF or JSON')
+
         """Creates a request object"""
         request = api.Request(start_ts = self._ctx.start_ts, commit_now=commit_now,
                               read_only=self._read_only, best_effort=self._best_effort, resp_format = resp_format)
