@@ -90,9 +90,9 @@ class TestQueries(helper.ClientIntegrationTestCase):
         """ Run query with JSON and RDF resp_format and verify the result """
         response = self.client.txn().query(queryRDF, variables={'$a': 'Alice'})
         uid = json.loads(response.json).get('q')[0]['uid']
-        expected_rdf = "<{}> <name> \"Alice\" .\n".format(uid)
+        expected_rdf = '<{}> <name> \"Alice\" .\n'.format(uid)
         response = self.client.txn().query(queryRDF, variables={'$a': 'Alice'}, resp_format="RDF")
-        self.assertEqual(expected_rdf,response.rdf)
+        self.assertEqual(expected_rdf,response.rdf.decode('utf-8'))
 
 def is_number(number):
     """Returns true if object is a number. Compatible with Python 2 and 3."""
