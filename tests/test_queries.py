@@ -69,6 +69,14 @@ class TestQueries(helper.ClientIntegrationTestCase):
             }
         }"""
 
+        queryRDF = """query q($a: string) {
+            q(func: anyofterms(name, "Alice"))
+            {
+                uid
+                name
+            }
+        }"""
+
         response = self.client.txn().query(query, variables={'$a': 'Alice'})
         self.assertEqual([{'name': 'Alice', 'follows': [{'name': 'Greg'}]}],
                          json.loads(response.json).get('me'))
@@ -79,6 +87,12 @@ class TestQueries(helper.ClientIntegrationTestCase):
         self.assertTrue(is_number(response.latency.encoding_ns),
                         'Encoding latency is not available')
 
+        """ Run query with JSON and RDF resp_format and verify the result """
+        response = self.client.txn().query(queryRDF, variables={'$a': 'Alice'})
+        uid = json.loads(response.json).get('q')[0]['uid']
+        expected_rdf = '<{}> <name> \"Alice\" .\n'.format(uid)
+        response = self.client.txn().query(queryRDF, variables={'$a': 'Alice'}, resp_format="RDF")
+        self.assertEqual(expected_rdf,response.rdf.decode('utf-8'))
 
 def is_number(number):
     """Returns true if object is a number. Compatible with Python 2 and 3."""
