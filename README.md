@@ -1,16 +1,18 @@
 # pydgraph
 
-Official Dgraph client implementation for Python (Python >= v2.7 and >= v3.5), using [gRPC][grpc].
+This is the official Dgraph database client implementation for Python (Python >= v2.7 and >= v3.5), using [gRPC][grpc].
 
 [grpc]: https://grpc.io/
 
 This client follows the [Dgraph Go client][goclient] closely.
 
-**Use [Discuss Issues](https://discuss.dgraph.io/c/issues/35/clients/46) for reporting issues about this repository.**
+**Use [Discuss Issues](https://discuss.dgraph.io/c/issues/35/clients/46) to report issues about this repository.**
 
 [goclient]: https://github.com/dgraph-io/dgo
-Before using this client, we highly recommend that you go through [docs.dgraph.io],
-and understand how to run and work with Dgraph.
+
+Before using this client, we highly recommend that you read the [Dgraph Python
+Client docs](https://dgraph.io/docs/clients/python/), as well as reviewing
+the product documentation at [docs.dgraph.io].
 
 [docs.dgraph.io]:https://docs.dgraph.io
 
