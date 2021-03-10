@@ -68,6 +68,21 @@ class DgraphClient(object):
         login_req = api.LoginRequest()
         login_req.userid = userid
         login_req.password = password
+        login_req.namespace = 0
+
+        response = self.any_client().login(login_req, timeout=timeout,
+                                           metadata=metadata,
+                                           credentials=credentials)
+        self._jwt = api.Jwt()
+        self._jwt.ParseFromString(response.json)
+        self._login_metadata = [("accessjwt", self._jwt.access_jwt)]
+
+    def login_into_namespace(self, userid, password, namespace, timeout=None, metadata=None,
+              credentials=None):
+        login_req = api.LoginRequest()
+        login_req.userid = userid
+        login_req.password = password
+        login_req.namespace = namespace
 
         response = self.any_client().login(login_req, timeout=timeout,
                                            metadata=metadata,
