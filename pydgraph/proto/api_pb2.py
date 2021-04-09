@@ -19,7 +19,7 @@ DESCRIPTOR = _descriptor.FileDescriptor(
   name='api.proto',
   package='api',
   syntax='proto3',
-  serialized_pb=_b('\n\tapi.proto\x12\x03\x61pi\"\xaa\x02\n\x07Request\x12\x10\n\x08start_ts\x18\x01 \x01(\x04\x12\r\n\x05query\x18\x04 \x01(\t\x12$\n\x04vars\x18\x05 \x03(\x0b\x32\x16.api.Request.VarsEntry\x12\x11\n\tread_only\x18\x06 \x01(\x08\x12\x13\n\x0b\x62\x65st_effort\x18\x07 \x01(\x08\x12 \n\tmutations\x18\x0c \x03(\x0b\x32\r.api.Mutation\x12\x12\n\ncommit_now\x18\r \x01(\x08\x12,\n\x0bresp_format\x18\x0e \x01(\x0e\x32\x17.api.Request.RespFormat\x1a+\n\tVarsEntry\x12\x0b\n\x03key\x18\x01 \x01(\t\x12\r\n\x05value\x18\x02 \x01(\t:\x02\x38\x01\"\x1f\n\nRespFormat\x12\x08\n\x04JSON\x10\x00\x12\x07\n\x03RDF\x10\x01\"\x14\n\x04Uids\x12\x0c\n\x04uids\x18\x01 \x03(\t\"\x1d\n\x0cListOfString\x12\r\n\x05value\x18\x01 \x03(\t\"\xbc\x02\n\x08Response\x12\x0c\n\x04json\x18\x01 \x01(\x0c\x12\x1c\n\x03txn\x18\x02 \x01(\x0b\x32\x0f.api.TxnContext\x12\x1d\n\x07latency\x18\x03 \x01(\x0b\x32\x0c.api.Latency\x12\x1d\n\x07metrics\x18\x04 \x01(\x0b\x32\x0c.api.Metrics\x12%\n\x04uids\x18\x0c \x03(\x0b\x32\x17.api.Response.UidsEntry\x12\x0b\n\x03rdf\x18\r \x01(\x0c\x12%\n\x04hdrs\x18\x0e \x03(\x0b\x32\x17.api.Response.HdrsEntry\x1a+\n\tUidsEntry\x12\x0b\n\x03key\x18\x01 \x01(\t\x12\r\n\x05value\x18\x02 \x01(\t:\x02\x38\x01\x1a>\n\tHdrsEntry\x12\x0b\n\x03key\x18\x01 \x01(\t\x12 \n\x05value\x18\x02 \x01(\x0b\x32\x11.api.ListOfString:\x02\x38\x01\"\xad\x01\n\x08Mutation\x12\x10\n\x08set_json\x18\x01 \x01(\x0c\x12\x13\n\x0b\x64\x65lete_json\x18\x02 \x01(\x0c\x12\x12\n\nset_nquads\x18\x03 \x01(\x0c\x12\x12\n\ndel_nquads\x18\x04 \x01(\x0c\x12\x17\n\x03set\x18\x05 \x03(\x0b\x32\n.api.NQuad\x12\x17\n\x03\x64\x65l\x18\x06 \x03(\x0b\x32\n.api.NQuad\x12\x0c\n\x04\x63ond\x18\t \x01(\t\x12\x12\n\ncommit_now\x18\x0e \x01(\x08\"\xd2\x01\n\tOperation\x12\x0e\n\x06schema\x18\x01 \x01(\t\x12\x11\n\tdrop_attr\x18\x02 \x01(\t\x12\x10\n\x08\x64rop_all\x18\x03 \x01(\x08\x12&\n\x07\x64rop_op\x18\x04 \x01(\x0e\x32\x15.api.Operation.DropOp\x12\x12\n\ndrop_value\x18\x05 \x01(\t\x12\x19\n\x11run_in_background\x18\x06 \x01(\x08\"9\n\x06\x44ropOp\x12\x08\n\x04NONE\x10\x00\x12\x07\n\x03\x41LL\x10\x01\x12\x08\n\x04\x44\x41TA\x10\x02\x12\x08\n\x04\x41TTR\x10\x03\x12\x08\n\x04TYPE\x10\x04\"\x17\n\x07Payload\x12\x0c\n\x04\x44\x61ta\x18\x01 \x01(\x0c\"_\n\nTxnContext\x12\x10\n\x08start_ts\x18\x01 \x01(\x04\x12\x11\n\tcommit_ts\x18\x02 \x01(\x04\x12\x0f\n\x07\x61\x62orted\x18\x03 \x01(\x08\x12\x0c\n\x04keys\x18\x04 \x03(\t\x12\r\n\x05preds\x18\x05 \x03(\t\"\x07\n\x05\x43heck\"\x16\n\x07Version\x12\x0b\n\x03tag\x18\x01 \x01(\t\"x\n\x07Latency\x12\x12\n\nparsing_ns\x18\x01 \x01(\x04\x12\x15\n\rprocessing_ns\x18\x02 \x01(\x04\x12\x13\n\x0b\x65ncoding_ns\x18\x03 \x01(\x04\x12\x1b\n\x13\x61ssign_timestamp_ns\x18\x04 \x01(\x04\x12\x10\n\x08total_ns\x18\x05 \x01(\x04\"f\n\x07Metrics\x12+\n\x08num_uids\x18\x01 \x03(\x0b\x32\x19.api.Metrics.NumUidsEntry\x1a.\n\x0cNumUidsEntry\x12\x0b\n\x03key\x18\x01 \x01(\t\x12\r\n\x05value\x18\x02 \x01(\x04:\x02\x38\x01\"\xa3\x01\n\x05NQuad\x12\x0f\n\x07subject\x18\x01 \x01(\t\x12\x11\n\tpredicate\x18\x02 \x01(\t\x12\x11\n\tobject_id\x18\x03 \x01(\t\x12 \n\x0cobject_value\x18\x04 \x01(\x0b\x32\n.api.Value\x12\x0c\n\x04lang\x18\x06 \x01(\t\x12\x1a\n\x06\x66\x61\x63\x65ts\x18\x07 \x03(\x0b\x32\n.api.Facet\x12\x11\n\tnamespace\x18\x08 \x01(\x04J\x04\x08\x05\x10\x06\"\xf4\x01\n\x05Value\x12\x15\n\x0b\x64\x65\x66\x61ult_val\x18\x01 \x01(\tH\x00\x12\x13\n\tbytes_val\x18\x02 \x01(\x0cH\x00\x12\x11\n\x07int_val\x18\x03 \x01(\x03H\x00\x12\x12\n\x08\x62ool_val\x18\x04 \x01(\x08H\x00\x12\x11\n\x07str_val\x18\x05 \x01(\tH\x00\x12\x14\n\ndouble_val\x18\x06 \x01(\x01H\x00\x12\x11\n\x07geo_val\x18\x07 \x01(\x0cH\x00\x12\x12\n\x08\x64\x61te_val\x18\x08 \x01(\x0cH\x00\x12\x16\n\x0c\x64\x61tetime_val\x18\t \x01(\x0cH\x00\x12\x16\n\x0cpassword_val\x18\n \x01(\tH\x00\x12\x11\n\x07uid_val\x18\x0b \x01(\x04H\x00\x42\x05\n\x03val\"\xab\x01\n\x05\x46\x61\x63\x65t\x12\x0b\n\x03key\x18\x01 \x01(\t\x12\r\n\x05value\x18\x02 \x01(\x0c\x12$\n\x08val_type\x18\x03 \x01(\x0e\x32\x12.api.Facet.ValType\x12\x0e\n\x06tokens\x18\x04 \x03(\t\x12\r\n\x05\x61lias\x18\x05 \x01(\t\"A\n\x07ValType\x12\n\n\x06STRING\x10\x00\x12\x07\n\x03INT\x10\x01\x12\t\n\x05\x46LOAT\x10\x02\x12\x08\n\x04\x42OOL\x10\x03\x12\x0c\n\x08\x44\x41TETIME\x10\x04\"Z\n\x0cLoginRequest\x12\x0e\n\x06userid\x18\x01 \x01(\t\x12\x10\n\x08password\x18\x02 \x01(\t\x12\x15\n\rrefresh_token\x18\x03 \x01(\t\x12\x11\n\tnamespace\x18\x04 \x01(\x04\".\n\x03Jwt\x12\x12\n\naccess_jwt\x18\x01 \x01(\t\x12\x13\n\x0brefresh_jwt\x18\x02 \x01(\t2\xe7\x01\n\x06\x44graph\x12+\n\x05Login\x12\x11.api.LoginRequest\x1a\r.api.Response\"\x00\x12&\n\x05Query\x12\x0c.api.Request\x1a\r.api.Response\"\x00\x12\'\n\x05\x41lter\x12\x0e.api.Operation\x1a\x0c.api.Payload\"\x00\x12\x33\n\rCommitOrAbort\x12\x0f.api.TxnContext\x1a\x0f.api.TxnContext\"\x00\x12*\n\x0c\x43heckVersion\x12\n.api.Check\x1a\x0c.api.Version\"\x00\x42\x18\n\tio.dgraphB\x0b\x44graphProtob\x06proto3')
+  serialized_pb=_b('\n\tapi.proto\x12\x03\x61pi\"\xb8\x02\n\x07Request\x12\x10\n\x08start_ts\x18\x01 \x01(\x04\x12\r\n\x05query\x18\x04 \x01(\t\x12$\n\x04vars\x18\x05 \x03(\x0b\x32\x16.api.Request.VarsEntry\x12\x11\n\tread_only\x18\x06 \x01(\x08\x12\x13\n\x0b\x62\x65st_effort\x18\x07 \x01(\x08\x12 \n\tmutations\x18\x0c \x03(\x0b\x32\r.api.Mutation\x12\x12\n\ncommit_now\x18\r \x01(\x08\x12,\n\x0bresp_format\x18\x0e \x01(\x0e\x32\x17.api.Request.RespFormat\x12\x0c\n\x04hash\x18\x0f \x01(\t\x1a+\n\tVarsEntry\x12\x0b\n\x03key\x18\x01 \x01(\t\x12\r\n\x05value\x18\x02 \x01(\t:\x02\x38\x01\"\x1f\n\nRespFormat\x12\x08\n\x04JSON\x10\x00\x12\x07\n\x03RDF\x10\x01\"\x14\n\x04Uids\x12\x0c\n\x04uids\x18\x01 \x03(\t\"\x1d\n\x0cListOfString\x12\r\n\x05value\x18\x01 \x03(\t\"\xbc\x02\n\x08Response\x12\x0c\n\x04json\x18\x01 \x01(\x0c\x12\x1c\n\x03txn\x18\x02 \x01(\x0b\x32\x0f.api.TxnContext\x12\x1d\n\x07latency\x18\x03 \x01(\x0b\x32\x0c.api.Latency\x12\x1d\n\x07metrics\x18\x04 \x01(\x0b\x32\x0c.api.Metrics\x12%\n\x04uids\x18\x0c \x03(\x0b\x32\x17.api.Response.UidsEntry\x12\x0b\n\x03rdf\x18\r \x01(\x0c\x12%\n\x04hdrs\x18\x0e \x03(\x0b\x32\x17.api.Response.HdrsEntry\x1a+\n\tUidsEntry\x12\x0b\n\x03key\x18\x01 \x01(\t\x12\r\n\x05value\x18\x02 \x01(\t:\x02\x38\x01\x1a>\n\tHdrsEntry\x12\x0b\n\x03key\x18\x01 \x01(\t\x12 \n\x05value\x18\x02 \x01(\x0b\x32\x11.api.ListOfString:\x02\x38\x01\"\xad\x01\n\x08Mutation\x12\x10\n\x08set_json\x18\x01 \x01(\x0c\x12\x13\n\x0b\x64\x65lete_json\x18\x02 \x01(\x0c\x12\x12\n\nset_nquads\x18\x03 \x01(\x0c\x12\x12\n\ndel_nquads\x18\x04 \x01(\x0c\x12\x17\n\x03set\x18\x05 \x03(\x0b\x32\n.api.NQuad\x12\x17\n\x03\x64\x65l\x18\x06 \x03(\x0b\x32\n.api.NQuad\x12\x0c\n\x04\x63ond\x18\t \x01(\t\x12\x12\n\ncommit_now\x18\x0e \x01(\x08\"\xd2\x01\n\tOperation\x12\x0e\n\x06schema\x18\x01 \x01(\t\x12\x11\n\tdrop_attr\x18\x02 \x01(\t\x12\x10\n\x08\x64rop_all\x18\x03 \x01(\x08\x12&\n\x07\x64rop_op\x18\x04 \x01(\x0e\x32\x15.api.Operation.DropOp\x12\x12\n\ndrop_value\x18\x05 \x01(\t\x12\x19\n\x11run_in_background\x18\x06 \x01(\x08\"9\n\x06\x44ropOp\x12\x08\n\x04NONE\x10\x00\x12\x07\n\x03\x41LL\x10\x01\x12\x08\n\x04\x44\x41TA\x10\x02\x12\x08\n\x04\x41TTR\x10\x03\x12\x08\n\x04TYPE\x10\x04\"\x17\n\x07Payload\x12\x0c\n\x04\x44\x61ta\x18\x01 \x01(\x0c\"m\n\nTxnContext\x12\x10\n\x08start_ts\x18\x01 \x01(\x04\x12\x11\n\tcommit_ts\x18\x02 \x01(\x04\x12\x0f\n\x07\x61\x62orted\x18\x03 \x01(\x08\x12\x0c\n\x04keys\x18\x04 \x03(\t\x12\r\n\x05preds\x18\x05 \x03(\t\x12\x0c\n\x04hash\x18\x06 \x01(\t\"\x07\n\x05\x43heck\"\x16\n\x07Version\x12\x0b\n\x03tag\x18\x01 \x01(\t\"x\n\x07Latency\x12\x12\n\nparsing_ns\x18\x01 \x01(\x04\x12\x15\n\rprocessing_ns\x18\x02 \x01(\x04\x12\x13\n\x0b\x65ncoding_ns\x18\x03 \x01(\x04\x12\x1b\n\x13\x61ssign_timestamp_ns\x18\x04 \x01(\x04\x12\x10\n\x08total_ns\x18\x05 \x01(\x04\"f\n\x07Metrics\x12+\n\x08num_uids\x18\x01 \x03(\x0b\x32\x19.api.Metrics.NumUidsEntry\x1a.\n\x0cNumUidsEntry\x12\x0b\n\x03key\x18\x01 \x01(\t\x12\r\n\x05value\x18\x02 \x01(\x04:\x02\x38\x01\"\xa3\x01\n\x05NQuad\x12\x0f\n\x07subject\x18\x01 \x01(\t\x12\x11\n\tpredicate\x18\x02 \x01(\t\x12\x11\n\tobject_id\x18\x03 \x01(\t\x12 \n\x0cobject_value\x18\x04 \x01(\x0b\x32\n.api.Value\x12\x0c\n\x04lang\x18\x06 \x01(\t\x12\x1a\n\x06\x66\x61\x63\x65ts\x18\x07 \x03(\x0b\x32\n.api.Facet\x12\x11\n\tnamespace\x18\x08 \x01(\x04J\x04\x08\x05\x10\x06\"\xf4\x01\n\x05Value\x12\x15\n\x0b\x64\x65\x66\x61ult_val\x18\x01 \x01(\tH\x00\x12\x13\n\tbytes_val\x18\x02 \x01(\x0cH\x00\x12\x11\n\x07int_val\x18\x03 \x01(\x03H\x00\x12\x12\n\x08\x62ool_val\x18\x04 \x01(\x08H\x00\x12\x11\n\x07str_val\x18\x05 \x01(\tH\x00\x12\x14\n\ndouble_val\x18\x06 \x01(\x01H\x00\x12\x11\n\x07geo_val\x18\x07 \x01(\x0cH\x00\x12\x12\n\x08\x64\x61te_val\x18\x08 \x01(\x0cH\x00\x12\x16\n\x0c\x64\x61tetime_val\x18\t \x01(\x0cH\x00\x12\x16\n\x0cpassword_val\x18\n \x01(\tH\x00\x12\x11\n\x07uid_val\x18\x0b \x01(\x04H\x00\x42\x05\n\x03val\"\xab\x01\n\x05\x46\x61\x63\x65t\x12\x0b\n\x03key\x18\x01 \x01(\t\x12\r\n\x05value\x18\x02 \x01(\x0c\x12$\n\x08val_type\x18\x03 \x01(\x0e\x32\x12.api.Facet.ValType\x12\x0e\n\x06tokens\x18\x04 \x03(\t\x12\r\n\x05\x61lias\x18\x05 \x01(\t\"A\n\x07ValType\x12\n\n\x06STRING\x10\x00\x12\x07\n\x03INT\x10\x01\x12\t\n\x05\x46LOAT\x10\x02\x12\x08\n\x04\x42OOL\x10\x03\x12\x0c\n\x08\x44\x41TETIME\x10\x04\"Z\n\x0cLoginRequest\x12\x0e\n\x06userid\x18\x01 \x01(\t\x12\x10\n\x08password\x18\x02 \x01(\t\x12\x15\n\rrefresh_token\x18\x03 \x01(\t\x12\x11\n\tnamespace\x18\x04 \x01(\x04\".\n\x03Jwt\x12\x12\n\naccess_jwt\x18\x01 \x01(\t\x12\x13\n\x0brefresh_jwt\x18\x02 \x01(\t2\xe7\x01\n\x06\x44graph\x12+\n\x05Login\x12\x11.api.LoginRequest\x1a\r.api.Response\"\x00\x12&\n\x05Query\x12\x0c.api.Request\x1a\r.api.Response\"\x00\x12\'\n\x05\x41lter\x12\x0e.api.Operation\x1a\x0c.api.Payload\"\x00\x12\x33\n\rCommitOrAbort\x12\x0f.api.TxnContext\x1a\x0f.api.TxnContext\"\x00\x12*\n\x0c\x43heckVersion\x12\n.api.Check\x1a\x0c.api.Version\"\x00\x42\x18\n\tio.dgraphB\x0b\x44graphProtob\x06proto3')
 )
 _sym_db.RegisterFileDescriptor(DESCRIPTOR)
 
@@ -42,8 +42,8 @@ _REQUEST_RESPFORMAT = _descriptor.EnumDescriptor(
   ],
   containing_type=None,
   options=None,
-  serialized_start=286,
-  serialized_end=317,
+  serialized_start=300,
+  serialized_end=331,
 )
 _sym_db.RegisterEnumDescriptor(_REQUEST_RESPFORMAT)
 
@@ -76,8 +76,8 @@ _OPERATION_DROPOP = _descriptor.EnumDescriptor(
   ],
   containing_type=None,
   options=None,
-  serialized_start=1021,
-  serialized_end=1078,
+  serialized_start=1035,
+  serialized_end=1092,
 )
 _sym_db.RegisterEnumDescriptor(_OPERATION_DROPOP)
 
@@ -110,8 +110,8 @@ _FACET_VALTYPE = _descriptor.EnumDescriptor(
   ],
   containing_type=None,
   options=None,
-  serialized_start=1981,
-  serialized_end=2046,
+  serialized_start=2009,
+  serialized_end=2074,
 )
 _sym_db.RegisterEnumDescriptor(_FACET_VALTYPE)
 
@@ -149,8 +149,8 @@ _REQUEST_VARSENTRY = _descriptor.Descriptor(
   extension_ranges=[],
   oneofs=[
   ],
-  serialized_start=241,
-  serialized_end=284,
+  serialized_start=255,
+  serialized_end=298,
 )
 
 _REQUEST = _descriptor.Descriptor(
@@ -216,6 +216,13 @@ _REQUEST = _descriptor.Descriptor(
       message_type=None, enum_type=None, containing_type=None,
       is_extension=False, extension_scope=None,
       options=None),
+    _descriptor.FieldDescriptor(
+      name='hash', full_name='api.Request.hash', index=8,
+      number=15, type=9, cpp_type=9, label=1,
+      has_default_value=False, default_value=_b("").decode('utf-8'),
+      message_type=None, enum_type=None, containing_type=None,
+      is_extension=False, extension_scope=None,
+      options=None),
   ],
   extensions=[
   ],
@@ -230,7 +237,7 @@ _REQUEST = _descriptor.Descriptor(
   oneofs=[
   ],
   serialized_start=19,
-  serialized_end=317,
+  serialized_end=331,
 )
 
 
@@ -260,8 +267,8 @@ _UIDS = _descriptor.Descriptor(
   extension_ranges=[],
   oneofs=[
   ],
-  serialized_start=319,
-  serialized_end=339,
+  serialized_start=333,
+  serialized_end=353,
 )
 
 
@@ -291,8 +298,8 @@ _LISTOFSTRING = _descriptor.Descriptor(
   extension_ranges=[],
   oneofs=[
   ],
-  serialized_start=341,
-  serialized_end=370,
+  serialized_start=355,
+  serialized_end=384,
 )
 
 
@@ -329,8 +336,8 @@ _RESPONSE_UIDSENTRY = _descriptor.Descriptor(
   extension_ranges=[],
   oneofs=[
   ],
-  serialized_start=582,
-  serialized_end=625,
+  serialized_start=596,
+  serialized_end=639,
 )
 
 _RESPONSE_HDRSENTRY = _descriptor.Descriptor(
@@ -366,8 +373,8 @@ _RESPONSE_HDRSENTRY = _descriptor.Descriptor(
   extension_ranges=[],
   oneofs=[
   ],
-  serialized_start=627,
-  serialized_end=689,
+  serialized_start=641,
+  serialized_end=703,
 )
 
 _RESPONSE = _descriptor.Descriptor(
@@ -438,8 +445,8 @@ _RESPONSE = _descriptor.Descriptor(
   extension_ranges=[],
   oneofs=[
   ],
-  serialized_start=373,
-  serialized_end=689,
+  serialized_start=387,
+  serialized_end=703,
 )
 
 
@@ -518,8 +525,8 @@ _MUTATION = _descriptor.Descriptor(
   extension_ranges=[],
   oneofs=[
   ],
-  serialized_start=692,
-  serialized_end=865,
+  serialized_start=706,
+  serialized_end=879,
 )
 
 
@@ -585,8 +592,8 @@ _OPERATION = _descriptor.Descriptor(
   extension_ranges=[],
   oneofs=[
   ],
-  serialized_start=868,
-  serialized_end=1078,
+  serialized_start=882,
+  serialized_end=1092,
 )
 
 
@@ -616,8 +623,8 @@ _PAYLOAD = _descriptor.Descriptor(
   extension_ranges=[],
   oneofs=[
   ],
-  serialized_start=1080,
-  serialized_end=1103,
+  serialized_start=1094,
+  serialized_end=1117,
 )
 
 
@@ -663,6 +670,13 @@ _TXNCONTEXT = _descriptor.Descriptor(
       message_type=None, enum_type=None, containing_type=None,
       is_extension=False, extension_scope=None,
       options=None),
+    _descriptor.FieldDescriptor(
+      name='hash', full_name='api.TxnContext.hash', index=5,
+      number=6, type=9, cpp_type=9, label=1,
+      has_default_value=False, default_value=_b("").decode('utf-8'),
+      message_type=None, enum_type=None, containing_type=None,
+      is_extension=False, extension_scope=None,
+      options=None),
   ],
   extensions=[
   ],
@@ -675,8 +689,8 @@ _TXNCONTEXT = _descriptor.Descriptor(
   extension_ranges=[],
   oneofs=[
   ],
-  serialized_start=1105,
-  serialized_end=1200,
+  serialized_start=1119,
+  serialized_end=1228,
 )
 
 
@@ -699,8 +713,8 @@ _CHECK = _descriptor.Descriptor(
   extension_ranges=[],
   oneofs=[
   ],
-  serialized_start=1202,
-  serialized_end=1209,
+  serialized_start=1230,
+  serialized_end=1237,
 )
 
 
@@ -730,8 +744,8 @@ _VERSION = _descriptor.Descriptor(
   extension_ranges=[],
   oneofs=[
   ],
-  serialized_start=1211,
-  serialized_end=1233,
+  serialized_start=1239,
+  serialized_end=1261,
 )
 
 
@@ -789,8 +803,8 @@ _LATENCY = _descriptor.Descriptor(
   extension_ranges=[],
   oneofs=[
   ],
-  serialized_start=1235,
-  serialized_end=1355,
+  serialized_start=1263,
+  serialized_end=1383,
 )
 
 
@@ -827,8 +841,8 @@ _METRICS_NUMUIDSENTRY = _descriptor.Descriptor(
   extension_ranges=[],
   oneofs=[
   ],
-  serialized_start=1413,
-  serialized_end=1459,
+  serialized_start=1441,
+  serialized_end=1487,
 )
 
 _METRICS = _descriptor.Descriptor(
@@ -857,8 +871,8 @@ _METRICS = _descriptor.Descriptor(
   extension_ranges=[],
   oneofs=[
   ],
-  serialized_start=1357,
-  serialized_end=1459,
+  serialized_start=1385,
+  serialized_end=1487,
 )
 
 
@@ -930,8 +944,8 @@ _NQUAD = _descriptor.Descriptor(
   extension_ranges=[],
   oneofs=[
   ],
-  serialized_start=1462,
-  serialized_end=1625,
+  serialized_start=1490,
+  serialized_end=1653,
 )
 
 
@@ -1034,8 +1048,8 @@ _VALUE = _descriptor.Descriptor(
       name='val', full_name='api.Value.val',
       index=0, containing_type=None, fields=[]),
   ],
-  serialized_start=1628,
-  serialized_end=1872,
+  serialized_start=1656,
+  serialized_end=1900,
 )
 
 
@@ -1094,8 +1108,8 @@ _FACET = _descriptor.Descriptor(
   extension_ranges=[],
   oneofs=[
   ],
-  serialized_start=1875,
-  serialized_end=2046,
+  serialized_start=1903,
+  serialized_end=2074,
 )
 
 
@@ -1146,8 +1160,8 @@ _LOGINREQUEST = _descriptor.Descriptor(
   extension_ranges=[],
   oneofs=[
   ],
-  serialized_start=2048,
-  serialized_end=2138,
+  serialized_start=2076,
+  serialized_end=2166,
 )
 
 
@@ -1184,8 +1198,8 @@ _JWT = _descriptor.Descriptor(
   extension_ranges=[],
   oneofs=[
   ],
-  serialized_start=2140,
-  serialized_end=2186,
+  serialized_start=2168,
+  serialized_end=2214,
 )
 
 _REQUEST_VARSENTRY.containing_type = _REQUEST

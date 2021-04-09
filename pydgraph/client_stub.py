@@ -87,6 +87,8 @@ class DgraphClientStub(object):
         del self.channel
         del self.stub
 
+    # from_slash_endpoint is deprecated and will be removed in v21.07 release. For more details,
+    # see: https://discuss.dgraph.io/t/regarding-slash-cloud-dgraph-endpoints-in-the-clients/13492
     @staticmethod
     def from_slash_endpoint(slash_end_point, api_key):
         """Returns Dgraph Client stub for the Slash GraphQL endpoint"""
