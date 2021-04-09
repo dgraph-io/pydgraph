@@ -95,6 +95,7 @@ class Txn(object):
                 raise errors.TransactionError('Readonly transaction cannot run mutations')
             self._mutated = True
 
+        request.hash = self._ctx.hash
         new_metadata = self._dg.add_login_metadata(metadata)
         query_error = None
         try:
@@ -311,7 +312,7 @@ class Txn(object):
         elif self._ctx.start_ts != src.start_ts:
             # This condition should never be true.
             raise errors.TransactionError('StartTs mismatch')
-
+        self._ctx.hash = src.hash
         self._ctx.keys.extend(src.keys)
         self._ctx.preds.extend(src.preds)
 
