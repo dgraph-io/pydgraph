@@ -5,4 +5,4 @@ Simple demonstration on how to automatically convert DGraph's DateTime strings t
 
 ## Running
 
-The conditions for running this example are the same as described in the [simple example](dgraph-io/pydgraph/tree/master/examples/simple).
+The conditions for running this example are the same as described in the [simple example](pydgraph/tree/master/examples/simple).
