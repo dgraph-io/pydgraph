@@ -24,7 +24,7 @@ services:
       - 8080:8080
       - 9080:9080
     restart: on-failure
-    command: dgraph alpha --my=server:7080 --lru_mb=2048 --zero=zero:5080 --whitelist "${WHITELISTED}"
+    command: dgraph alpha --my=server:7080 --zero=zero:5080 --security "whitelist=${WHITELISTED}"
 ```
 The "WHITELISTED" environment variable can be intiialized as described [in this post](https://discuss.dgraph.io/t/suggestion-for-how-to-add-docker-compose-network-to-whitelist/9600). We need to whitelist these IPs because the docker container runs with it's own IP address.
 
