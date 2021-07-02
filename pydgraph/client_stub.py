@@ -92,14 +92,14 @@ class DgraphClientStub(object):
     @staticmethod
     def from_slash_endpoint(cloud_end_point, api_key):
         return from_cloud(cloud_end_point, api_key)
-    
+
     # Usage:
     # import pydgraph
     # client_stub = pydgraph.DgraphClientStub.from_cloud("cloud_endpoint", "api-key")
     # client = pydgraph.DgraphClient(client_stub)
     @staticmethod
     def from_cloud(cloud_end_point, api_key):
-    """Returns Dgraph Client stub for the Slash GraphQL endpoint"""
+        """Returns Dgraph Client stub for the Slash GraphQL endpoint"""
         url = urlparse(slash_end_point)
         url_parts = url.netloc.split(".", 1)
         host = url_parts[0] + ".grpc." + url_parts[1]
