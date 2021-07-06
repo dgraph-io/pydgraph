@@ -25,18 +25,19 @@ information.
 Create the root CA. All certificates and keys are created in the `tls` directory.
 
 ```sh
-dgraph cert
+docker run -t --volume $PWD/tls:/dgraph-tls dgraph/dgraph:latest dgraph cert --dir /dgraph-tls
 ```
+
 
 Now create the Alpha server certificate (node.crt) and key (node.key) and client
 certificate (client.user.crt) key (client.user.key).
 
 ```sh
-dgraph cert -n localhost
+docker run -t --volume $PWD/tls:/dgraph-tls dgraph/dgraph:latest dgraph cert --nodes localhost --dir /dgraph-tls
 ```
 
 ```sh
-dgraph cert -c user
+docker run -t --volume $PWD/tls:/dgraph-tls dgraph/dgraph:latest dgraph cert --client user --dir /dgraph-tls
 ```
 
 The following files should now be in the `tls` directory:

@@ -1,1 +1,4 @@
-pydgraph>=2.0.2
+grpcio==1.38.1
+protobuf==3.17.3
+pydgraph==21.3.0
+six==1.16.0
