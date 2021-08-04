@@ -33,7 +33,11 @@ password: ${password}
 - If necessary, update the `CHANGELOG.md` file to reflect new changes
 - Commit the changes
 - Make sure you have [setuptools], [wheel], [twine], and [pypandoc]
-  installed
+  installed. You can install them by running the following:
+
+  ```
+  pip install -r publishing-requirements.txt
+  ```
 - Run the following commands:
 
 ```sh

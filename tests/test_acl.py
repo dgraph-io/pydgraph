@@ -20,6 +20,7 @@ __author__ = 'Animesh Pathak <animesh@dgrpah.io>'
 __maintainer__ = 'Animesh Pathak <animesh@dgrpah.io>'
 
 import logging
+import os
 import unittest
 
 from . import helper
@@ -29,7 +30,6 @@ class TestACL(helper.ClientIntegrationTestCase):
     user_id = 'alice'
     group_id = 'dev'
     user_password = 'simplepassword'
-    server_addr = 'localhost:9180'
 
     def setUp(self):
         super(TestACL, self).setUp()
@@ -39,7 +39,7 @@ class TestACL(helper.ClientIntegrationTestCase):
         self.add_user()
         self.add_group()
         self.add_user_to_group()
-        self.alice_client = helper.create_client(self.server_addr)
+        self.alice_client = helper.create_client(self.TEST_SERVER_ADDR)
         time.sleep(6)
         self.alice_client.login(self.user_id, self.user_password)
 
@@ -65,8 +65,8 @@ class TestACL(helper.ClientIntegrationTestCase):
         self.change_permission(0)
 
     def change_permission(self, permission):
-        bash_command = "dgraph acl -a " + self.server_addr + " mod -g " + self.group_id + \
-                       " -p name -m " + str(permission) + " -x password"
+        bash_command = "dgraph acl -a " + self.TEST_SERVER_ADDR + " mod -g " + self.group_id + \
+                       " -p name -m " + str(permission) + " --guardian-creds user=groot;password=password"
         self.run_command(bash_command)
         # wait for ACL cache to be refreshed.
         time.sleep(6)
@@ -76,17 +76,17 @@ class TestACL(helper.ClientIntegrationTestCase):
         txn.mutate(set_nquads='_:animesh <name> "Animesh" .', commit_now=True)
 
     def add_user(self):
-        bash_command = "dgraph acl -a " + self.server_addr + " add -u " + self.user_id + \
-                       " -p " + self.user_password + " -x password"
+        bash_command = "dgraph acl -a " + self.TEST_SERVER_ADDR + " add -u " + self.user_id + \
+                       " -p " + self.user_password + " --guardian-creds user=groot;password=password"
         self.run_command(bash_command)
 
     def add_group(self):
-        bash_command = "dgraph acl -a " + self.server_addr + " add -g " + self.group_id + " -x password"
+        bash_command = "dgraph acl -a " + self.TEST_SERVER_ADDR + " add -g " + self.group_id + " --guardian-creds user=groot;password=password"
         self.run_command(bash_command)
 
     def add_user_to_group(self):
-        bash_command = "dgraph acl -a " + self.server_addr + " mod -u " + \
-                       self.user_id + " -l " + self.group_id + " -x password"
+        bash_command = "dgraph acl -a " + self.TEST_SERVER_ADDR + " mod -u " + \
+                       self.user_id + " -l " + self.group_id + " --guardian-creds user=groot;password=password"
         self.run_command(bash_command)
 
     def run_command(self, bash_command):
