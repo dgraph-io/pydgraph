@@ -66,7 +66,7 @@ class TestACL(helper.ClientIntegrationTestCase):
 
     def change_permission(self, permission):
         bash_command = "dgraph acl -a " + self.TEST_SERVER_ADDR + " mod -g " + self.group_id + \
-                       " -p name -m " + str(permission) + " -x password"
+                       " -p name -m " + str(permission) + " --guardian-creds user=groot;password=password"
         self.run_command(bash_command)
         # wait for ACL cache to be refreshed.
         time.sleep(6)
@@ -77,16 +77,16 @@ class TestACL(helper.ClientIntegrationTestCase):
 
     def add_user(self):
         bash_command = "dgraph acl -a " + self.TEST_SERVER_ADDR + " add -u " + self.user_id + \
-                       " -p " + self.user_password + " -x password"
+                       " -p " + self.user_password + " --guardian-creds user=groot;password=password"
         self.run_command(bash_command)
 
     def add_group(self):
-        bash_command = "dgraph acl -a " + self.TEST_SERVER_ADDR + " add -g " + self.group_id + " -x password"
+        bash_command = "dgraph acl -a " + self.TEST_SERVER_ADDR + " add -g " + self.group_id + " --guardian-creds user=groot;password=password"
         self.run_command(bash_command)
 
     def add_user_to_group(self):
         bash_command = "dgraph acl -a " + self.TEST_SERVER_ADDR + " mod -u " + \
-                       self.user_id + " -l " + self.group_id + " -x password"
+                       self.user_id + " -l " + self.group_id + " --guardian-creds user=groot;password=password"
         self.run_command(bash_command)
 
     def run_command(self, bash_command):
