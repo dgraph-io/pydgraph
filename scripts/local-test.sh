@@ -26,6 +26,7 @@ function restartCluster() {
     DockerCompose up --detach --force-recreate
     alphaHttpPort=$(DockerCompose port alpha1 8080 | awk -F: '{print $2}')
     wait-for-healthy localhost:$alphaHttpPort/health
+    sleep 5
 }
 
 function stopCluster() {
@@ -46,6 +47,10 @@ alphaGrpcPort=$(DockerCompose port alpha1 9080 | awk -F: '{print $2}')
 popd
 export TEST_SERVER_ADDR="localhost:$alphaGrpcPort"
 echo "Using TEST_SERVER_ADDR=$TEST_SERVER_ADDR"
-coverage run --source=pydgraph --omit=pydgraph/proto/* setup.py test # || stopCluster
-#stopCluster
+coverage run --source=pydgraph --omit=pydgraph/proto/* setup.py test
+tests_failed="$?"
+stopCluster
 popd
+if [ "$tests_failed" -ne 0 ]; then
+    exit 1
+fi
