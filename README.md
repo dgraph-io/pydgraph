@@ -512,6 +512,3 @@ HTTP and gRPC requests to prevent interference with clusters running on the
 default port. Docker and docker-compose need to be installed before running the
 script. Refer to the official [Docker documentation](https://docs.docker.com/)
 for instructions on how to install those packages.
-
-```bash
-
