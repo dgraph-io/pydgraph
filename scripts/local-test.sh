@@ -14,6 +14,10 @@ pip install coveralls
 pushd $(dirname $SRCDIR)
 source $GOPATH/src/github.com/dgraph-io/dgraph/contrib/scripts/functions.sh
 restartCluster
+pushd $GOPATH/src/github.com/dgraph-io/dgraph/dgraph
+  alphaport=$(docker-compose -p dgraph port alpha1 9080 | awk -F: '{print $2}')
+popd
+export TEST_SERVER_ADDR="localhost:$alphaport"
 coverage run --source=pydgraph --omit=pydgraph/proto/* setup.py test || stopCluster
 stopCluster
 popd

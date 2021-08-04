@@ -17,6 +17,7 @@
 __author__ = 'Garvit Pahal <garvit@dgraph.io>'
 __maintainer__ = 'Martin Martinez Rivera <martinmr@dgraph.io>'
 
+import os
 import time
 import unittest
 
@@ -53,7 +54,7 @@ class ClientIntegrationTestCase(unittest.TestCase):
     with a connection to the dgraph server.
     """
 
-    TEST_SERVER_ADDR = SERVER_ADDR
+    TEST_SERVER_ADDR = os.getenv("TEST_SERVER_ADDR", SERVER_ADDR)
 
     def setUp(self):
         """Sets up the client."""
