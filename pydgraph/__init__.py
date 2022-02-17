@@ -18,3 +18,5 @@ from pydgraph.client_stub import *
 from pydgraph.client import *
 from pydgraph.txn import *
 from pydgraph.errors import *
+
+import pydgraph.aio as aio
