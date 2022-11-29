@@ -14,6 +14,7 @@
 
 """Stub for RPC request."""
 
+import contextlib
 import grpc
 
 from pydgraph.meta import VERSION
@@ -40,6 +41,14 @@ class DgraphClientStub(object):
             self.channel = grpc.secure_channel(addr, credentials, options)
 
         self.stub = api_grpc.DgraphStub(self.channel)
+    
+    def __enter__(self):
+        return self
+    
+    def __exit__(self, exc_type, exc_val, exc_tb):
+        self.close()
+        if exc_type is not None:
+            raise exc_val
 
     def login(self, login_req, timeout=None, metadata=None, credentials=None):
         return self.stub.Login(login_req, timeout=timeout, metadata=metadata,
@@ -111,3 +120,27 @@ class DgraphClientStub(object):
         client_stub = DgraphClientStub('{host}:{port}'.format(
             host=host, port="443"), composite_credentials, options=(('grpc.enable_http_proxy', 0),))
         return client_stub
+
+@contextlib.contextmanager
+def client_stub(addr='localhost:9080', **kwargs):
+    """ Create a managed DgraphClientStub instance.
+
+    Parameters
+    ----------
+    addr : str, optional
+    credentials : ChannelCredentials, optional
+    options: List[Dict]
+        An optional list of key-value pairs (``channel_arguments``
+        in gRPC Core runtime) to configure the channel.
+        
+    Note
+    ----
+    Only use this function in ``with-as`` blocks. 
+    """    
+    stub = DgraphClientStub(addr=addr, **kwargs)
+    try:
+        yield stub
+    except Exception as e:
+        raise e
+    finally:
+        stub.close()
