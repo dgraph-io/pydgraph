@@ -411,6 +411,10 @@ with pydgraph.DgraphClientStub(SERVER_ADDR) as stub1:
     client = pydgraph.DgraphClient(stub1, stub2)
 ```
 
+Note: `client` should be used inside the "`with-as`" block. The resources related to
+`client` will be automatically released outside the block and `client` is not usable
+any more.
+
 ### Setting Metadata Headers
 
 Metadata headers such as authentication tokens can be set through the metadata of gRPC methods. Below is an example of how to set a header named "auth-token".
