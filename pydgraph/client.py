@@ -159,6 +159,7 @@ class DgraphClient(object):
         except Exception as error:
             DgraphClient._common_except_alter(error)
 
+<<<<<<< HEAD
     def drop_all(self, timeout=None, metadata=None, credentials=None):
         """Drops all data and schema from the Dgraph instance.
 
@@ -267,10 +268,9 @@ class DgraphClient(object):
             operation, timeout=timeout, metadata=metadata, credentials=credentials
         )
 
-    def txn(self, read_only=False, best_effort=False):
+    def txn(self, read_only=False, best_effort=False, **commit_kwargs):
         """Creates a transaction."""
-
-        return txn.Txn(self, read_only=read_only, best_effort=best_effort)
+        return txn.Txn(self, read_only=read_only, best_effort=best_effort, **commit_kwargs)
 
     def run_dql(
         self,
