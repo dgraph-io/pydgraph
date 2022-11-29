@@ -21,7 +21,7 @@ import unittest
 import sys
 
 import pydgraph
-from . import helper
+from tests import helper
 
 class TestDgraphClientStub(helper.ClientIntegrationTestCase):
     """Tests client stub."""

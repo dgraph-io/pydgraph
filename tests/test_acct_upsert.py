@@ -26,7 +26,7 @@ import multiprocessing.dummy as mpd
 
 import pydgraph
 
-from . import helper
+from tests import helper
 
 CONCURRENCY = 5
 FIRSTS = ['Paul', 'Eric', 'Jack', 'John', 'Martin']

@@ -20,7 +20,7 @@ __maintainer__ = 'Martin Martinez Rivera <martinmr@dgraph.io>'
 import json
 import pydgraph
 
-from . import helper
+from tests import helper
 
 class TestAsync(helper.ClientIntegrationTestCase):
     server_addr = 'localhost:9180'

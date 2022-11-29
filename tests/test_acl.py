@@ -23,7 +23,7 @@ import logging
 import os
 import unittest
 
-from . import helper
+from tests import helper
 import pydgraph
 
 class TestACL(helper.ClientIntegrationTestCase):

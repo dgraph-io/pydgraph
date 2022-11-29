@@ -22,7 +22,7 @@ import unittest
 from pydgraph import util
 import pydgraph
 
-from . import helper
+from tests import helper
 
 
 class TestIsString(unittest.TestCase):
