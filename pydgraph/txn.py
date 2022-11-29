@@ -158,7 +158,7 @@ class Txn(object):
         try:
             response = future.result()
         except Exception as error:
-            txn._common_except_mutate(error)
+            Txn._common_except_mutate(error)
 
         return response
 
@@ -174,7 +174,7 @@ class Txn(object):
             except:
                 # Ignore error - user should see the original error.
                 pass
-            txn._common_except_mutate(error)
+            Txn._common_except_mutate(error)
 
         if commit_now:
             txn._finished = True
