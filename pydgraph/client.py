@@ -179,7 +179,7 @@ class DgraphClient(object):
         tx = self.txn(read_only=read_only, best_effort=best_effort)
         try:
             yield tx
-            if read_only == False:
+            if read_only == False and tx._finished == False:
                 tx.commit(timeout=timeout, metadata=metadata, credentials=credentials)
         except Exception as e:
             raise e

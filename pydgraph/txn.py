@@ -69,7 +69,7 @@ class Txn(object):
         if exc_type is not None:
             self.discard(**self._commit_kwargs)
             raise exc_val
-        if self._read_only == False:
+        if self._read_only == False and self._finished == False:
             self.commit(**self._commit_kwargs)
         else:
             self.discard(**self._commit_kwargs)
