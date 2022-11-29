@@ -352,6 +352,55 @@ request = txn.create_request(mutations=[mutation], commit_now=True)
 txn.do_request(request)
 ```
 
+### Committing a Transaction
+
+A transaction can be committed using the `Txn#commit()` method. If your transaction
+consist solely of `Txn#query` or `Txn#queryWithVars` calls, and no calls to
+`Txn#mutate`, then calling `Txn#commit()` is not necessary.
+
+An error is raised if another transaction(s) modify the same data concurrently that was
+modified in the current transaction. It is up to the user to retry transactions
+when they fail.
+
+```python
+txn = client.txn()
+try:
+  # ...
+  # Perform any number of queries and mutations
+  # ...
+  # and finally...
+  txn.commit()
+except pydgraph.AbortedError:
+  # Retry or handle exception.
+finally:
+  # Clean up. Calling this after txn.commit() is a no-op
+  # and hence safe.
+  txn.discard()
+```
+
+#### Using Transaction with Context Manager
+
+The Python context manager will automatically perform the "`commit`" action
+after all queries and mutations have been done, and perform "`discard`" action
+to clean the transaction.
+When something goes wrong in the scope of context manager, "`commit`" will not
+be called,and the "`discard`" action will be called to drop any potential changes.
+
+```python
+with client.begin(read_only=False, best_effort=False) as txn:
+  # Do some queries or mutations here
+```
+
+or you can directly create a transaction from the `Txn` class.
+
+```python
+with pydgraph.Txn(client, read_only=False, best_effort=False) as txn:
+  # Do some queries or mutations here
+```
+
+> `client.begin()` can only be used with "`with-as`" blocks, while `pydgraph.Txn` class can be directly called to instantiate a transaction object.
+
+
 ### Running a Query
 
 You can run a query by calling `Txn#query(string)`. You will need to pass in a
