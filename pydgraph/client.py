@@ -150,9 +150,9 @@ class DgraphClient(object):
         except Exception as error:
             DgraphClient._common_except_alter(error)
 
-    def txn(self, read_only=False, best_effort=False):
+    def txn(self, read_only=False, best_effort=False, **commit_kwargs):
         """Creates a transaction."""
-        return txn.Txn(self, read_only=read_only, best_effort=best_effort)
+        return txn.Txn(self, read_only=read_only, best_effort=best_effort, **commit_kwargs)
 
     def any_client(self):
         """Returns a random gRPC client so that requests are distributed evenly among them."""

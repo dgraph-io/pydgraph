@@ -42,7 +42,8 @@ class Txn(object):
     after calling commit.
     """
 
-    def __init__(self, client, read_only=False, best_effort=False):
+    def __init__(self, client, read_only=False, best_effort=False,
+                 timeout=None, metadata=None, credentials=None):
         if not read_only and best_effort:
             raise Exception('Best effort transactions are only compatible with '
                             'read-only transactions')
@@ -55,6 +56,11 @@ class Txn(object):
         self._mutated = False
         self._read_only = read_only
         self._best_effort = best_effort
+        self._commit_kwargs = {
+            "timeout": timeout,
+            "metadata": metadata,
+            "credentials": credentials
+        }
 
     def query(self, query, variables=None, timeout=None, metadata=None, credentials=None, resp_format="JSON"):
         """Executes a query operation."""
@@ -164,7 +170,7 @@ class Txn(object):
             response = future.result()
         except Exception as error:
             try:
-                txn.discard(timeout=timeout, metadata=metadata, credentials=credentials)
+                txn.discard(**txn._commit_kwargs)
             except:
                 # Ignore error - user should see the original error.
                 pass
