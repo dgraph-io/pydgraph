@@ -70,10 +70,32 @@ class TestFromCloud(unittest.TestCase):
                     raise (e)
 
 
+class TestDgraphClientStubContextManager(helper.ClientIntegrationTestCase):
+    def setUp(self):
+        pass
+
+    def test_context_manager(self):
+        with pydgraph.DgraphClientStub(addr=self.TEST_SERVER_ADDR) as client_stub:
+            ver = client_stub.check_version(pydgraph.Check())
+            self.assertIsNotNone(ver)
+
+    def test_context_manager_code_exception(self):
+        with self.assertRaises(AttributeError):
+            with pydgraph.DgraphClientStub(addr=self.TEST_SERVER_ADDR) as client_stub:
+                self.check_version(client_stub) # AttributeError: no such method
+
+    def test_context_manager_function_wrapper(self):
+        with pydgraph.client_stub(addr=self.TEST_SERVER_ADDR) as client_stub:
+            ver = client_stub.check_version(pydgraph.Check())
+            self.assertIsNotNone(ver)
+
+
+
 def suite():
     """Returns a test suite object."""
     suite_obj = unittest.TestSuite()
     suite_obj.addTest(TestDgraphClientStub())
+    suite_obj.addTest(TestDgraphClientStubContextManager())
     return suite_obj
 
 

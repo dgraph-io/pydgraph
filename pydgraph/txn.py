@@ -51,6 +51,18 @@ class Txn(object):
             "metadata": metadata,
             "credentials": credentials
         }
+    
+    def __enter__(self):
+        return self
+
+    def __exit__(self, exc_type, exc_val, exc_tb):
+        if exc_type is not None:
+            self.discard(**self._commit_kwargs)
+            raise exc_val
+        if self._read_only == False:
+            self.commit(**self._commit_kwargs)
+        else:
+            self.discard(**self._commit_kwargs)
 
     def query(
         self,

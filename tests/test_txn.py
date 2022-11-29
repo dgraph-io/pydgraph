@@ -610,10 +610,40 @@ class TestSPStar(helper.ClientIntegrationTestCase):
         self.assertEqual([{"uid": uid1}], json.loads(resp.json).get("me"))
 
 
+class TestContextManager(helper.ClientIntegrationTestCase):
+    def setUp(self):
+        self.stub = pydgraph.DgraphClientStub(self.TEST_SERVER_ADDR)
+        self.client = pydgraph.DgraphClient(self.stub)
+        self.q = '''
+        {
+            company(func: type(x.Company), first: 10){
+                    expand(_all_)
+            }
+        }
+        '''
+    def tearDown(self) -> None:
+        self.stub.close()
+        
+    def test_context_manager_by_contextlib(self):
+        with self.client.begin(read_only=True, best_effort=True) as tx:
+            response = tx.query(self.q)
+        self.assertIsNotNone(response)
+        data = json.loads(response.json)
+        print(data)
+    
+    def test_context_manager_by_class(self):
+        with pydgraph.Txn(self.client, read_only=True, best_effort=True) as tx:
+            response = tx.query(self.q)
+        self.assertIsNotNone(response)
+        data = json.loads(response.json)
+        print(data)
+
+
 def suite():
     s = unittest.TestSuite()
     s.addTest(TestTxn())
     s.addTest(TestSPStar())
+    s.addTest(TestContextManager())
     return s
 
 
