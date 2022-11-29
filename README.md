@@ -559,6 +559,24 @@ stub1.close()
 stub2.close()
 ```
 
+#### Use context manager to automatically clean resources
+
+Use function call:
+
+```python
+with pydgraph.client_stub(SERVER_ADDR) as stub1:
+  with pydgraph.client_stub(SERVER_ADDR) as stub2:
+    client = pydgraph.DgraphClient(stub1, stub2)
+```
+
+Use class constructor:
+
+```python
+with pydgraph.DgraphClientStub(SERVER_ADDR) as stub1:
+  with pydgraph.DgraphClientStub(SERVER_ADDR) as stub2:
+    client = pydgraph.DgraphClient(stub1, stub2)
+```
+
 ### Setting Metadata Headers
 
 Metadata headers such as authentication tokens can be set through the metadata of gRPC methods.
