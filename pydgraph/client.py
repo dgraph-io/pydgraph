@@ -61,35 +61,41 @@ class DgraphClient(object):
                                                    credentials=credentials)
                 return response.tag
             else:
-                raise error
+                self._common_except(error)
 
     def login(self, userid, password, timeout=None, metadata=None,
               credentials=None):
-        login_req = api.LoginRequest()
-        login_req.userid = userid
-        login_req.password = password
-        login_req.namespace = 0
+        try:
+            login_req = api.LoginRequest()
+            login_req.userid = userid
+            login_req.password = password
+            login_req.namespace = 0
 
-        response = self.any_client().login(login_req, timeout=timeout,
-                                           metadata=metadata,
-                                           credentials=credentials)
-        self._jwt = api.Jwt()
-        self._jwt.ParseFromString(response.json)
-        self._login_metadata = [("accessjwt", self._jwt.access_jwt)]
+            response = self.any_client().login(login_req, timeout=timeout,
+                                            metadata=metadata,
+                                            credentials=credentials)
+            self._jwt = api.Jwt()
+            self._jwt.ParseFromString(response.json)
+            self._login_metadata = [("accessjwt", self._jwt.access_jwt)]
+        except Exception as error:
+            self._common_except(error)
 
     def login_into_namespace(self, userid, password, namespace, timeout=None, metadata=None,
               credentials=None):
-        login_req = api.LoginRequest()
-        login_req.userid = userid
-        login_req.password = password
-        login_req.namespace = namespace
+        try:
+            login_req = api.LoginRequest()
+            login_req.userid = userid
+            login_req.password = password
+            login_req.namespace = namespace
 
-        response = self.any_client().login(login_req, timeout=timeout,
-                                           metadata=metadata,
-                                           credentials=credentials)
-        self._jwt = api.Jwt()
-        self._jwt.ParseFromString(response.json)
-        self._login_metadata = [("accessjwt", self._jwt.access_jwt)]
+            response = self.any_client().login(login_req, timeout=timeout,
+                                            metadata=metadata,
+                                            credentials=credentials)
+            self._jwt = api.Jwt()
+            self._jwt.ParseFromString(response.json)
+            self._login_metadata = [("accessjwt", self._jwt.access_jwt)]
+        except Exception as error:
+            self._common_except(error)
 
     def retry_login(self, timeout=None, metadata=None, credentials=None):
         if len(self._jwt.refresh_jwt) == 0:
@@ -122,12 +128,12 @@ class DgraphClient(object):
                                                    metadata=new_metadata,
                                                    credentials=credentials)
                 except Exception as error:
-                    self._common_except_alter(error)
+                    self._common_except(error)
             else:
-                self._common_except_alter(error)
+                self._common_except(error)
 
     @staticmethod
-    def _common_except_alter(error):
+    def _common_except(error):
         if util.is_retriable_error(error):
             raise errors.RetriableError(error)
 
@@ -148,7 +154,7 @@ class DgraphClient(object):
         try:
             return future.result()
         except Exception as error:
-            DgraphClient._common_except_alter(error)
+            DgraphClient._common_except(error)
 
     def txn(self, read_only=False, best_effort=False):
         """Creates a transaction."""

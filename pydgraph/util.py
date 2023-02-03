@@ -52,5 +52,9 @@ def is_retriable_error(error):
 
 def is_connection_error(error):
     """Returns true if the error is caused connection issues."""
+    if isinstance(error, grpc._channel._InactiveRpcError):
+        status_code = error.code()
+        if (status_code == grpc.StatusCode.UNAVAILABLE):
+            return True
     msg = str(error)
     return 'Unhealthy connection' in msg or 'No connection exists' in msg
