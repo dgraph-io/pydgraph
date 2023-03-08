@@ -52,13 +52,33 @@ class TestDgraphClientStub(helper.ClientIntegrationTestCase):
         with self.assertRaises(Exception):
             client_stub.check_version(pydgraph.Check())
 
+class TestFromCloud(unittest.TestCase):
+    """Tests the from_cloud function"""
+    def test_from_cloud(self):
+        testcases = [
+            {"endpoint": "godly.grpc.region.aws.cloud.dgraph.io"},
+            {"endpoint": "godly.grpc.region.aws.cloud.dgraph.io:443"},
+            {"endpoint": "https://godly.region.aws.cloud.dgraph.io/graphql"},
+            {"endpoint": "godly.region.aws.cloud.dgraph.io"},
+            {"endpoint": "https://godly.region.aws.cloud.dgraph.io"},
+            {"endpoint": "godly.region.aws.cloud.dgraph.io:random"},
+            {"endpoint": "random:url", "error": True},
+            {"endpoint": "google", "error": True},
+        ]
+
+        for case in testcases:
+            try:
+                pydgraph.DgraphClientStub.from_cloud(case["endpoint"], "api-key")
+            except IndexError as e:
+                if not case["error"]:
+                    # we didn't expect an error
+                    raise(e)
 
 def suite():
     """Returns a test suite object."""
     suite_obj = unittest.TestSuite()
     suite_obj.addTest(TestDgraphClientStub())
     return suite_obj
-
 
 if __name__ == '__main__':
     runner = unittest.TextTestRunner()
