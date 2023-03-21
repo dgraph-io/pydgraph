@@ -1,4 +1,4 @@
 pypandoc==1.6.3
 twine==3.4.2
 wheel==0.34.2
-setuptools==45.2.0
+setuptools==65.5.1
