@@ -1,4 +1,4 @@
 grpcio==1.38.1
-protobuf==3.17.3
+protobuf==3.18.3
 pydgraph==21.3.0
 six==1.16.0
