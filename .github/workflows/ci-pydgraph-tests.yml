@@ -47,7 +47,7 @@ jobs:
         run: |
           #!/bin/bash
           cd pydgraph
-          PYTHON_VERSION=$({ [ -f .[ python-version ] && cat .[python-version; })
+          PYTHON_VERSION=$({ [ -f .python-version ] && cat .[python-version; })
           echo "PYTHON_VERSION=$PYTHON_VERSION" >> $GITHUB_ENV
       - name: Set up Python
         uses: actions/setup-python@v4
