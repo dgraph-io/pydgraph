@@ -15,6 +15,7 @@ on:
     - cron: "0 0 * * *" # run workflow daily
 jobs:
   build:
+    name: pydgraph-tests
     runs-on: ubuntu-20.04
     steps:
       - name: Checkout Dgraph repo # needed for acl tests
@@ -46,7 +47,7 @@ jobs:
         run: |
           #!/bin/bash
           cd pydgraph
-          PYTHON_VERSION=$({ [ -f .[python-version ] && cat .[python-version; })
+          PYTHON_VERSION=$({ [ -f .[ python-version ] && cat .[python-version; })
           echo "PYTHON_VERSION=$PYTHON_VERSION" >> $GITHUB_ENV
       - name: Set up Python
         uses: actions/setup-python@v4
