@@ -34,3 +34,4 @@ pydgraph.iml
 
 # Python Virtual Environments
 venv
+.venv

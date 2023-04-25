@@ -1,0 +1,13 @@
+version: "3.2"
+services:
+  zero:
+    image: dgraph/dgraph:latest
+    restart: on-failure
+    command: dgraph zero --my=zero:5080
+  server:
+    image: dgraph/dgraph:latest
+    ports:
+      - 8080:8080
+      - 9080:9080
+    restart: on-failure
+    command: dgraph alpha --my=server:7080 --zero=zero:5080 --security whitelist=0.0.0.0/0

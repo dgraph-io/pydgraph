@@ -1,4 +1,4 @@
-# Copyright 2016 Dgraph Labs, Inc.
+# Copyright 2023 Dgraph Labs, Inc.
 #
 # Licensed under the Apache License, Version 2.0 (the "License");
 # you may not use this file except in compliance with the License.
@@ -40,9 +40,7 @@ setup(
         'Operating System :: OS Independent',
         'Topic :: Database',
         'Topic :: Software Development',
-        'Programming Language :: Python :: 2.7',
-        'Programming Language :: Python :: 3.5',
-        'Programming Language :: Python :: 3.6',
+        'Programming Language :: Python :: 3.11',
     ],
     packages=['pydgraph', 'pydgraph.proto'],
     install_requires=open('requirements.txt').readlines(),
