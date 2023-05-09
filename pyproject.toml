@@ -1,0 +1,30 @@
+[build-system]
+requires = ["setuptools==67.7.2"]
+build-backend = "setuptools.build_meta"
+
+#[tool.setuptools.dynamic]
+#version = {attr = "package.__version__"}
+
+[project]
+name = 'pydgraph'
+version = "v23.0.0rc2"
+authors = [
+  { name="Dgraph Labs", email="contact@dgraph.io" },
+]
+license = {file = "LICENSE" }
+description = "Official Dgraph client implementation for Python"
+readme = "README.md"
+requires-python = ">=3.11"
+classifiers=[
+    'Intended Audience :: Developers',
+    'License :: OSI Approved :: Apache Software License',
+    'Operating System :: OS Independent',
+    'Topic :: Database',
+    'Topic :: Software Development',
+    'Programming Language :: Python :: 3.11',
+]
+dependencies = [ "grpcio==1.54.0", "protobuf==4.22.3" ]
+
+[project.urls]
+"Homepage" = "https://github.com/dgraph-io/pydgraph"
+
