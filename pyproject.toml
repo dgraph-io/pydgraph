@@ -2,12 +2,8 @@
 requires = ["setuptools==67.7.2"]
 build-backend = "setuptools.build_meta"
 
-#[tool.setuptools.dynamic]
-#version = {attr = "package.__version__"}
-
 [project]
 name = "pydgraph"
-version = "v23.0.0rc2"
 authors = [
   { name="Dgraph Labs", email="contact@dgraph.io" },
 ]
@@ -24,6 +20,10 @@ classifiers=[
     'Programming Language :: Python :: 3.11',
 ]
 dependencies = [ "grpcio==1.54.0", "protobuf==4.22.3" ]
+dynamic = ["version"]
+
+[tool.setuptools.dynamic]
+version = {attr = "pydgraph.meta.VERSION"}
 
 [project.urls]
 "Homepage" = "https://github.com/dgraph-io/pydgraph"
