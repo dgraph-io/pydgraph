@@ -37,6 +37,10 @@ readonly SRCDIR=$(readlink -f ${BASH_SOURCE[0]%/*})
 
 # Install dependencies
 pip install -r requirements_dev.txt
+pip_failed="$?"
+if [ "$tests_failed" -ne 0 ]; then
+    exit 1
+fi
 # pip install coveralls (will figure out later)
 
 # Run cluster and tests
