@@ -1,0 +1,37 @@
+name: cd-pydgraph
+on:
+  workflow_dispatch:
+    inputs:
+      releasetag:
+        description: 'releasetag'
+        required: true
+        type: string
+jobs:
+  pydgraph-build:
+    runs-on: ubuntu-20.04
+    steps:
+      - uses: actions/checkout@v3
+        with:
+          ref: '${{ github.event.inputs.releasetag }}'
+      - name: Set up Python
+        uses: actions/setup-python@v4
+        with:
+          python-version: ${{ env.PYTHON_VERSION }}
+      - name: Install dependencies
+        run: |
+          python -m pip install --upgrade pip
+          python -m pip install -r requirements_dev.txt
+          # use twine to upload to pypi
+          python -m pip install twine
+      - name: Verify that protobufs are checked in
+        run: |
+          # should be a no-op
+          python scripts/protogen.py
+          git diff --exit-code -- .
+      - name: Build pydgraph
+        run: |
+          rm -rf dist
+          # build binary wheel and a source tarball
+          python -m build
+      - name: Upload to PyPi
+        run: twine upload --username dgraph-io --password ${{ secrets.DGRAPH_PYPI_PASSWORD }} dist/*       
