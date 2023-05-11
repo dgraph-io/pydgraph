@@ -6,8 +6,6 @@ This is the official Dgraph database client implementation for Python (Python >=
 
 This client follows the [Dgraph Go client][goclient] closely.
 
-**Use [Discuss Issues](https://discuss.dgraph.io/c/issues/35/clients/46) to report issues about this repository.**
-
 [goclient]: https://github.com/dgraph-io/dgo
 
 Before using this client, we highly recommend that you read the [Dgraph Python
@@ -45,14 +43,6 @@ Install using pip:
 pip install pydgraph
 ```
 
-### Install Notes
-
-To avoid issues when adding composite credentials or when using client authorization, please install gRPC version 1.19.0:
-
-```sh
-pip install grpcio==1.19.0
-```
-
 ## Supported Versions
 
 Depending on the version of Dgraph that you are connecting to, you will have to
@@ -63,6 +53,7 @@ use a different version of this client.
 |     1.0.X      |      <= *1.2.0*      |
 |     1.1.X      |      >= *2.0.0*      |
 |     1.2.X      |      >= *2.0.0*      |
+|    23.X.Y      |      >= *23.0.0*     |
 
 ## Quickstart
 
@@ -100,7 +91,7 @@ op = pydgraph.Operation(schema=schema)
 client.alter(op)
 ```
 
-Starting with Dgraph version 20.03.0, indexes can be computed in the background.
+Indexes can be computed in the background.
 You can set the `run_in_background` field of `pydgraph.Operation` to `True`
 before passing it to the `Alter` function. You can find more details
 [here](https://docs.dgraph.io/master/query-language/#indexes-in-background).
@@ -465,12 +456,13 @@ except Exception as e:
 
 ## Development
 
-### Building the source
+### Build from source
+
+To build and install pydgraph locally, run
 
 ```sh
-python setup.py install
-# To install for the current user, use this instead:
-# python setup.py install --user
+python -m build
+pip install -e .
 ```
 
 If you have made changes to the `pydgraph/proto/api.proto` file, you need need
@@ -494,16 +486,14 @@ The required change is outlined below as a diff.
 
 ### Running tests
 
-To run the tests in your local machine, install and run `tox`:
+To run the tests in your local machine, run:
 
 ```bash
-pip install tox
-tox
+bash scripts/local-test.sh
 ```
 
-This script assumes Dgraph and [dgo](https://github.com/dgraph-io/dgo) (Go
-client) are already built on the local machine and that their code is in
-`$GOPATH/src`. It also requires that docker and docker-compose are installed in
+This script assumes dgraph is located on your path.  Dgraph release binaries can be found [here](https://github.com/dgraph-io/dgraph/releases).
+The test script also requires that `docker` and `docker compose` are installed on
 your machine.
 
 The script will take care of bringing up a Dgraph cluster and bringing it down
