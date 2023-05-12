@@ -461,13 +461,22 @@ except Exception as e:
 
 ## Development
 
+### Setting up environment
+
+There are many ways to set up your local Python environment.  We suggest some sane defaults here.
+
+- Use [pyenv](https://github.com/pyenv/pyenv) to manage your Python installations.
+- Most recent versions of Python should work, but the version of Python officially supported is located in
+`.python-version`
+- Create a Python virtual environment using `python -m venv .venv`
+- Activate virtual environment via `source .venv/bin/activate`
+
 ### Build from source
 
 To build and install pydgraph locally, run
 
 ```sh
-python -m build
-pip install -e .
+pip install -e .[dev]
 ```
 
 If you have made changes to the `pydgraph/proto/api.proto` file, you need need
