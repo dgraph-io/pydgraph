@@ -20,7 +20,7 @@ jobs:
       - name: Install dependencies
         run: |
           python -m pip install --upgrade pip
-          python -m pip install -r requirements_dev.txt
+          python -m pip install .[dev]
           # use twine to upload to pypi
           python -m pip install twine
       - name: Verify that protobufs are checked in
