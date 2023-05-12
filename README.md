@@ -492,7 +492,8 @@ To run the tests in your local machine, run:
 bash scripts/local-test.sh
 ```
 
-This script assumes dgraph is located on your path.  Dgraph release binaries can be found [here](https://github.com/dgraph-io/dgraph/releases).
+This script assumes dgraph is located on your path.  Dgraph release binaries can 
+be found [here](https://github.com/dgraph-io/dgraph/releases).
 The test script also requires that `docker` and `docker compose` are installed on
 your machine.
 
