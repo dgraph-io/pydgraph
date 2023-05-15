@@ -4,7 +4,7 @@
 # Instead it assumes dgraph is already installed.
 
 function DockerCompose() {
-    docker-compose -p pydgraph $@
+    docker compose -p pydgraph $@
 }
 
 function wait-for-healthy() {
@@ -36,8 +36,12 @@ function stopCluster() {
 readonly SRCDIR=$(readlink -f ${BASH_SOURCE[0]%/*})
 
 # Install dependencies
-pip install -r requirements.txt
-pip install coveralls
+pip install -r requirements_dev.txt
+pip_failed="$?"
+if [ "$tests_failed" -ne 0 ]; then
+    exit 1
+fi
+# pip install coveralls (will figure out later)
 
 # Run cluster and tests
 pushd $(dirname $SRCDIR)
@@ -47,7 +51,8 @@ alphaGrpcPort=$(DockerCompose port alpha1 9080 | awk -F: '{print $2}')
 popd
 export TEST_SERVER_ADDR="localhost:$alphaGrpcPort"
 echo "Using TEST_SERVER_ADDR=$TEST_SERVER_ADDR"
-coverage run --source=pydgraph --omit=pydgraph/proto/* setup.py test
+#coverage run --source=pydgraph --omit=pydgraph/proto/* setup.py test
+pytest
 tests_failed="$?"
 stopCluster
 popd
