@@ -3,7 +3,7 @@
 version: "3.5"
 services:
   alpha1:
-    image: dgraph/dgraph:latest
+    image: dgraph/dgraph:${DGRAPH_IMAGE_TAG:-latest}
     working_dir: /data/alpha1
     labels:
       cluster: test
@@ -23,7 +23,7 @@ services:
         limits:
           memory: 32G
   alpha2:
-    image: dgraph/dgraph:latest
+    image: dgraph/dgraph:${DGRAPH_IMAGE_TAG:-latest}
     working_dir: /data/alpha2
     labels:
       cluster: test
@@ -43,7 +43,7 @@ services:
         limits:
           memory: 32G
   alpha3:
-    image: dgraph/dgraph:latest
+    image: dgraph/dgraph:${DGRAPH_IMAGE_TAG:-latest}
     working_dir: /data/alpha3
     labels:
       cluster: test
@@ -63,7 +63,7 @@ services:
         limits:
           memory: 32G
   zero1:
-    image: dgraph/dgraph:latest
+    image: dgraph/dgraph:${DGRAPH_IMAGE_TAG:-latest}
     working_dir: /data/zero1
     labels:
       cluster: test
@@ -77,7 +77,7 @@ services:
         limits:
           memory: 32G
   zero2:
-    image: dgraph/dgraph:latest
+    image: dgraph/dgraph:${DGRAPH_IMAGE_TAG:-latest}
     working_dir: /data/zero2
     depends_on:
     - zero1
@@ -93,7 +93,7 @@ services:
         limits:
           memory: 32G
   zero3:
-    image: dgraph/dgraph:latest
+    image: dgraph/dgraph:${DGRAPH_IMAGE_TAG:-latest}
     working_dir: /data/zero3
     depends_on:
     - zero2
