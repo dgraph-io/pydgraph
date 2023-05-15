@@ -5,8 +5,34 @@ All notable changes to this project will be documented in this file.
 The format is based on [Keep a Changelog](http://keepachangelog.com/en/1.0.0/)
 and this project adheres to [Semantic Versioning](http://semver.org/spec/v2.0.0.html).
 
-## [Unreleased]
-===================
+## [v23.0.0] - 2023-05-15
+
+### Notes
+
+- This release requires Python >=3.11. Lower versions may also work but are untested
+- The repository has been refactored to use `pyproject.toml` as the source of truth for dependency requirements
+- Added `.python-version` file to keep track of supported Python version
+
+### Added
+- Github Actions for CI/CD pipelines
+    - chore(ci): test against latest dgraph on main (#196)
+    - chore(ci): fix test script & use latest docker image (#195)
+    - chore(ci/cd): add pipelines + modernize repo (#193)
+    - chore(ci): add ci to pydgraph (#192)
+- Add example for datetime parsing (#170)
+
+## [v21.3.2] - 2021-08-05
+
+### Added
+- Missing variable in from_cloud (#174)
+
+## [v21.3.1] - 2021-08-04
+
+### Added
+- Add from_cloud method (#169)
+- Refresh examples (#171)
+- test: Update test setup to use randomized Docker ports (picking up the port from `TEST_SERVER_ADDR`)
+- test: Use `--guardian-creds` superflags in ACL tests
 
 ## [v21.03.0] - 2020-04-09
 
@@ -24,8 +50,8 @@ and this project adheres to [Semantic Versioning](http://semver.org/spec/v2.0.0.
 
 ## [v20.03.1] - 2020-06-03
 
-### Added
-- Added more exception classes for specific types of errors (e.g retriable
+### Added 
+- Added mor e exception classes for specific types of errors (e.g retriable
 errors). Existing applications might want to update their error handling code to
 take advantage of these new error classes.
 - Added async versions of alter, query, and mutate functions.
