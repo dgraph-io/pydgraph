@@ -43,7 +43,6 @@ alphaGrpcPort=$(DockerCompose port alpha1 9080 | awk -F: '{print $2}')
 popd
 export TEST_SERVER_ADDR="localhost:$alphaGrpcPort"
 echo "Using TEST_SERVER_ADDR=$TEST_SERVER_ADDR"
-#coverage run --source=pydgraph --omit=pydgraph/proto/* setup.py test
 pytest
 tests_failed="$?"
 stopCluster
