@@ -50,8 +50,8 @@ and this project adheres to [Semantic Versioning](http://semver.org/spec/v2.0.0.
 
 ## [v20.03.1] - 2020-06-03
 
-### Added 
-- Added mor e exception classes for specific types of errors (e.g retriable
+### Added
+- Added more exception classes for specific types of errors (e.g retriable
 errors). Existing applications might want to update their error handling code to
 take advantage of these new error classes.
 - Added async versions of alter, query, and mutate functions.
