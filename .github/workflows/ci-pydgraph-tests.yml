@@ -24,11 +24,12 @@ jobs:
           path: dgraph
           repository: dgraph-io/dgraph
           ref: main
-      - name: Checkout Dgo repo
+      - name: Checkout pydgraph repo
         uses: actions/checkout@v3
         with:
           path: pydgraph
           repository: dgraph-io/pydgraph
+          ref: ${{ github.ref }}
       - name: Get Go Version
         run: |
           #!/bin/bash
@@ -59,4 +60,4 @@ jobs:
           python -m pip install --upgrade pip
           python -m pip install .[dev]
       - name: Run tests
-        run: cd pydgraph && bash scripts/local-test.sh
+        run: cd pydgraph && DGRAPH_IMAGE_TAG=local bash scripts/local-test.sh
