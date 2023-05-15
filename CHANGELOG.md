@@ -11,7 +11,7 @@ and this project adheres to [Semantic Versioning](http://semver.org/spec/v2.0.0.
 ## [v21.03.0] - 2020-04-09
 
 ### Added
--  Logging in to namespace
+-  Login to a namespace
 -  Add response type
 -  Hash to response and txn context.
 -  Deprecation messaged for Slash Endpoint [168]
