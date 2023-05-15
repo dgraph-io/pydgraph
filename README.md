@@ -10,30 +10,36 @@ This client follows the [Dgraph Go client][goclient] closely.
 
 Before using this client, we highly recommend that you read the [Dgraph Python
 Client docs](https://dgraph.io/docs/clients/python/), as well as reviewing
-the product documentation at [docs.dgraph.io].
+the product documentation at [dgraph.io/docs].
 
-[docs.dgraph.io]:https://docs.dgraph.io
+[dgraph.io/docs]:https://dgraph.io/docs
 
 ## Table of contents
-
-- [Install](#install)
-- [Supported Versions](#supported-versions)
-- [Quickstart](#quickstart)
-- [Using a Client](#using-a-client)
-  - [Creating a Client](#creating-a-client)
-  - [Altering the Database](#altering-the-database)
-  - [Creating a Transaction](#creating-a-transaction)
-  - [Running a Mutation](#running-a-mutation)
-  - [Committing a Transaction](#committing-a-transaction)
-  * [Running a Query](#running-a-query)
-  * [Running an Upsert: Query + Mutation](#running-an-upsert-query--mutation)
-  * [Running a Conditional Upsert](#running-a-conditional-upsert)
-  - [Cleaning up Resources](#cleaning-up-resources)
-  - [Setting Metadata Headers](#setting-metadata-headers)
-- [Examples](#examples)
-- [Development](#development)
-  - [Building the source](#building-the-source)
-  - [Running tests](#running-tests)
+- [pydgraph](#pydgraph)
+  - [Table of contents](#table-of-contents)
+  - [Install](#install)
+  - [Supported Versions](#supported-versions)
+  - [Quickstart](#quickstart)
+  - [Using a client](#using-a-client)
+    - [Creating a Client](#creating-a-client)
+    - [Altering the Database](#altering-the-database)
+    - [Creating a Transaction](#creating-a-transaction)
+    - [Running a Mutation](#running-a-mutation)
+    - [Committing a Transaction](#committing-a-transaction)
+    - [Running a Query](#running-a-query)
+    - [Running an Upsert: Query + Mutation](#running-an-upsert-query--mutation)
+    - [Running a Conditional Upsert](#running-a-conditional-upsert)
+    - [Cleaning Up Resources](#cleaning-up-resources)
+    - [Setting Metadata Headers](#setting-metadata-headers)
+    - [Setting a timeout](#setting-a-timeout)
+    - [Passing credentials](#passing-credentials)
+    - [Authenticating to a reverse TLS proxy](#authenticating-to-a-reverse-tls-proxy)
+    - [Async methods](#async-methods)
+  - [Examples](#examples)
+  - [Development](#development)
+    - [Setting up environment](#setting-up-environment)
+    - [Build from source](#build-from-source)
+    - [Running tests](#running-tests)
 
 ## Install
 
@@ -463,7 +469,7 @@ except Exception as e:
 
 ### Setting up environment
 
-There are many ways to set up your local Python environment.  We suggest some sane defaults here.
+There are many ways to set up your local Python environment. We suggest some sane defaults here.
 
 - Use [pyenv](https://github.com/pyenv/pyenv) to manage your Python installations.
 - Most recent versions of Python should work, but the version of Python officially supported is located in
@@ -506,7 +512,7 @@ To run the tests in your local machine, run:
 bash scripts/local-test.sh
 ```
 
-This script assumes dgraph is located on your path.  Dgraph release binaries can 
+This script assumes dgraph is located on your path. Dgraph release binaries can
 be found [here](https://github.com/dgraph-io/dgraph/releases).
 The test script also requires that `docker` and `docker compose` are installed on
 your machine.
