@@ -18,9 +18,7 @@ __author__ = 'Garvit Pahal <garvit@dgraph.io>'
 __maintainer__ = 'Martin Martinez Rivera <martinmr@dgraph.io>'
 
 import unittest
-
 import pydgraph
-
 
 class TestDgraphClient(unittest.TestCase):
     """Tests construction of Dgraph client."""
@@ -28,13 +26,11 @@ class TestDgraphClient(unittest.TestCase):
         with self.assertRaises(ValueError):
             pydgraph.DgraphClient()
 
-
 def suite():
     """Returns a tests suite object."""
     suite_obj = unittest.TestSuite()
     suite_obj.addTest(TestDgraphClient())
     return suite_obj
-
 
 if __name__ == '__main__':
     runner = unittest.TextTestRunner()
