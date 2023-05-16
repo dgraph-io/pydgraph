@@ -4,17 +4,6 @@ Project demonstrating the use of [pydgraph][] and Dgraph set up with client-serv
 mutual TLS. The following guide shows how to set up a single-group six-node
 cluster (3 Dgraph Zero and 3 Dgraph Alpha) configured with mutual TLS.
 
-### Install Dgraph
-
-You will need to [install Dgraph v1.1.0 or
-above](https://github.com/dgraph-io/dgraph/releases) and run it.
-
-A quick-start installation script is available for Linux and Mac:
-
-```sh
-curl -sSf https://get.dgraph.io | bash
-```
-
 ### Create TLS certificates
 
 Dgraph provides a `dgraph cert` tool to create and manage self-signed
@@ -45,6 +34,10 @@ The following files should now be in the `tls` directory:
 ```sh
 $ ls tls
 ca.crt  ca.key  client.user.crt  client.user.key  node.crt  node.key
+```
+
+```sh
+sudo chmod +r tls/*
 ```
 
 Using `dgraph cert ls` provides more details about each file. For instance, it
@@ -86,17 +79,10 @@ Expiration: 21 Feb 24 01:00 UTC
 
 ### Run Dgraph Cluster
 ```
-docker-compose up
+docker compose up
 ```
 
-### Run TLS Python Example
-
-#### Install Dependencies
-```
-pip3 install -r requirements.txt
-```
-
-#### Run Example Code
+### Run Example Code
 ```
 python3 tls_example.py
 ```
