@@ -6,36 +6,40 @@ This is the official Dgraph database client implementation for Python (Python >=
 
 This client follows the [Dgraph Go client][goclient] closely.
 
-**Use [Discuss Issues](https://discuss.dgraph.io/c/issues/35/clients/46) to report issues about this repository.**
-
 [goclient]: https://github.com/dgraph-io/dgo
 
 Before using this client, we highly recommend that you read the [Dgraph Python
 Client docs](https://dgraph.io/docs/clients/python/), as well as reviewing
-the product documentation at [docs.dgraph.io].
+the product documentation at [dgraph.io/docs].
 
-[docs.dgraph.io]:https://docs.dgraph.io
+[dgraph.io/docs]:https://dgraph.io/docs
 
 ## Table of contents
-
-- [Install](#install)
-- [Supported Versions](#supported-versions)
-- [Quickstart](#quickstart)
-- [Using a Client](#using-a-client)
-  - [Creating a Client](#creating-a-client)
-  - [Altering the Database](#altering-the-database)
-  - [Creating a Transaction](#creating-a-transaction)
-  - [Running a Mutation](#running-a-mutation)
-  - [Committing a Transaction](#committing-a-transaction)
-  * [Running a Query](#running-a-query)
-  * [Running an Upsert: Query + Mutation](#running-an-upsert-query--mutation)
-  * [Running a Conditional Upsert](#running-a-conditional-upsert)
-  - [Cleaning up Resources](#cleaning-up-resources)
-  - [Setting Metadata Headers](#setting-metadata-headers)
-- [Examples](#examples)
-- [Development](#development)
-  - [Building the source](#building-the-source)
-  - [Running tests](#running-tests)
+- [pydgraph](#pydgraph)
+  - [Table of contents](#table-of-contents)
+  - [Install](#install)
+  - [Supported Versions](#supported-versions)
+  - [Quickstart](#quickstart)
+  - [Using a client](#using-a-client)
+    - [Creating a Client](#creating-a-client)
+    - [Altering the Database](#altering-the-database)
+    - [Creating a Transaction](#creating-a-transaction)
+    - [Running a Mutation](#running-a-mutation)
+    - [Committing a Transaction](#committing-a-transaction)
+    - [Running a Query](#running-a-query)
+    - [Running an Upsert: Query + Mutation](#running-an-upsert-query--mutation)
+    - [Running a Conditional Upsert](#running-a-conditional-upsert)
+    - [Cleaning Up Resources](#cleaning-up-resources)
+    - [Setting Metadata Headers](#setting-metadata-headers)
+    - [Setting a timeout](#setting-a-timeout)
+    - [Passing credentials](#passing-credentials)
+    - [Authenticating to a reverse TLS proxy](#authenticating-to-a-reverse-tls-proxy)
+    - [Async methods](#async-methods)
+  - [Examples](#examples)
+  - [Development](#development)
+    - [Setting up environment](#setting-up-environment)
+    - [Build from source](#build-from-source)
+    - [Running tests](#running-tests)
 
 ## Install
 
@@ -45,14 +49,6 @@ Install using pip:
 pip install pydgraph
 ```
 
-### Install Notes
-
-To avoid issues when adding composite credentials or when using client authorization, please install gRPC version 1.19.0:
-
-```sh
-pip install grpcio==1.19.0
-```
-
 ## Supported Versions
 
 Depending on the version of Dgraph that you are connecting to, you will have to
@@ -60,9 +56,15 @@ use a different version of this client.
 
 | Dgraph version |   pydgraph version   |
 |:--------------:|:--------------------:|
-|     1.0.X      |      <= *1.2.0*      |
-|     1.1.X      |      >= *2.0.0*      |
-|     1.2.X      |      >= *2.0.0*      |
+|     1.0.X      |      *1.2.0*         |
+|     1.1.X      |      *2.0.0*         |
+|     1.2.X      |      *2.0.0*         |
+|    20.3.X      |      *20.3.0*        |
+|    20.7.X      |      *20.7.0*        |
+|    20.11.X     |      *20.7.0*        |
+|    21.X.Y      |      *21.3.0*        |
+|    22.X.Y      |      *21.3.0*        |
+|    23.X.Y      |      *23.0.0*        |
 
 ## Quickstart
 
@@ -100,7 +102,7 @@ op = pydgraph.Operation(schema=schema)
 client.alter(op)
 ```
 
-Starting with Dgraph version 20.03.0, indexes can be computed in the background.
+Indexes can be computed in the background.
 You can set the `run_in_background` field of `pydgraph.Operation` to `True`
 before passing it to the `Alter` function. You can find more details
 [here](https://docs.dgraph.io/master/query-language/#indexes-in-background).
@@ -510,12 +512,22 @@ except Exception as e:
 
 ## Development
 
-### Building the source
+### Setting up environment
+
+There are many ways to set up your local Python environment. We suggest some sane defaults here.
+
+- Use [pyenv](https://github.com/pyenv/pyenv) to manage your Python installations.
+- Most recent versions of Python should work, but the version of Python officially supported is located in
+`.python-version`
+- Create a Python virtual environment using `python -m venv .venv`
+- Activate virtual environment via `source .venv/bin/activate`
+
+### Build from source
+
+To build and install pydgraph locally, run
 
 ```sh
-python setup.py install
-# To install for the current user, use this instead:
-# python setup.py install --user
+pip install -e .[dev]
 ```
 
 If you have made changes to the `pydgraph/proto/api.proto` file, you need need
@@ -539,16 +551,15 @@ The required change is outlined below as a diff.
 
 ### Running tests
 
-To run the tests in your local machine, install and run `tox`:
+To run the tests in your local machine, run:
 
 ```bash
-pip install tox
-tox
+bash scripts/local-test.sh
 ```
 
-This script assumes Dgraph and [dgo](https://github.com/dgraph-io/dgo) (Go
-client) are already built on the local machine and that their code is in
-`$GOPATH/src`. It also requires that docker and docker-compose are installed in
+This script assumes dgraph is located on your path. Dgraph release binaries can
+be found [here](https://github.com/dgraph-io/dgraph/releases).
+The test script also requires that `docker` and `docker compose` are installed on
 your machine.
 
 The script will take care of bringing up a Dgraph cluster and bringing it down

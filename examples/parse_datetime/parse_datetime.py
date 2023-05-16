@@ -49,7 +49,7 @@ def set_schema(client):
     type Person {
         name
         friend
-        married 
+        married
         loc
         dob
     }
@@ -75,7 +75,7 @@ def create_data(client):
                 'type': 'Point',
                 'coordinates': [1.1, 2],
             },
-            
+
             'friend': [
                 {
                     'uid': '_:bob',

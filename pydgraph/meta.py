@@ -1,4 +1,4 @@
-# Copyright 2018 Dgraph Labs, Inc.
+# Copyright 2023 Dgraph Labs, Inc.
 #
 # Licensed under the Apache License, Version 2.0 (the "License");
 # you may not use this file except in compliance with the License.
@@ -14,4 +14,4 @@
 
 """Metadata about this package."""
 
-VERSION = '21.3.2'
+VERSION = '23.0.0rc1'
