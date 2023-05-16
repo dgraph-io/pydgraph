@@ -482,7 +482,7 @@ There are many ways to set up your local Python environment. We suggest some san
 To build and install pydgraph locally, run
 
 ```sh
-pip install -e .[dev]
+pip install -e ".[dev]"
 ```
 
 If you have made changes to the `pydgraph/proto/api.proto` file, you need need
