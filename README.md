@@ -1,6 +1,6 @@
 # pydgraph
 
-This is the official Dgraph database client implementation for Python (Python >= v2.7 and >= v3.5), using [gRPC][grpc].
+This is the official Dgraph database client implementation for Python (>= v3.11), using [gRPC][grpc].
 
 [grpc]: https://grpc.io/
 
@@ -8,8 +8,7 @@ This client follows the [Dgraph Go client][goclient] closely.
 
 [goclient]: https://github.com/dgraph-io/dgo
 
-Before using this client, we highly recommend that you read the [Dgraph Python
-Client docs](https://dgraph.io/docs/clients/python/), as well as reviewing
+Before using this client, we highly recommend that you read the
 the product documentation at [dgraph.io/docs].
 
 [dgraph.io/docs]:https://dgraph.io/docs
@@ -22,18 +21,19 @@ the product documentation at [dgraph.io/docs].
   - [Quickstart](#quickstart)
   - [Using a client](#using-a-client)
     - [Creating a Client](#creating-a-client)
+    - [Login into a Namespace](#login-into-a-namespace)
+    - [Connecting To Dgraph Cloud](#connecting-to-dgraph-cloud)
     - [Altering the Database](#altering-the-database)
     - [Creating a Transaction](#creating-a-transaction)
     - [Running a Mutation](#running-a-mutation)
-    - [Committing a Transaction](#committing-a-transaction)
     - [Running a Query](#running-a-query)
+    - [Query with RDF response](#query-with-rdf-response)
     - [Running an Upsert: Query + Mutation](#running-an-upsert-query--mutation)
     - [Running a Conditional Upsert](#running-a-conditional-upsert)
+    - [Committing a Transaction](#committing-a-transaction)
     - [Cleaning Up Resources](#cleaning-up-resources)
     - [Setting Metadata Headers](#setting-metadata-headers)
     - [Setting a timeout](#setting-a-timeout)
-    - [Passing credentials](#passing-credentials)
-    - [Authenticating to a reverse TLS proxy](#authenticating-to-a-reverse-tls-proxy)
     - [Async methods](#async-methods)
   - [Examples](#examples)
   - [Development](#development)
@@ -84,21 +84,66 @@ servers in the same cluster allows for better distribution of workload.
 
 The following code snippet shows just one connection.
 
-```python
+```python3
 import pydgraph
 
 client_stub = pydgraph.DgraphClientStub('localhost:9080')
 client = pydgraph.DgraphClient(client_stub)
 ```
 
+### Login into a Namespace
+
+If your server has Access Control Lists enabled (Dgraph v1.1 or above), the client must be
+logged in for accessing data. Use `login` endpoint:
+
+Calling login will obtain and remember the access and refresh JWT tokens. All subsequent operations
+via the logged in client will send along the stored access token.
+
+```python3
+client.login("groot", "password")
+```
+
+If your server additionally has namespaces (Dgraph v21.03 or above), use the
+`login_into_namespace` API.
+
+```python3
+client.login_into_namespace("groot", "password", "123")
+```
+
+### Connecting To Dgraph Cloud
+
+If you want to connect to Dgraph running on [Dgraph Cloud](https://cloud.dgraph.io) instance, then
+all you need is the URL of your Dgraph Cloud endpoint and the API key. You can get a client using
+them as follows:
+
+```python3
+client_stub = pydgraph.DgraphClientStub.from_cloud(
+    "https://frozen-mango.eu-central-1.aws.cloud.dgraph.io/graphql", "<api-key>")
+client = pydgraph.DgraphClient(client_stub)
+```
+
+The `DgraphClientStub.from_slash_endpoint()` method has been removed v23.0.
+Please use `DgraphClientStub.from_cloud()` instead.
+
 ### Altering the Database
 
 To set the schema, create an `Operation` object, set the schema and pass it to
 `DgraphClient#alter(Operation)` method.
 
-```python
+```python3
 schema = 'name: string @index(exact) .'
 op = pydgraph.Operation(schema=schema)
+client.alter(op)
+```
+
+`Operation` contains other fields as well, including `DropAttr` and `DropAll`. `DropAll` is
+useful if you wish to discard all the data, and start from a clean slate, without bringing
+the instance down. `DropAttr` is used to drop all the data related to a predicate.
+
+```python3
+# Drop all data including schema from the Dgraph instance. This is a useful
+# for small examples such as this since it puts Dgraph into a clean state.
+op = pydgraph.Operation(drop_all=True)
 client.alter(op)
 ```
 
@@ -107,20 +152,9 @@ You can set the `run_in_background` field of `pydgraph.Operation` to `True`
 before passing it to the `Alter` function. You can find more details
 [here](https://docs.dgraph.io/master/query-language/#indexes-in-background).
 
-```python
+```python3
 schema = 'name: string @index(exact) .'
 op = pydgraph.Operation(schema=schema, run_in_background=True)
-client.alter(op)
-```
-
-`Operation` contains other fields as well, including the `drop` predicate and `drop all`.
-Drop all is useful if you wish to discard all the data, and start with a clean
-slate, without bringing the instance down.
-
-```python
-# Drop all data including schema from the Dgraph instance. This is a useful
-# for small examples such as this since it puts Dgraph into a clean state.
-op = pydgraph.Operation(drop_all=True)
 client.alter(op)
 ```
 
@@ -133,7 +167,7 @@ It is good practice to call `Txn#discard()` in a `finally` block after running
 the transaction. Calling `Txn#discard()` after `Txn#commit()` is a no-op
 and you can call `Txn#discard()` multiple times with no additional side-effects.
 
-```python
+```python3
 txn = client.txn()
 try:
   # Do something here
@@ -147,7 +181,7 @@ To create a read-only transaction, call `DgraphClient#txn(read_only=True)`.
 Read-only transactions are ideal for transactions which only involve queries.
 Mutations and commits are not allowed.
 
-```python
+```python3
 txn = client.txn(read_only=True)
 try:
   # Do some queries here
@@ -175,11 +209,9 @@ values. See examples below for usage.
 
 We define a person object to represent a person and use it in a transaction.
 
-```python
+```python3
 # Create data.
-p = {
-    'name': 'Alice',
-}
+p = { 'name': 'Alice' }
 
 # Run mutation.
 txn.mutate(set_obj=p)
@@ -192,8 +224,8 @@ txn.mutate(set_obj=p)
 # txn.mutate(set_nquads='_:alice <name> "Alice" .')
 ```
 
-```python
-# Delete data.
+```python3
+# Delete data
 
 query = """query all($a: string)
  {
@@ -202,7 +234,6 @@ query = """query all($a: string)
       uid
     }
   }"""
-
 variables = {'$a': 'Bob'}
 
 res = txn.query(query, variables=variables)
@@ -221,51 +252,24 @@ that the mutation must be immediately committed.
 
 A mutation can be executed using `txn.do_request` as well.
 
-```python
+```python3
 mutation = txn.create_mutation(set_nquads='_:alice <name> "Alice" .')
 request = txn.create_request(mutations=[mutation], commit_now=True)
 txn.do_request(request)
 ```
 
-### Committing a Transaction
-
-A transaction can be committed using the `Txn#commit()` method. If your transaction
-consist solely of `Txn#query` or `Txn#queryWithVars` calls, and no calls to
-`Txn#mutate`, then calling `Txn#commit()` is not necessary.
-
-An error is raised if another transaction(s) modify the same data concurrently that was
-modified in the current transaction. It is up to the user to retry transactions
-when they fail.
-
-```python
-txn = client.txn()
-try:
-  # ...
-  # Perform any number of queries and mutations
-  # ...
-  # and finally...
-  txn.commit()
-except pydgraph.AbortedError:
-  # Retry or handle exception.
-finally:
-  # Clean up. Calling this after txn.commit() is a no-op
-  # and hence safe.
-  txn.discard()
-```
-
 ### Running a Query
 
 You can run a query by calling `Txn#query(string)`. You will need to pass in a
-[DQL](https://dgraph.io/docs/query-language/) query string. If you want to pass an additional dictionary of any
-variables that you might want to set in the query, call
-`Txn#query(string, variables=d)` with the variables dictionary `d`.
+[DQL](https://dgraph.io/docs/query-language/) query string. If you want to pass
+an additional dictionary of any variables that you might want to set in the query,
+call `Txn#query(string, variables=d)` with the variables dictionary `d`.
 
 The query response contains the `json` field, which returns the JSON response.
-
 Let’s run a query with a variable `$a`, deserialize the result from JSON and
 print it out:
 
-```python
+```python3
 # Run query.
 query = """query all($a: string) {
   all(func: eq(name, $a))
@@ -297,9 +301,21 @@ Alice
 
 You can also use `txn.do_request` function to run the query.
 
-```python
+```python3
 request = txn.create_request(query=query)
 txn.do_request(request)
+```
+
+### Query with RDF response
+
+You can get query result as a RDF response by calling `Txn#query(string)` with `resp_format` set
+to `RDF`. The response would contain a `rdf` field, which has the RDF encoded result.
+
+**Note:** If you are querying only for `uid` values, use a JSON format response.
+
+```python3
+res = txn.query(query, variables=variables, resp_format="RDF")
+print(res.rdf)
 ```
 
 ### Running an Upsert: Query + Mutation
@@ -313,14 +329,16 @@ implemented by DQL.
 To learn more about upsert blocks, see the
 [Upsert Block documentation](https://dgraph.io/docs/mutations/upsert-block/).
 
-```python
+```python3
 query = """{
   u as var(func: eq(name, "Alice"))
 }"""
+
 nquad = """
   uid(u) <name> "Alice" .
   uid(u) <age> "25" .
 """
+
 mutation = txn.create_mutation(set_nquads=nquad)
 request = txn.create_request(query=query, mutations=[mutation], commit_now=True)
 txn.do_request(request)
@@ -328,24 +346,53 @@ txn.do_request(request)
 
 ### Running a Conditional Upsert
 
-The upsert block also allows specifying a conditional mutation block using an `@if` directive. The mutation is executed
-only when the specified condition is true. If the condition is false, the mutation is silently ignored.
+The upsert block also allows specifying a conditional mutation block using an `@if` directive.
+The mutation is executed only when the specified condition is true. If the condition is false,
+the mutation is silently ignored.
 
 See more about Conditional Upserts [here](https://docs.dgraph.io/mutations/#conditional-upsert).
 
-```python
+```python3
 query = """
   {
     user as var(func: eq(email, "wrong_email@dgraph.io"))
   }
 """
+
 cond = "@if(eq(len(user), 1))"
 nquads = """
   uid(user) <email> "correct_email@dgraph.io" .
 """
+
 mutation = txn.create_mutation(cond=cond, set_nquads=nquads)
 request = txn.create_request(mutations=[mutation], query=query, commit_now=True)
 txn.do_request(request)
+```
+
+### Committing a Transaction
+
+A transaction can be committed using the `Txn#commit()` method. If your transaction
+consist solely of `Txn#query` or `Txn#queryWithVars` calls, and no calls to
+`Txn#mutate`, then calling `Txn#commit()` is not necessary.
+
+An error is raised if another transaction(s) modify the same data concurrently that was
+modified in the current transaction. It is up to the user to retry transactions
+when they fail.
+
+```python3
+txn = client.txn()
+try:
+  # ...
+  # Perform any number of queries and mutations
+  # ...
+  # and finally...
+  txn.commit()
+except pydgraph.AbortedError:
+  # Retry or handle exception.
+finally:
+  # Clean up. Calling this after txn.commit() is a no-op
+  # and hence safe.
+  txn.discard()
 ```
 
 ### Cleaning Up Resources
@@ -353,19 +400,19 @@ txn.do_request(request)
 To clean up resources, you have to call `DgraphClientStub#close()` individually for
 all the instances of `DgraphClientStub`.
 
-```python
-SERVER_ADDR = "localhost:9080"
+```python3
+SERVER_ADDR1 = "localhost:9080"
+SERVER_ADDR2 = "localhost:9080"
 
 # Create instances of DgraphClientStub.
-stub1 = pydgraph.DgraphClientStub(SERVER_ADDR)
-stub2 = pydgraph.DgraphClientStub(SERVER_ADDR)
+stub1 = pydgraph.DgraphClientStub(SERVER_ADDR1)
+stub2 = pydgraph.DgraphClientStub(SERVER_ADDR2)
 
 # Create an instance of DgraphClient.
 client = pydgraph.DgraphClient(stub1, stub2)
 
-# ...
 # Use client
-# ...
+...
 
 # Clean up resources by closing all client stubs.
 stub1.close()
@@ -374,9 +421,10 @@ stub2.close()
 
 ### Setting Metadata Headers
 
-Metadata headers such as authentication tokens can be set through the metadata of gRPC methods. Below is an example of how to set a header named "auth-token".
+Metadata headers such as authentication tokens can be set through the metadata of gRPC methods.
+Below is an example of how to set a header named "auth-token".
 
-```python
+```python3
 # The following piece of code shows how one can set metadata with
 # auth-token, to allow Alter operation, if the server requires it.
 # metadata is a list of arbitrary key-value pairs.
@@ -392,29 +440,6 @@ A timeout value representing the number of seconds can be passed to the `login`,
 For example, the following alters the schema with a timeout of ten seconds:
 `dg.alter(op, timeout=10)`
 
-### Passing credentials
-
-A `CallCredentials` object can be passed to the `login`, `alter`, `query`, and
-`mutate` methods using the `credentials` keyword argument.
-
-### Authenticating to a reverse TLS proxy
-
-If the Dgraph instance is behind a reverse TLS proxy, credentials can also be
-passed through the methods available in the gRPC library. Note that in this case
-every request will need to include the credentials. In the example below, we are
-trying to add authentication to a proxy that requires an API key. This value is
-expected to be included in the metadata using the key "authorization".
-
-```python
-creds = grpc.ssl_channel_credentials()
-call_credentials = grpc.metadata_call_credentials(
-    lambda context, callback: callback((("authorization", "<api-key>"),), None))
-composite_credentials = grpc.composite_channel_credentials(creds, call_credentials)
-client_stub = pydgraph.DgraphClientStub(
-    '{host}:{port}'.format(host=GRPC_HOST, port=GRPC_PORT), composite_credentials)
-client = pydgraph.DgraphClient(client_stub)
-```
-
 ### Async methods
 
 The `alter` method in the client has an asynchronous version called
@@ -422,7 +447,7 @@ The `alter` method in the client has an asynchronous version called
 `result` method on the future. However. The DgraphClient class provides a static
 method `handle_alter_future` to handle any possible exception.
 
-```python
+```python3
 alter_future = self.client.async_alter(pydgraph.Operation(
 	schema="name: string @index(term) ."))
 response = pydgraph.DgraphClient.handle_alter_future(alter_future)
@@ -435,21 +460,19 @@ just like `async_alter`.
 You can use the `handle_query_future` and `handle_mutate_future` static methods
 in the `Txn` class to retrieve the result. A short example is given below:
 
-```python
+```python3
 txn = client.txn()
 query = "query body here"
 future = txn.async_query()
 response = pydgraph.Txn.handle_query_future(future)
 ```
 
-A working example can be found in the `test_asycn.py` test file.
-
 Keep in mind that due to the nature of async calls, the async functions cannot
 retry the request if the login is invalid. You will have to check for this error
 and retry the login (with the function `retry_login` in both the `Txn` and
 `Client` classes). A short example is given below:
 
-```python
+```python3
 client = DgraphClient(client_stubs) # client_stubs is a list of gRPC stubs.
 alter_future = client.async_alter()
 try:
@@ -463,7 +486,12 @@ except Exception as e:
 
 ## Examples
 
+[tls]: ./examples/tls
+[parse_datetime]: ./examples/parse_datetime
+
 - [simple][]: Quickstart example of using pydgraph.
+- [tls][]: Quickstart example that uses TLS.
+- [parse_datetime]: Demonstration of converting Dgraph's DateTime strings to native python datetime.
 
 ## Development
 
