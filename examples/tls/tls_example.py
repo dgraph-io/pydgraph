@@ -1,4 +1,5 @@
 #!/usr/bin/env python3
+
 import pydgraph
 import grpc
 
@@ -49,15 +50,15 @@ url: string .
 
     # Query
     res = client.txn(read_only=True).query('''
-query dgraph($name: string) {
-  data(func: eq(name, $name)) {
-    uid
-    name
-    description
-    url
-  }
-}
-''', variables={"$name": "Dgraph"})
+        query dgraph($name: string) {
+            data(func: eq(name, $name)) {
+                uid
+                name
+                description
+                url
+            }
+        }
+        ''', variables={"$name": "Dgraph"})
     print(res.json);
 
 if __name__ == '__main__':
