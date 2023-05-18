@@ -21,7 +21,7 @@ import unittest
 import logging
 import json
 
-from . import helper
+from tests import helper
 
 
 class TestEssentials(helper.ClientIntegrationTestCase):

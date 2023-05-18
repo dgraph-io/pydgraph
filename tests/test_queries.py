@@ -24,7 +24,7 @@ import json
 
 import pydgraph
 
-from . import helper
+from tests import helper
 
 
 class TestQueries(helper.ClientIntegrationTestCase):

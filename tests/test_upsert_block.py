@@ -20,7 +20,7 @@ import unittest
 import logging
 import json
 
-from . import helper
+from tests import helper
 
 class TestUpsertBlock(helper.ClientIntegrationTestCase):
     """Tests for Upsert Block"""
