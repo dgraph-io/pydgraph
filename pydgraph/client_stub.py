@@ -96,22 +96,21 @@ class DgraphClientStub(object):
         del self.channel
         del self.stub
 
-    # from_slash_endpoint is deprecated and will be removed in v21.07 release.
-    # Use from_cloud method to connect to dgraph cloud backend.
-    @staticmethod
-    def from_slash_endpoint(cloud_endpoint, api_key):
-        return from_cloud(cloud_endpoint, api_key)
-
+    # accepts grpc endpoint as copied in cloud console as well as graphql endpoint
     # Usage:
     # import pydgraph
     # client_stub = pydgraph.DgraphClientStub.from_cloud("cloud_endpoint", "api-key")
     # client = pydgraph.DgraphClient(client_stub)
     @staticmethod
     def from_cloud(cloud_endpoint, api_key):
-        """Returns Dgraph Client stub for the Slash GraphQL endpoint"""
-        url = urlparse(cloud_endpoint)
-        url_parts = url.netloc.split(".", 1)
-        host = url_parts[0] + ".grpc." + url_parts[1]
+        """Returns Dgraph Client stub for the Dgraph Cloud endpoint"""
+        if cloud_endpoint.startswith("http"): # catch http:// and https://
+            host = urlparse(cloud_endpoint).netloc
+        else:
+            host = cloud_endpoint.split(":",1)[0] # remove port if any
+        if not ".grpc." in host:
+            url_parts = host.split(".", 1)
+            host = url_parts[0] + ".grpc." + url_parts[1]
         creds = grpc.ssl_channel_credentials()
         call_credentials = grpc.metadata_call_credentials(
             lambda context, callback: callback((("authorization", api_key),), None))

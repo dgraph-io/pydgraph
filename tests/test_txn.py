@@ -18,6 +18,7 @@ __maintainer__ = 'Garvit Pahal <garvit@dgraph.io>'
 import unittest
 import logging
 import json
+import time
 
 import pydgraph
 
@@ -234,8 +235,12 @@ class TestTxn(helper.ClientIntegrationTestCase):
         """Tests read-only transactions. Read-only transactions should
         not advance the start ts nor should allow mutations or commits."""
 
-        query = '{ me() {} }'
+        # We sleep here so that rollups do not move the MaxAssigned.
+        # Starting Dgraph v23, rollups can move the MaxAssigned too.
+        # PR: https://github.com/dgraph-io/dgraph/pull/8774
+        time.sleep(1)
 
+        query = '{ me() {} }'
         resp1 = self.client.txn(read_only=True).query(query)
         start_ts1 = resp1.txn.start_ts
         resp2 = self.client.txn(read_only=True).query(query)
@@ -261,16 +266,21 @@ class TestTxn(helper.ClientIntegrationTestCase):
         helper.set_schema(self.client, 'name: string @index(exact) .')
 
         txn = self.client.txn()
-        _ = txn.mutate(set_obj={'name': 'Manish'})
+        resp = txn.mutate(set_obj={'name': 'Manish'})
         txn.commit()
+        mu_ts = resp.txn.commit_ts
 
         query = '{ me(func: has(name)) {name} }'
         with self.assertRaises(Exception):
             self.client.txn(read_only=False, best_effort=True)
 
-        txn = self.client.txn(read_only=True, best_effort=True)
-        resp = txn.query(query)
-        self.assertEqual([], json.loads(resp.json).get('me'))
+        while True:
+            txn = self.client.txn(read_only=True, best_effort=True)
+            resp = txn.query(query)
+            if resp.txn.start_ts < mu_ts:
+                continue
+            self.assertEqual([], json.loads(resp.json).get('me'))
+            break
 
         with self.assertRaises(Exception):
             txn.mutate(set_obj={'name': 'Manish'})
