@@ -56,15 +56,12 @@ use a different version of this client.
 
 | Dgraph version |   pydgraph version   |
 |:--------------:|:--------------------:|
-|     1.0.X      |      *1.2.0*         |
-|     1.1.X      |      *2.0.0*         |
-|     1.2.X      |      *2.0.0*         |
 |    20.3.X      |      *20.3.0*        |
 |    20.7.X      |      *20.7.0*        |
 |    20.11.X     |      *20.7.0*        |
-|    21.X.Y      |      *21.3.0*        |
-|    22.X.Y      |      *21.3.0*        |
-|    23.X.Y      |      *23.0.0*        |
+|    21.03.X     |      *21.3.0*        |
+|    22.0.X      |      *21.3.0*        |
+|    23.0.X      |      *23.0.0*        |
 
 ## Quickstart
 
@@ -113,12 +110,14 @@ client.login_into_namespace("groot", "password", "123")
 ### Connecting To Dgraph Cloud
 
 If you want to connect to Dgraph running on [Dgraph Cloud](https://cloud.dgraph.io) instance, then
-all you need is the URL of your Dgraph Cloud endpoint and the API key. You can get a client using
-them as follows:
+get the gRPC endpoint of your cluster that you can find in the
+[Settings section](https://cloud.dgraph.io/_/settings) of Dgraph Cloud console and obtain a Client
+or Admin API key (created in the [API key tab](https://cloud.dgraph.io/_/settings?tab=api-keys)
+of the Setting section). Create the `client_stub` using the gRPC endpoint and the API key:
 
 ```python3
 client_stub = pydgraph.DgraphClientStub.from_cloud(
-    "https://frozen-mango.eu-central-1.aws.cloud.dgraph.io/graphql", "<api-key>")
+    "https://morning-glade.grpc.us-east-1.aws.cloud.dgraph.io:443", "<api-key>")
 client = pydgraph.DgraphClient(client_stub)
 ```
 
