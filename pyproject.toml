@@ -10,7 +10,7 @@ authors = [
 license = {file = "LICENSE" }
 description = "Official Dgraph client implementation for Python"
 readme = "README.md"
-requires-python = ">=3.11"
+requires-python = ">=3.5"
 classifiers=[
     'Intended Audience :: Developers',
     'License :: OSI Approved :: Apache Software License',

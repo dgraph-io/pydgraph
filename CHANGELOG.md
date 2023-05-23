@@ -9,17 +9,23 @@ and this project adheres to [Semantic Versioning](http://semver.org/spec/v2.0.0.
 
 ### Notes
 
-- This release requires Python >=3.11. Lower versions may also work but are untested
+- Testing is done against Python >=3.11. Minimum requirement is now Python 3.5
 - The repository has been refactored to use `pyproject.toml` as the source of truth for dependency requirements
 - Added `.python-version` file to keep track of supported Python version
 
+### Breaking
+- accept grpc endpoint or /graphql endpoint in from_cloud function (#190)
+
 ### Added
 - Github Actions for CI/CD pipelines
-    - chore(ci): test against latest dgraph on main (#196)
-    - chore(ci): fix test script & use latest docker image (#195)
-    - chore(ci/cd): add pipelines + modernize repo (#193)
-    - chore(ci): add ci to pydgraph (#192)
+  - chore(ci): test against latest dgraph on main (#196)
+  - chore(ci): fix test script & use latest docker image (#195)
+  - chore(ci/cd): add pipelines + modernize repo (#193)
+  - chore(ci): add ci to pydgraph (#192)
 - Add example for datetime parsing (#170)
+- cleanup README, compose files and doc links (#194)
+- fix the TLS examples in examples/tls (#198)
+- update docs and fix flaky tests (#199)
 
 ## [v21.3.2] - 2021-08-05
 
