@@ -18,13 +18,8 @@ __author__ = 'Garvit Pahal <garvit@dgraph.io>'
 __maintainer__ = 'Martin Martinez Rivera <martinmr@dgraph.io>'
 
 import unittest
-import json
 
 from pydgraph import util
-import pydgraph
-
-from . import helper
-
 
 class TestUtil(unittest.TestCase):
     """Tests util utility functions."""

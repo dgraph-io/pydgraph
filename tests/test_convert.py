@@ -19,9 +19,6 @@ import json
 
 from pydgraph import convert
 
-from . import helper
-
-
 class TestConvert(unittest.TestCase):
     """Tests conversion functions."""
 
