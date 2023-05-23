@@ -20,12 +20,13 @@ __author__ = 'Animesh Pathak <animesh@dgrpah.io>'
 __maintainer__ = 'Animesh Pathak <animesh@dgrpah.io>'
 
 import logging
-import os
+import shutil
 import unittest
 
 from . import helper
 import pydgraph
 
+@unittest.skipIf(shutil.which('dgraph') is None, 'Dgraph binary not found.')
 class TestACL(helper.ClientIntegrationTestCase):
     user_id = 'alice'
     group_id = 'dev'
