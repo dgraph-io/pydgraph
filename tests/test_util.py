@@ -20,13 +20,9 @@ __maintainer__ = 'Martin Martinez Rivera <martinmr@dgraph.io>'
 import unittest
 
 from pydgraph import util
-import pydgraph
 
-from . import helper
-
-
-class TestIsString(unittest.TestCase):
-    """Tests is_string utility function."""
+class TestUtil(unittest.TestCase):
+    """Tests util utility functions."""
 
     def test_is_string(self):
         self.assertTrue(util.is_string(''))
@@ -34,14 +30,14 @@ class TestIsString(unittest.TestCase):
         self.assertFalse(util.is_string(object()))
         self.assertFalse(util.is_string({}))
 
-
 def suite():
     """Returns a test suite object."""
     suite_obj = unittest.TestSuite()
-    suite_obj.addTest(TestIsString())
+    suite_obj.addTest(TestUtil())
     return suite_obj
 
 
 if __name__ == '__main__':
     runner = unittest.TextTestRunner()
     runner.run(suite())
+    
