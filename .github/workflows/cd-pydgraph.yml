@@ -16,7 +16,6 @@ jobs:
       - name: Get Python Version
         run: |
           #!/bin/bash
-          cd pydgraph
           PYTHON_VERSION=$({ [ -f .python-version ] && cat .python-version; })
           echo "PYTHON_VERSION=$PYTHON_VERSION" >> $GITHUB_ENV
       - name: Set up Python
@@ -40,4 +39,4 @@ jobs:
           # build binary wheel and a source tarball
           python -m build
       - name: Upload to PyPi
-        run: twine upload --username dgraph-io --password ${{ secrets.DGRAPH_PYPI_PASSWORD }} dist/*       
+        run: twine upload --username ${{ secrets.DGRAPH_PYPI_USERNAME }} --password ${{ secrets.DGRAPH_PYPI_PASSWORD }} dist/*       
