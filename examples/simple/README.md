@@ -12,10 +12,10 @@ Start by spinning up a Dgraph cluster locally. Run `docker compose up`.
 Note that the security flag uses a blanket whitelist. This is for convenience when testing locally.
 Do not use this in a production environment.
 
-## Install the Dependencies
+## Install pydgraph
 
 ```sh
-pip install -r requirements.txt
+pip install pydgraph
 ```
 
 ## Run the Sample Code
