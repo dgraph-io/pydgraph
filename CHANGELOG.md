@@ -8,7 +8,7 @@ and this project adheres to [Semantic Versioning](http://semver.org/spec/v2.0.0.
 ## [v23.0.0] - 2023-05-15
 
 ### Breaking
-- Minimum required Python now 3.5 (CI runs against 3.11)
+- Minimum required Python now 3.7 (CI runs against 3.11)
 - deprecated from_slash_endpoint function (#190)
 
 ### Added
