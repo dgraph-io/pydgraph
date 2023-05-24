@@ -30,9 +30,16 @@ jobs:
           python -m pip install twine
       - name: Verify that protobufs are checked in
         run: |
-          # should be a no-op
+          # we modify one line in proto/api_pb2_grpc.py as described in readme
           python scripts/protogen.py
-          git diff --exit-code -- .
+          ACTUAL_DIFF=$(git diff --shortstat)
+          EXPECTED_DIFF="1 file changed, 1 insertion(+), 1 deletion(-)"
+          if [[ "$ACTUAL_DIFF" == "$EXPECTED_DIFF" ]]; then
+            echo "found expected difference"
+          else
+            echo "unexpected difference when regenerating protobufs, verify they are checked in"
+            exit 1
+          fi
       - name: Build pydgraph
         run: |
           rm -rf dist
