@@ -14,7 +14,8 @@ and this project adheres to [Semantic Versioning](http://semver.org/spec/v2.0.0.
 - Added `.python-version` file to keep track of supported Python version
 
 ### Breaking
-- accept grpc endpoint or /graphql endpoint in from_cloud function (#190)
+- accept grpc endpoint or /graphql endpoint in from_cloud function
+- deprecated from_slash_endpoint function (#190)
 
 ### Added
 - Github Actions for CI/CD pipelines
