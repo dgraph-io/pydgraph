@@ -1,6 +1,6 @@
 # pydgraph
 
-This is the official Dgraph database client implementation for Python (>= v3.11), using [gRPC][grpc].
+This is the official Dgraph database client implementation for Python (Python >= v3.7), using [gRPC][grpc].
 
 [grpc]: https://grpc.io/
 

@@ -5,8 +5,40 @@ All notable changes to this project will be documented in this file.
 The format is based on [Keep a Changelog](http://keepachangelog.com/en/1.0.0/)
 and this project adheres to [Semantic Versioning](http://semver.org/spec/v2.0.0.html).
 
-## [Unreleased]
-===================
+## [v23.0.0] - 2023-05-15
+
+### Breaking
+- Minimum required Python now 3.7 (CI runs against 3.11)
+- deprecated from_slash_endpoint function (#190)
+
+### Added
+- accept grpc endpoint or /graphql endpoint in from_cloud function
+- `pyproject.toml` as the source of truth for dependency requirements
+- `.python-version` file to keep track of supported Python version
+
+### Chore
+- Github Actions for CI/CD pipelines
+  - chore(ci): test against latest dgraph on main (#196)
+  - chore(ci): fix test script & use latest docker image (#195)
+  - chore(ci/cd): add pipelines + modernize repo (#193)
+  - chore(ci): add ci to pydgraph (#192)
+- Add example for datetime parsing (#170)
+- cleanup README, compose files and doc links (#194)
+- fix the TLS examples in examples/tls (#198)
+- update docs and fix flaky tests (#199)
+
+## [v21.3.2] - 2021-08-05
+
+### Added
+- Missing variable in from_cloud (#174)
+
+## [v21.3.1] - 2021-08-04
+
+### Added
+- Add from_cloud method (#169)
+- Refresh examples (#171)
+- test: Update test setup to use randomized Docker ports (picking up the port from `TEST_SERVER_ADDR`)
+- test: Use `--guardian-creds` superflags in ACL tests
 
 ## [v21.03.0] - 2020-04-09
 
