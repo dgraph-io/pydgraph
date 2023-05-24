@@ -7,16 +7,16 @@ and this project adheres to [Semantic Versioning](http://semver.org/spec/v2.0.0.
 
 ## [v23.0.0] - 2023-05-15
 
-### Notes
-
-- Testing is done against Python >=3.11. Minimum requirement is now Python 3.5
-- The repository has been refactored to use `pyproject.toml` as the source of truth for dependency requirements
-- Added `.python-version` file to keep track of supported Python version
-
 ### Breaking
+- Minimum required Python now 3.5 (CI runs against 3.11)
 - deprecated from_slash_endpoint function (#190)
 
 ### Added
+- accept grpc endpoint or /graphql endpoint in from_cloud function
+- `pyproject.toml` as the source of truth for dependency requirements
+- `.python-version` file to keep track of supported Python version
+
+### Chore
 - Github Actions for CI/CD pipelines
   - chore(ci): test against latest dgraph on main (#196)
   - chore(ci): fix test script & use latest docker image (#195)
