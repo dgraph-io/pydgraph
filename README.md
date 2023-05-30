@@ -523,14 +523,6 @@ command:
 python scripts/protogen.py
 ```
 
-The generated file `api_pb2_grpc.py` needs to be changed in recent versions of python.
-The required change is outlined below as a diff.
-
-```diff
--import api_pb2 as api__pb2
-+from . import api_pb2 as api__pb2
-```
-
 ### Running tests
 
 To run the tests in your local machine, run:
