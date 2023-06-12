@@ -58,6 +58,7 @@ class TestFromCloud(unittest.TestCase):
         testcases = [
             {"endpoint": "godly.grpc.region.aws.cloud.dgraph.io"},
             {"endpoint": "godly.grpc.region.aws.cloud.dgraph.io:443"},
+            {"endpoint": "https://godly.grpc.region.aws.cloud.dgraph.io:443"},
             {"endpoint": "https://godly.region.aws.cloud.dgraph.io/graphql"},
             {"endpoint": "godly.region.aws.cloud.dgraph.io"},
             {"endpoint": "https://godly.region.aws.cloud.dgraph.io"},
