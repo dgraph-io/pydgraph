@@ -87,6 +87,18 @@ class DgraphClientStub(object):
         del self.channel
         del self.stub
 
+    @staticmethod
+    def parse_host(cloud_endpoint):
+        """Converts any cloud endpoint to grpc endpoint"""
+        host = cloud_endpoint
+        if cloud_endpoint.startswith("http"): # catch http:// and https://
+            host = urlparse(cloud_endpoint).netloc
+        host = host.split(":",1)[0] # remove port if any
+        if not ".grpc." in host:
+            url_parts = host.split(".", 1)
+            host = url_parts[0] + ".grpc." + url_parts[1]
+        return host
+
     # accepts grpc endpoint as copied in cloud console as well as graphql endpoint
     # Usage:
     # import pydgraph
@@ -95,13 +107,7 @@ class DgraphClientStub(object):
     @staticmethod
     def from_cloud(cloud_endpoint, api_key):
         """Returns Dgraph Client stub for the Dgraph Cloud endpoint"""
-        if cloud_endpoint.startswith("http"): # catch http:// and https://
-            host = urlparse(cloud_endpoint).netloc
-        else:
-            host = cloud_endpoint.split(":",1)[0] # remove port if any
-        if not ".grpc." in host:
-            url_parts = host.split(".", 1)
-            host = url_parts[0] + ".grpc." + url_parts[1]
+        host = DgraphClientStub.parse_host(cloud_endpoint)
         creds = grpc.ssl_channel_credentials()
         call_credentials = grpc.metadata_call_credentials(
             lambda context, callback: callback((("authorization", api_key),), None))
