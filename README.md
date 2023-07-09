@@ -188,7 +188,7 @@ client.alter(op)
 ```
 
 **Note**
-``drop_op="TYPE"`` just removes a type definition from the DQL schema. No data is removed from the cluster. The operation does not drop the predciates definitions nor the predicate values.
+``drop_op="TYPE"`` just removes a type definition from the DQL schema. No data is removed from the cluster. The operation does not drop the predicates associated with the type.
 
 
 
