@@ -125,8 +125,8 @@ The `DgraphClientStub.from_slash_endpoint()` method has been removed v23.0.
 Please use `DgraphClientStub.from_cloud()` instead.
 
 ### Altering the Database
-
-To set the schema, create an `Operation` object, set the schema and pass it to
+#### Set the Dgraph types schema
+To set the Dgraph types schema (aka DQL schema), create an `Operation` object, set the schema and pass it to
 `DgraphClient#alter(Operation)` method.
 
 ```python3
@@ -134,11 +134,22 @@ schema = 'name: string @index(exact) .'
 op = pydgraph.Operation(schema=schema)
 client.alter(op)
 ```
+Indexes can be computed in the background.
+You can set the `run_in_background` field of `pydgraph.Operation` to `True`
+before passing it to the `Alter` function. You can find more details
+[here](https://docs.dgraph.io/master/query-language/#indexes-in-background).
 
-`Operation` contains other fields as well, including `DropAttr` and `DropAll`. `DropAll` is
-useful if you wish to discard all the data, and start from a clean slate, without bringing
-the instance down. `DropAttr` is used to drop all the data related to a predicate.
+**Note**
+To deploy the GraphQL schema in python you have to use GraphQL client such as [python-graphql-client](https://github.com/prodigyeducation/python-graphql-client) to invoke the GraphQL admin mutation [updateGQLSchema](https://dgraph.io/docs/graphql/admin/#using-updategqlschema-to-add-or-modify-a-schema)
 
+```python3
+schema = 'name: string @index(exact) .'
+op = pydgraph.Operation(schema=schema, run_in_background=True)
+client.alter(op)
+```
+#### Drop data
+
+To drop all data and schema:
 ```python3
 # Drop all data including schema from the Dgraph instance. This is a useful
 # for small examples such as this since it puts Dgraph into a clean state.
@@ -146,16 +157,43 @@ op = pydgraph.Operation(drop_all=True)
 client.alter(op)
 ```
 
-Indexes can be computed in the background.
-You can set the `run_in_background` field of `pydgraph.Operation` to `True`
-before passing it to the `Alter` function. You can find more details
-[here](https://docs.dgraph.io/master/query-language/#indexes-in-background).
+**Note** 
+If the Dgraph cluster contains a GraphQL Schema, it will also be deleted by this operation. 
 
+To drop all data and preserve the DQL schema:
 ```python3
-schema = 'name: string @index(exact) .'
-op = pydgraph.Operation(schema=schema, run_in_background=True)
+# Drop all data from the Dgraph instance. Keep the DQL Schema.
+op = pydgraph.Operation(drop_op="DATA")
 client.alter(op)
 ```
+
+To drop a predicate:
+```python3
+# Drop the data associated to a predicate and the predicate from the schema.
+op = pydgraph.Operation(drop_op="ATTR", drop_value="<predicate_name>")
+client.alter(op)
+```
+the same result is obtained using 
+```python3
+# Drop the data associated to a predicate and the predicate from the schema.
+op = pydgraph.Operation(drop_attr="<predicate_name>")
+client.alter(op)
+```
+
+To drop a type definition from DQL Schema:
+```python3
+# Drop a type from the schema.
+op = pydgraph.Operation(drop_op="TYPE", drop_value="<predicate_name>")
+client.alter(op)
+```
+
+**Note**
+``drop_op="TYPE"`` just removes a type definition from the DQL schema. No data is removed from the cluster. The operation does not drop the predciates definitions nor the predicate values.
+
+
+
+
+
 
 ### Creating a Transaction
 
