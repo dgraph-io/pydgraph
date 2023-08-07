@@ -37,14 +37,14 @@ in the **config-local.json** **dgraph_grpc** field as a string
         DELETE {{qdrant-endpoint}}/collections/oilrig
             click on Headers and add a key called api-key with a value {{qdrant-key}} <---this will pull the qdrant-key from the environment 
 
-    3. Scroll: 
+
 
 **OpenAI API**
 go to openai.com, create an account and generate an API key
 Paste this in the **config-local.json** **OpenAIKey** field as a string
 
 
-**Node.js**
+**Node.js----This is only needed for visualization, not necessary**
 https://medium.com/@muesingb/how-to-install-update-node-js-on-macos-using-homebrew-22fc921312c9
 
 
