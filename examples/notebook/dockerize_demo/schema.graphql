@@ -1,0 +1,163 @@
+"""
+Source is the source of the data.
+"""
+enum Source {
+    PandoraPapers
+    ParadisePapers
+    OffshoreLeaks
+    BahamasLeaks
+    PanamaPapers
+}
+
+"""
+Record is the base type for all records in the graph.
+"""
+interface Record {
+    id: ID!
+
+    "The offshore links 'node_id'"
+    nodeID: String! @id
+    "The ICIJ internal ID"
+    internalID: String @search(by: [exact])
+    "The record source"
+    sourceID: Source! @search(by: [exact])
+    "Notes about the record"
+    notes: String @search(by: [fulltext])
+
+    "The associated name"
+    name: String! @search(by: [term, fulltext, regexp])
+
+    "Associated country codes"
+    countryCodes: [String!] @search(by: [exact])
+
+    "Year (inclusive) through which the record is considered valid"
+    validUntil: DateTime @search
+
+    "Addresses associated with the record"
+    hasAddress: [Record!]
+    "Records to which this Address is registered"
+    addressFor: [Record!]
+
+    "Intermediaries associated with the record"
+    hasIntermediary: [Record!]
+    "Records for which this Intermediary is associated"
+    intermediaryFor: [Record!]
+
+    "Officers associated with the record"
+    hasOfficer: [Record!]
+    "Records for which this officer is associated"
+    officerFor: [Record!]
+
+    "Records that are the same as this record"
+    sameAs: [Record!]
+    "Record that have the same name as this record, but are not verified to be the same"
+    sameNameAs: [Record!]
+    "Records that are similar to this record"
+    similarTo: [Record!]
+    "Records that are connected in some way to this record"
+    connectedTo: [Record!]
+}
+
+"""
+Entity represents companies, trusts and foundations.
+"""
+type Entity implements Record {
+
+    "The original name of the entity"
+    originalName: String @search(by: [exact, term, fulltext, regexp])
+    "The former name of the entity"
+    formerName: String @search(by: [exact, term, fulltext, regexp])
+
+    "The jurisdiction of the entity"
+    jurisdiction: String @search(by: [exact])
+
+    "The company type, free-form text"
+    companyType: String @search(by: [exact, term])
+
+    "The full text address"
+    address: String @search(by: [exact, term, fulltext, regexp])
+
+    "The incorporation date"
+    incorporationDate: DateTime @search
+    "The inactivation date"
+    inactivationDate: DateTime @search
+    "The struck off date"
+    struckOffDate: DateTime @search
+    "The dormancy(?) date"
+    dormDate: DateTime @search
+
+    "The status of the entity (arbitrary)"
+    status: String @search(by: [exact, term])
+
+    "The service provider for the entity"
+    serviceProvider: String @search(by: [fulltext])
+}
+
+enum OtherType {
+    LLC
+    SoleOwnership
+    ForeignFormed
+}
+
+"""
+Other (an ICIJ term) represents other companies, trusts and foundations.
+"""
+type Other implements Record {
+     "The former name of the entity"
+    formerName: String! @search(by: [exact, term, fulltext, regexp])
+
+    "The organization type of the Other record"
+    type: OtherType
+
+     "The incorporation date"
+    incorporationDate: DateTime @search
+    "The struck off date"
+    struckOffDate: DateTime @search
+    "The closed date"
+    closedDate: DateTime @search
+
+    "The jurisdiction of the entity"
+    jurisdiction: String @search(by: [exact])
+}
+
+enum IntermediaryStatus {
+    Active
+    Inactive
+    Prospect
+    Suspended
+    Delinquent
+    ActiveLegal
+    SuspendedLegal
+    UnrecoverableAccounts
+    ClientInRepresentativeTerritory
+}
+
+"""
+Intermediary represents people or entities that intermediate.
+"""
+type Intermediary implements Record {
+
+    "The intermediary status"
+    status: IntermediaryStatus @search(by: [exact])
+}
+
+"""
+Officer represents people that are officers of entities or others.
+"""
+type Officer implements Record {
+    _: Boolean
+}
+
+"""
+Address represents physical addresses.
+"""
+type Address implements Record {
+    "The full text address, unstructured. Record.name is the normalized field"
+    address: String @search(by: [exact, term, fulltext, regexp])
+
+    "The source of the geolocation data for the address"
+    geoSource: String @search(by: [term])
+
+    "The geolocation of the address"
+    location: Point @search
+}

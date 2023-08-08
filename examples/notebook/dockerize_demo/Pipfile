@@ -1,0 +1,25 @@
+[[source]]
+url = "https://pypi.org/simple"
+verify_ssl = true
+name = "pypi"
+
+[packages]
+jupyterlab = "*"
+ipycytoscape = "*"
+grpcio = "==1.51.3"
+protobuf = "==3.17.3"
+pydgraph = "==21.03.0"
+python-graphql-client = "*"
+graphistry = "*"
+python-dotenv = "*"
+bokeh = "*"
+importlib-resources = "*"
+
+[dev-packages]
+
+[requires]
+python_version = "3.9"
+
+[packages.networkx]
+extras = [ "default",]
+version = "*"
