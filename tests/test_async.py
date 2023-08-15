@@ -14,8 +14,8 @@
 
 """Tests to verify async client methods."""
 
-__author__ = 'Martin Martinez Rivera <martinmr@dgraph.io>'
-__maintainer__ = 'Martin Martinez Rivera <martinmr@dgraph.io>'
+__author__ = 'Martin Martinez Rivera'
+__maintainer__ = 'Dgraph Labs <contact@dgraph.io>' 
 
 import json
 import pydgraph
