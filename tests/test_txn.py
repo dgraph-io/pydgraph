@@ -12,8 +12,8 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 
-__author__ = 'Garvit Pahal <garvit@dgraph.io>'
-__maintainer__ = 'Garvit Pahal <garvit@dgraph.io>'
+__author__ = 'Garvit Pahal'
+__maintainer__ = 'Dgraph Labs <contact@dgraph.io>'
 
 import unittest
 import logging

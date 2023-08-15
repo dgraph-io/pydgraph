@@ -15,7 +15,7 @@
 """Tests behavior of queries after mutation in the same transaction."""
 
 __author__ = 'Mohit Ranka <mohitranka@gmail.com>'
-__maintainer__ = 'Martin Martinez Rivera <martinmr@dgraph.io>'
+__maintainer__ = 'Dgraph Labs <contact@dgraph.io>' 
 
 import unittest
 import sys
