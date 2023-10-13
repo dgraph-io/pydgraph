@@ -235,7 +235,7 @@ class Txn(object):
 
         new_metadata = self._dg.add_login_metadata(metadata)
         try:
-            self._dc.commit_or_abort(self._ctx, timeout=timeout,
+            return self._dc.commit_or_abort(self._ctx, timeout=timeout,
                                      metadata=new_metadata,
                                      credentials=credentials)
         except Exception as error:

@@ -78,7 +78,8 @@ def create_data(client):
         response = txn.mutate(set_obj=p)
 
         # Commit transaction.
-        txn.commit()
+        commit_response = txn.commit()
+        print(commit_response)
 
         # Get uid of the outermost object (person named "Alice").
         # response.uids returns a map from blank node names to uids.
@@ -106,7 +107,8 @@ def delete_data(client):
             print("Bob's UID: " + person['uid'])
             txn.mutate(del_obj=person)
             print('Bob deleted')
-        txn.commit()
+        commit_response = txn.commit()
+        print(commit_response)
 
     finally:
         txn.discard()
