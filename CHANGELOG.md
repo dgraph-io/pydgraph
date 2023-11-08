@@ -5,6 +5,17 @@ All notable changes to this project will be documented in this file.
 The format is based on [Keep a Changelog](http://keepachangelog.com/en/1.0.0/)
 and this project adheres to [Semantic Versioning](http://semver.org/spec/v2.0.0.html).
 
+## [v23.0.2] - 2023-11-08
+
+### Added
+- accept custom grpc options in from_cloud function (#215)
+- return commit_ts in the function 'commit()' in txn.py (#213)
+- add ai-classification notebook (#207)
+- Add Jupyter Notebook example (#206)
+
+### Chore
+- chore(docs): Remove invalid emails and non-maintainers. (#208)
+
 ## [v23.0.1] - 2023-05-29
 
 ### Added
