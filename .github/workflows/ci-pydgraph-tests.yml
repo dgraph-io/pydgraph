@@ -12,7 +12,7 @@ on:
     branches:
       - master
   schedule:
-    - cron: "0 0 * * *" # run workflow daily
+    - cron: "1 0 * * *" # run workflow daily
 jobs:
   build:
     name: pydgraph-tests
