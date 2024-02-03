@@ -1,0 +1,12 @@
+{
+    "dgraph_cerebro": "",
+    "dgraph_graphql_endpoint": "",
+    "dgraph_grpc": "",
+    "qdrnt_endpoint": "",
+    "qdrnt_collection": "oilrig",
+    "qdrnt_api_key": "",
+    "dgraph_cloud_user": "",
+    "dgraph_cloud_passw" : "",
+    "APIAdminKey" : "",
+    "OpenAIKey" : ""
+  }
