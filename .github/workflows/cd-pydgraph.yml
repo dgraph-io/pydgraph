@@ -10,7 +10,7 @@ jobs:
   pydgraph-build:
     runs-on: ubuntu-20.04
     steps:
-      - uses: actions/checkout@v3
+      - uses: actions/checkout@v4
         with:
           ref: '${{ github.event.inputs.releasetag }}'
       - name: Get Python Version
