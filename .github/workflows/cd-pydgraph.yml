@@ -10,7 +10,7 @@ jobs:
   pydgraph-build:
     runs-on: ubuntu-20.04
     steps:
-      - uses: actions/checkout@v3
+      - uses: actions/checkout@v4
         with:
           ref: '${{ github.event.inputs.releasetag }}'
       - name: Get Python Version
@@ -19,7 +19,7 @@ jobs:
           PYTHON_VERSION=$({ [ -f .python-version ] && cat .python-version; })
           echo "PYTHON_VERSION=$PYTHON_VERSION" >> $GITHUB_ENV
       - name: Set up Python
-        uses: actions/setup-python@v4
+        uses: actions/setup-python@v5
         with:
           python-version: ${{ env.PYTHON_VERSION }}
       - name: Install dependencies

@@ -19,13 +19,13 @@ jobs:
     runs-on: ubuntu-20.04
     steps:
       - name: Checkout Dgraph repo # needed for acl tests
-        uses: actions/checkout@v3
+        uses: actions/checkout@v4
         with:
           path: dgraph
           repository: dgraph-io/dgraph
           ref: main
       - name: Checkout pydgraph repo
-        uses: actions/checkout@v3
+        uses: actions/checkout@v4
         with:
           path: pydgraph
           repository: dgraph-io/pydgraph
@@ -37,7 +37,7 @@ jobs:
           GOVERSION=$({ [ -f .go-version ] && cat .go-version; })
           echo "GOVERSION=$GOVERSION" >> $GITHUB_ENV
       - name: Set up Go
-        uses: actions/setup-go@v3
+        uses: actions/setup-go@v5
         with:
           go-version: ${{ env.GOVERSION }}
       - name: Build dgraph binary
@@ -51,7 +51,7 @@ jobs:
           PYTHON_VERSION=$({ [ -f .python-version ] && cat .python-version; })
           echo "PYTHON_VERSION=$PYTHON_VERSION" >> $GITHUB_ENV
       - name: Set up Python
-        uses: actions/setup-python@v4
+        uses: actions/setup-python@v5
         with:
           python-version: ${{ env.PYTHON_VERSION }}
       - name: Install dependencies
