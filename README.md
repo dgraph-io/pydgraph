@@ -56,7 +56,7 @@ use a different version of this client.
 
 | Dgraph version |   pydgraph version   |
 |:--------------:|:--------------------:|
-|    21.03.x     |      *21.3.x*        |
+|    21.03.x     |      *21.03.x*        |
 |    23.0.x+     |      *23.0.x*        |
 
 ## Quickstart
