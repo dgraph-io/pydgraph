@@ -19,7 +19,7 @@ classifiers=[
     'Topic :: Software Development',
     'Programming Language :: Python :: 3.11',
 ]
-dependencies = [ "grpcio==1.54.3", "protobuf==4.22.3" ]
+dependencies = [ "grpcio==1.64.1", "protobuf==4.22.3" ]
 dynamic = ["version"]
 
 [tool.setuptools.dynamic]
@@ -28,7 +28,7 @@ version = {attr = "pydgraph.meta.VERSION"}
 [project.optional-dependencies]
 dev = [
   "build==0.10.0",
-  "grpcio-tools==1.54.0",
+  "grpcio-tools==1.64.1",
   "pytest==7.3.1",
 ]
 
