@@ -38,4 +38,4 @@ jobs:
           # build binary wheel and a source tarball
           python -m build
       - name: Upload to PyPi
-        run: twine upload --username ${{ secrets.DGRAPH_PYPI_USERNAME }} --password ${{ secrets.DGRAPH_PYPI_PASSWORD }} dist/*       
+        run: twine upload --username ${{ secrets.DGRAPH_PYPI_USERNAME }} --password ${{ secrets.DGRAPH_PYPI_PASSWORD }} dist/*

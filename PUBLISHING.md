@@ -12,7 +12,7 @@ This document contains instructions to publish pydgraph to [PyPI].
 
 ## Deploying
 
-- Regenerate protobufs if api.proto was changed
+- Regenerate protobufs if api.proto was changed, make sure to use python version used in `.python-version` file
 - Bump version by modifying the `VERSION` variable in `pydgraph/meta.py` file
 - Update the `CHANGELOG.md` file to reflect new changes
 - Tag pydgraph locally (`git tag x.y.z`) and push to origin (`git push x.y.z`)
