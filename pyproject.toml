@@ -21,7 +21,7 @@ classifiers=[
 ]
 dependencies = [
     "grpcio>=1.54.3,<2.0.0",
-    "protobuf>=4.22.3,<5.0.0"
+    "protobuf>=4.22.3,<6.0.0"
 ]
 dynamic = ["version"]
 
