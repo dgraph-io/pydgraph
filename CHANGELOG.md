@@ -5,6 +5,15 @@ All notable changes to this project will be documented in this file.
 The format is based on [Keep a Changelog](http://keepachangelog.com/en/1.0.0/)
 and this project adheres to [Semantic Versioning](http://semver.org/spec/v2.0.0.html).
 
+## [v24.0.2] - 2024-07-24
+
+### Added
+* Create example computeEmbeddings.py by @rderbier in https://github.com/dgraph-io/pydgraph/pull/221
+* Allow flexible dependency versions by @gautambhat in https://github.com/dgraph-io/pydgraph/pull/233
+* update proto to make it consistent with dgraph-io/dgo by @mangalaman93 in https://github.com/dgraph-io/pydgraph/pull/237
+* Bump protobuf from 4.22.3 to 5.27.2 by @dependabot in https://github.com/dgraph-io/pydgraph/pull/231
+* Minor and patch dependency upgrades
+
 ## [v23.0.2] - 2023-11-08
 
 ### Added
