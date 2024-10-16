@@ -31,7 +31,7 @@ version = {attr = "pydgraph.meta.VERSION"}
 [project.optional-dependencies]
 dev = [
   "build==1.2.2.post1",
-  "grpcio-tools==1.66.2",
+  "grpcio-tools==1.67.0",
   "pytest==8.3.3",
 ]
 
