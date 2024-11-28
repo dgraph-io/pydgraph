@@ -6,6 +6,18 @@ The format is based on [Keep a Changelog](http://keepachangelog.com/en/1.0.0/)
 and this project adheres to [Semantic Versioning](http://semver.org/spec/v2.0.0.html).
 
 
+## [v24.1.0] - 2024-11-29
+
+### Added
+
+* add RAG notebooks by @rderbier in https://github.com/dgraph-io/pydgraph/pull/240
+* Bump grpcio-tools from 1.65.2 to 1.68.0 in the minor-and-patch group by @dependabot in #242 #243 #244 #245 #247 #251
+* Bump the minor-and-patch group with 2 updates by @dependabot in https://github.com/dgraph-io/pydgraph/pull/246
+* Bump build from 1.2.2 to 1.2.2.post1 by @dependabot in https://github.com/dgraph-io/pydgraph/pull/248
+* Bump setuptools from 67.7.2 to 75.6.0 by @dependabot in https://github.com/dgraph-io/pydgraph/pull/252
+* update proto file to support bigfloat data type by @mangalaman93 in https://github.com/dgraph-io/pydgraph/pull/255
+
+
 ## [v24.0.2] - 2024-07-24
 
 ### Added
