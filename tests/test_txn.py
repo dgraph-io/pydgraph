@@ -282,7 +282,7 @@ class TestTxn(helper.ClientIntegrationTestCase):
         self.assertEqual([], json.loads(resp.json).get('me'))
 
         while True:
-            txn = self.client.txn(read_only=True, best_effort=True)
+            txn = self.client.txn(read_only=True)
             resp = txn.query(query)
             if resp.txn.start_ts < mu_ts:
                 continue
