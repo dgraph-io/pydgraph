@@ -5,6 +5,7 @@ All notable changes to this project will be documented in this file.
 The format is based on [Keep a Changelog](http://keepachangelog.com/en/1.0.0/)
 and this project adheres to [Semantic Versioning](http://semver.org/spec/v2.0.0.html).
 
+
 ## [v24.0.2] - 2024-07-24
 
 ### Added
@@ -13,6 +14,7 @@ and this project adheres to [Semantic Versioning](http://semver.org/spec/v2.0.0.
 * update proto to make it consistent with dgraph-io/dgo by @mangalaman93 in https://github.com/dgraph-io/pydgraph/pull/237
 * Bump protobuf from 4.22.3 to 5.27.2 by @dependabot in https://github.com/dgraph-io/pydgraph/pull/231
 * Minor and patch dependency upgrades
+
 
 ## [v23.0.2] - 2023-11-08
 
@@ -25,11 +27,13 @@ and this project adheres to [Semantic Versioning](http://semver.org/spec/v2.0.0.
 ### Chore
 - chore(docs): Remove invalid emails and non-maintainers. (#208)
 
+
 ## [v23.0.1] - 2023-05-29
 
 ### Added
 
 - chore(cd): fix protobuf import issue (#204)
+
 
 ## [v23.0.0] - 2023-05-15
 
@@ -53,10 +57,12 @@ and this project adheres to [Semantic Versioning](http://semver.org/spec/v2.0.0.
 - fix the TLS examples in examples/tls (#198)
 - update docs and fix flaky tests (#199)
 
+
 ## [v21.3.2] - 2021-08-05
 
 ### Added
 - Missing variable in from_cloud (#174)
+
 
 ## [v21.3.1] - 2021-08-04
 
@@ -66,6 +72,7 @@ and this project adheres to [Semantic Versioning](http://semver.org/spec/v2.0.0.
 - test: Update test setup to use randomized Docker ports (picking up the port from `TEST_SERVER_ADDR`)
 - test: Use `--guardian-creds` superflags in ACL tests
 
+
 ## [v21.03.0] - 2020-04-09
 
 ### Added
@@ -74,11 +81,13 @@ and this project adheres to [Semantic Versioning](http://semver.org/spec/v2.0.0.
 -  Hash to response and txn context.
 -  Deprecation messaged for Slash Endpoint [168]
 
+
 ## [v20.07.0] - 2020-09-18
 
 ### Added
 - Support for Slash GraphQl
 - Fixed missing import in the client.
+
 
 ## [v20.03.1] - 2020-06-03
 
@@ -88,6 +97,7 @@ errors). Existing applications might want to update their error handling code to
 take advantage of these new error classes.
 - Added async versions of alter, query, and mutate functions.
 
+
 ## [v20.03.0] - 2020-03-31
 
 Starting with this release, the release number has changed to match the Dgraph release
@@ -96,30 +106,36 @@ to make it easier to identify which version of Dgraph a client version supports.
 ### Added
 - Use RunInBackground flag for computing indexes in background.
 
+
 ## [v2.0.3] - 2020-03-24
 
 ### Added
 - Updated protobufs to latest version.
+
 
 ## [v2.0.2] - 2019-09-10
 
 ### Added
 - Do not throw errors in build steps if pypandoc is not found.
 
+
 ## [v2.0.1] - 2019-09-06
 
 ### Added
 - Fix unhandled ModuleNotFoundError.
+
 
 ## [v2.0.0] - 2019-09-05
 
 ### Added
 - Update internal grpc API to talk to dgraph v1.1.0
 
+
 ## [v1.2.0] - 2019-06-24
 
 ### Added
 - Added support for Upsert Block
+
 
 ## [v1.1.2] - 2019-06-07
 
@@ -127,10 +143,12 @@ to make it easier to identify which version of Dgraph a client version supports.
 - Updated requirements.txt to unpin protobuf version.
 - Manually free Grpc resources on stub close.
 
+
 ## [v1.1.1] - 2019-04-26
 
 ### Added
 - Bug fix
+
 
 ## [v1.1] - 2019-04-16
 
@@ -142,10 +160,12 @@ to make it easier to identify which version of Dgraph a client version supports.
   order to match the rest of the clients and to make it explicit that creating a
   transaction is required to query Dgraph.
 
+
 ## [v1.0.3] - 2019-03-20
 
 ### Added
 - Support for best-effort queries.
+
 
 ## [v1.0.2] - 2019-03-19
 
@@ -153,6 +173,7 @@ to make it easier to identify which version of Dgraph a client version supports.
 - During queries, passing a map with non-string keys or values as a variable
   map will result in an error instead of continuing silently.
 - Fixed dependencies.
+
 
 ## [v1.0.1] - 2019-01-03
 
@@ -162,6 +183,7 @@ to make it easier to identify which version of Dgraph a client version supports.
 - Fixed dependencies.
 - Support for predicate tracking.
 - Remove linread map and sequencing.
+
 
 ## [v1.0.0] - 2018-05-16
 
