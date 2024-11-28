@@ -18,22 +18,23 @@ jobs:
     name: pydgraph-tests
     runs-on: ubuntu-20.04
     steps:
-      - name: Checkout Dgraph repo # needed for acl tests
-        uses: actions/checkout@v4
-        with:
-          path: dgraph
-          repository: dgraph-io/dgraph
-          ref: main
       - name: Checkout pydgraph repo
         uses: actions/checkout@v4
         with:
           path: pydgraph
           repository: dgraph-io/pydgraph
           ref: ${{ github.ref }}
+      - name: Checkout Dgraph repo # needed for acl tests
+        uses: actions/checkout@v4
+        with:
+          path: dgraph
+          repository: dgraph-io/dgraph
+          ref: main
       - name: Set up Go
         uses: actions/setup-go@v5
         with:
-          go-version-file: go.mod
+          go-version-file: dgraph/go.mod
+      - name: Build dgraph binary
         run: cd dgraph && make docker-image # also builds dgraph binary
       - name: Move dgraph binary to gopath
         run: cd dgraph && mv dgraph/dgraph ~/go/bin/dgraph
