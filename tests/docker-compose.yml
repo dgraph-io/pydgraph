@@ -1,4 +1,3 @@
-version: "3.5"
 services:
   alpha1:
     image: dgraph/dgraph:${DGRAPH_IMAGE_TAG:-latest}
