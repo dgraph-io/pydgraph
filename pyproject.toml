@@ -1,5 +1,5 @@
 [build-system]
-requires = ["setuptools==75.6.0"]
+requires = ["setuptools>=75.6.0"]
 build-backend = "setuptools.build_meta"
 
 [project]
@@ -17,11 +17,16 @@ classifiers=[
     'Operating System :: OS Independent',
     'Topic :: Database',
     'Topic :: Software Development',
+    'Programming Language :: Python :: 3.7',
+    'Programming Language :: Python :: 3.8',
+    'Programming Language :: Python :: 3.9',
+    'Programming Language :: Python :: 3.10',
     'Programming Language :: Python :: 3.11',
+    'Programming Language :: Python :: 3.12',
 ]
 dependencies = [
-    "grpcio>=1.54.3,<2.0.0",
-    "protobuf>=4.22.3,<6.0.0"
+    "grpcio>=1.56.0,<2.0.0",
+    "protobuf>=4.23.0,<6.0.0"
 ]
 dynamic = ["version"]
 
@@ -30,11 +35,10 @@ version = {attr = "pydgraph.meta.VERSION"}
 
 [project.optional-dependencies]
 dev = [
-  "build==1.2.2.post1",
-  "grpcio-tools==1.68.0",
-  "pytest==8.3.3",
+  "build>=1.2.2.post1",
+  "grpcio-tools>=1.68.0",
+  "pytest>=8.3.3",
 ]
 
 [project.urls]
 "Homepage" = "https://github.com/dgraph-io/pydgraph"
-
