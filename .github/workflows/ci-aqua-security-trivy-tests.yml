@@ -12,14 +12,18 @@ on:
     branches:
       - master
   schedule:
-    - cron: "0 * * * *"
+    - cron: "1 0 * * *"
+
+permissions:
+  security-events: write
+
 jobs:
   build:
     name: trivy-tests
     runs-on: ubuntu-20.04
     steps:
       - name: Checkout code
-        uses: actions/checkout@v3
+        uses: actions/checkout@v4
       - name: Run Trivy vulnerability scanner
         uses: aquasecurity/trivy-action@master
         with:
@@ -28,6 +32,6 @@ jobs:
           format: 'sarif'
           output: 'trivy-results.sarif'
       - name: Upload Trivy scan results to GitHub Security tab
-        uses: github/codeql-action/upload-sarif@v2
+        uses: github/codeql-action/upload-sarif@v3
         with:
           sarif_file: 'trivy-results.sarif'

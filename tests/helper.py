@@ -14,8 +14,8 @@
 
 """Utilities used by tests."""
 
-__author__ = 'Garvit Pahal <garvit@dgraph.io>'
-__maintainer__ = 'Martin Martinez Rivera <martinmr@dgraph.io>'
+__author__ = 'Garvit Pahal'
+__maintainer__ = 'Dgraph Labs <contact@dgraph.io>' 
 
 import os
 import time

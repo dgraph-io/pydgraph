@@ -22,7 +22,7 @@ from pydgraph.meta import VERSION
 from pydgraph.proto import api_pb2 as api
 
 __author__ = 'Shailesh Kochhar <shailesh.kochhar@gmail.com>'
-__maintainer__ = 'Martin Martinez Rivera <martinmr@dgraph.io>'
+__maintainer__ = 'Dgraph Labs <contact@dgraph.io>' 
 __version__ = VERSION
 __status__ = 'development'
 
@@ -235,7 +235,7 @@ class Txn(object):
 
         new_metadata = self._dg.add_login_metadata(metadata)
         try:
-            self._dc.commit_or_abort(self._ctx, timeout=timeout,
+            return self._dc.commit_or_abort(self._ctx, timeout=timeout,
                                      metadata=new_metadata,
                                      credentials=credentials)
         except Exception as error:

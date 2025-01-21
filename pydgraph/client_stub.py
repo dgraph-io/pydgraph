@@ -24,8 +24,8 @@ try:
 except ImportError:
      from urlparse import urlparse
 
-__author__ = 'Garvit Pahal <garvit@dgraph.io>'
-__maintainer__ = 'Martin Martinez Rivera <martinmr@dgraph.io>'
+__author__ = 'Garvit Pahal'
+__maintainer__ = 'Dgraph Labs <contact@dgraph.io>' 
 __version__ = VERSION
 __status__ = 'development'
 
@@ -105,7 +105,7 @@ class DgraphClientStub(object):
     # client_stub = pydgraph.DgraphClientStub.from_cloud("cloud_endpoint", "api-key")
     # client = pydgraph.DgraphClient(client_stub)
     @staticmethod
-    def from_cloud(cloud_endpoint, api_key):
+    def from_cloud(cloud_endpoint, api_key, options=None):
         """Returns Dgraph Client stub for the Dgraph Cloud endpoint"""
         host = DgraphClientStub.parse_host(cloud_endpoint)
         creds = grpc.ssl_channel_credentials()
@@ -113,6 +113,10 @@ class DgraphClientStub(object):
             lambda context, callback: callback((("authorization", api_key),), None))
         composite_credentials = grpc.composite_channel_credentials(
             creds, call_credentials)
+        if options==None:
+            options=[('grpc.enable_http_proxy', 0)]
+        else:
+            options.append(('grpc.enable_http_proxy', 0))
         client_stub = DgraphClientStub('{host}:{port}'.format(
-            host=host, port="443"), composite_credentials, options=(('grpc.enable_http_proxy', 0),))
+            host=host, port="443"), composite_credentials, options=options)
         return client_stub

@@ -10,7 +10,7 @@ jobs:
   pydgraph-build:
     runs-on: ubuntu-20.04
     steps:
-      - uses: actions/checkout@v3
+      - uses: actions/checkout@v4
         with:
           ref: '${{ github.event.inputs.releasetag }}'
       - name: Get Python Version
@@ -19,7 +19,7 @@ jobs:
           PYTHON_VERSION=$({ [ -f .python-version ] && cat .python-version; })
           echo "PYTHON_VERSION=$PYTHON_VERSION" >> $GITHUB_ENV
       - name: Set up Python
-        uses: actions/setup-python@v4
+        uses: actions/setup-python@v5
         with:
           python-version: ${{ env.PYTHON_VERSION }}
       - name: Install dependencies
@@ -38,4 +38,4 @@ jobs:
           # build binary wheel and a source tarball
           python -m build
       - name: Upload to PyPi
-        run: twine upload --username ${{ secrets.DGRAPH_PYPI_USERNAME }} --password ${{ secrets.DGRAPH_PYPI_PASSWORD }} dist/*       
+        run: twine upload --username ${{ secrets.DGRAPH_PYPI_USERNAME }} --password ${{ secrets.DGRAPH_PYPI_PASSWORD }} dist/*

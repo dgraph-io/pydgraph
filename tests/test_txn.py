@@ -12,8 +12,8 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 
-__author__ = 'Garvit Pahal <garvit@dgraph.io>'
-__maintainer__ = 'Garvit Pahal <garvit@dgraph.io>'
+__author__ = 'Garvit Pahal'
+__maintainer__ = 'Dgraph Labs <contact@dgraph.io>'
 
 import unittest
 import logging
@@ -265,27 +265,29 @@ class TestTxn(helper.ClientIntegrationTestCase):
         helper.drop_all(self.client)
         helper.set_schema(self.client, 'name: string @index(exact) .')
 
+        with self.assertRaises(Exception):
+            self.client.txn(read_only=False, best_effort=True)
+
+        query = '{ me(func: has(name)) {name} }'
+        rtxn = self.client.txn(read_only=True, best_effort=True)
+        resp = rtxn.query(query)
+        self.assertEqual([], json.loads(resp.json).get('me'))
+
         txn = self.client.txn()
         resp = txn.mutate(set_obj={'name': 'Manish'})
         txn.commit()
         mu_ts = resp.txn.commit_ts
 
-        query = '{ me(func: has(name)) {name} }'
-        with self.assertRaises(Exception):
-            self.client.txn(read_only=False, best_effort=True)
+        resp = rtxn.query(query)
+        self.assertEqual([], json.loads(resp.json).get('me'))
 
         while True:
-            txn = self.client.txn(read_only=True, best_effort=True)
+            txn = self.client.txn(read_only=True)
             resp = txn.query(query)
             if resp.txn.start_ts < mu_ts:
                 continue
-            self.assertEqual([], json.loads(resp.json).get('me'))
+            self.assertEqual([{'name': 'Manish'}], json.loads(resp.json).get('me'))
             break
-
-        with self.assertRaises(Exception):
-            txn.mutate(set_obj={'name': 'Manish'})
-        with self.assertRaises(Exception):
-            txn.commit()
 
     def test_conflict(self):
         """Tests committing two transactions which conflict."""
