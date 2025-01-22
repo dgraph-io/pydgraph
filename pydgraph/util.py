@@ -14,15 +14,16 @@
 
 """Various utility functions."""
 
-import grpc
 import sys
+
+import grpc
 
 from pydgraph.meta import VERSION
 
-__author__ = 'Shailesh Kochhar <shailesh.kochhar@gmail.com>'
-__maintainer__ = 'Dgraph Labs <contact@dgraph.io>' 
+__author__ = "Shailesh Kochhar <shailesh.kochhar@gmail.com>"
+__maintainer__ = "Dgraph Labs <contact@dgraph.io>"
 __version__ = VERSION
-__status__ = 'development'
+__status__ = "development"
 
 
 def is_string(string):
@@ -32,25 +33,32 @@ def is_string(string):
 
     return isinstance(string, str)
 
+
 def is_jwt_expired(exception):
-    return 'Token is expired' in str(exception)
+    return "Token is expired" in str(exception)
+
 
 def is_aborted_error(error):
     """Returns true if the error is due to an aborted transaction."""
-    if isinstance(error, grpc._channel._Rendezvous) or \
-       isinstance(error, grpc._channel._InactiveRpcError):
+    if isinstance(error, grpc._channel._Rendezvous) or isinstance(
+        error, grpc._channel._InactiveRpcError
+    ):
         status_code = error.code()
-        if (status_code == grpc.StatusCode.ABORTED or
-            status_code == grpc.StatusCode.FAILED_PRECONDITION):
+        if (
+            status_code == grpc.StatusCode.ABORTED
+            or status_code == grpc.StatusCode.FAILED_PRECONDITION
+        ):
             return True
     return False
+
 
 def is_retriable_error(error):
     """Returns true if the error is retriable (e.g server is not ready yet)."""
     msg = str(error)
-    return 'Please retry' in msg or 'opIndexing is already running' in msg
+    return "Please retry" in msg or "opIndexing is already running" in msg
+
 
 def is_connection_error(error):
     """Returns true if the error is caused connection issues."""
     msg = str(error)
-    return 'Unhealthy connection' in msg or 'No connection exists' in msg
+    return "Unhealthy connection" in msg or "No connection exists" in msg

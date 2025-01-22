@@ -7,7 +7,7 @@ import pydgraph
 
 # Create a client stub.
 def create_client_stub():
-    return pydgraph.DgraphClientStub('localhost:9080')
+    return pydgraph.DgraphClientStub("localhost:9080")
 
 
 # Create a client.
@@ -49,29 +49,29 @@ def create_data(client):
     try:
         # Create data.
         p = {
-            'uid': '_:alice',
-            'dgraph.type': 'Person',
-            'name': 'Alice',
-            'age': 26,
-            'married': True,
-            'loc': {
-                'type': 'Point',
-                'coordinates': [1.1, 2],
+            "uid": "_:alice",
+            "dgraph.type": "Person",
+            "name": "Alice",
+            "age": 26,
+            "married": True,
+            "loc": {
+                "type": "Point",
+                "coordinates": [1.1, 2],
             },
-            'dob': datetime.datetime(1980, 1, 1, 23, 0, 0, 0).isoformat(),
-            'friend': [
+            "dob": datetime.datetime(1980, 1, 1, 23, 0, 0, 0).isoformat(),
+            "friend": [
                 {
-                    'uid': '_:bob',
-                    'dgraph.type': 'Person',
-                    'name': 'Bob',
-                    'age': 24,
+                    "uid": "_:bob",
+                    "dgraph.type": "Person",
+                    "name": "Bob",
+                    "age": 24,
                 }
             ],
-            'school': [
+            "school": [
                 {
-                    'name': 'Crown Public School',
+                    "name": "Crown Public School",
                 }
-            ]
+            ],
         }
 
         # Run mutation.
@@ -83,7 +83,9 @@ def create_data(client):
 
         # Get uid of the outermost object (person named "Alice").
         # response.uids returns a map from blank node names to uids.
-        print('Created person named "Alice" with uid = {}'.format(response.uids['alice']))
+        print(
+            'Created person named "Alice" with uid = {}'.format(response.uids["alice"])
+        )
 
     finally:
         # Clean up. Calling this after txn.commit() is a no-op and hence safe.
@@ -100,13 +102,13 @@ def delete_data(client):
                uid
             }
         }"""
-        variables1 = {'$a': 'Bob'}
+        variables1 = {"$a": "Bob"}
         res1 = client.txn(read_only=True).query(query1, variables=variables1)
         ppl1 = json.loads(res1.json)
-        for person in ppl1['all']:
-            print("Bob's UID: " + person['uid'])
+        for person in ppl1["all"]:
+            print("Bob's UID: " + person["uid"])
             txn.mutate(del_obj=person)
-            print('Bob deleted')
+            print("Bob deleted")
         commit_response = txn.commit()
         print(commit_response)
 
@@ -135,12 +137,12 @@ def query_alice(client):
         }
     }"""
 
-    variables = {'$a': 'Alice'}
+    variables = {"$a": "Alice"}
     res = client.txn(read_only=True).query(query, variables=variables)
     ppl = json.loads(res.json)
 
     # Print results.
-    print('Number of people named "Alice": {}'.format(len(ppl['all'])))
+    print('Number of people named "Alice": {}'.format(len(ppl["all"])))
 
 
 # Query to check for deleted node
@@ -163,12 +165,12 @@ def query_bob(client):
             }
         }"""
 
-    variables = {'$b': 'Bob'}
+    variables = {"$b": "Bob"}
     res = client.txn(read_only=True).query(query, variables=variables)
     ppl = json.loads(res.json)
 
     # Print results.
-    print('Number of people named "Bob": {}'.format(len(ppl['all'])))
+    print('Number of people named "Bob": {}'.format(len(ppl["all"])))
 
 
 def main():
@@ -187,9 +189,9 @@ def main():
     client_stub.close()
 
 
-if __name__ == '__main__':
+if __name__ == "__main__":
     try:
         main()
-        print('DONE!')
+        print("DONE!")
     except Exception as e:
-        print('Error: {}'.format(e))
+        print("Error: {}".format(e))

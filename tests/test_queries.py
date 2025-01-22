@@ -14,13 +14,13 @@
 
 """Tests behavior of queries after mutation in the same transaction."""
 
-__author__ = 'Mohit Ranka <mohitranka@gmail.com>'
-__maintainer__ = 'Dgraph Labs <contact@dgraph.io>' 
+__author__ = "Mohit Ranka <mohitranka@gmail.com>"
+__maintainer__ = "Dgraph Labs <contact@dgraph.io>"
 
-import unittest
-import sys
-import logging
 import json
+import logging
+import sys
+import unittest
 
 import pydgraph
 
@@ -34,17 +34,17 @@ class TestQueries(helper.ClientIntegrationTestCase):
         super(TestQueries, self).setUp()
 
         helper.drop_all(self.client)
-        helper.set_schema(self.client, 'name: string @index(term) .')
+        helper.set_schema(self.client, "name: string @index(term) .")
 
     def test_check_version(self):
         """Verifies the check_version method correctly returns the cluster version"""
         success = 0
-        for i in range(3):
+        for _i in range(3):
             try:
                 tag = self.client.check_version()
                 self.assertGreater(len(tag), 0)
                 success += 1
-            except Exception as e:
+            except Exception:
                 continue
         self.assertGreater(success, 0)
 
@@ -52,11 +52,14 @@ class TestQueries(helper.ClientIntegrationTestCase):
         """Runs mutation and verifies queries see the results."""
 
         txn = self.client.txn()
-        _ = txn.mutate(pydgraph.Mutation(commit_now=True), set_nquads="""
+        _ = txn.mutate(
+            pydgraph.Mutation(commit_now=True),
+            set_nquads="""
             <_:alice> <name> \"Alice\" .
             <_:greg> <name> \"Greg\" .
             <_:alice> <follows> <_:greg> .
-        """)
+        """,
+        )
 
         query = """query me($a: string) {
             me(func: anyofterms(name, "Alice"))
@@ -77,22 +80,31 @@ class TestQueries(helper.ClientIntegrationTestCase):
             }
         }"""
 
-        response = self.client.txn().query(query, variables={'$a': 'Alice'})
-        self.assertEqual([{'name': 'Alice', 'follows': [{'name': 'Greg'}]}],
-                         json.loads(response.json).get('me'))
-        self.assertTrue(is_number(response.latency.parsing_ns),
-                        'Parsing latency is not available')
-        self.assertTrue(is_number(response.latency.processing_ns),
-                        'Processing latency is not available')
-        self.assertTrue(is_number(response.latency.encoding_ns),
-                        'Encoding latency is not available')
+        response = self.client.txn().query(query, variables={"$a": "Alice"})
+        self.assertEqual(
+            [{"name": "Alice", "follows": [{"name": "Greg"}]}],
+            json.loads(response.json).get("me"),
+        )
+        self.assertTrue(
+            is_number(response.latency.parsing_ns), "Parsing latency is not available"
+        )
+        self.assertTrue(
+            is_number(response.latency.processing_ns),
+            "Processing latency is not available",
+        )
+        self.assertTrue(
+            is_number(response.latency.encoding_ns), "Encoding latency is not available"
+        )
 
         """ Run query with JSON and RDF resp_format and verify the result """
-        response = self.client.txn().query(queryRDF, variables={'$a': 'Alice'})
-        uid = json.loads(response.json).get('q')[0]['uid']
-        expected_rdf = '<{}> <name> \"Alice\" .\n'.format(uid)
-        response = self.client.txn().query(queryRDF, variables={'$a': 'Alice'}, resp_format="RDF")
-        self.assertEqual(expected_rdf,response.rdf.decode('utf-8'))
+        response = self.client.txn().query(queryRDF, variables={"$a": "Alice"})
+        uid = json.loads(response.json).get("q")[0]["uid"]
+        expected_rdf = '<{}> <name> "Alice" .\n'.format(uid)
+        response = self.client.txn().query(
+            queryRDF, variables={"$a": "Alice"}, resp_format="RDF"
+        )
+        self.assertEqual(expected_rdf, response.rdf.decode("utf-8"))
+
 
 def is_number(number):
     """Returns true if object is a number. Compatible with Python 2 and 3."""
@@ -109,7 +121,7 @@ def suite():
     return suite_obj
 
 
-if __name__ == '__main__':
+if __name__ == "__main__":
     logging.basicConfig(level=logging.INFO)
     runner = unittest.TextTestRunner()
     runner.run(suite())

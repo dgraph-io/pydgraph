@@ -12,9 +12,21 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 
-from pydgraph.proto.api_pb2 import Operation, Payload, Request, Response, Mutation, TxnContext,\
-    Check, Version, NQuad, Value, Facet, Latency
-from pydgraph.client_stub import *
 from pydgraph.client import *
-from pydgraph.txn import *
+from pydgraph.client_stub import *
 from pydgraph.errors import *
+from pydgraph.proto.api_pb2 import (
+    Check,
+    Facet,
+    Latency,
+    Mutation,
+    NQuad,
+    Operation,
+    Payload,
+    Request,
+    Response,
+    TxnContext,
+    Value,
+    Version,
+)
+from pydgraph.txn import *

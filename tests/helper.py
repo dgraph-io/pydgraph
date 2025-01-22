@@ -14,8 +14,8 @@
 
 """Utilities used by tests."""
 
-__author__ = 'Garvit Pahal'
-__maintainer__ = 'Dgraph Labs <contact@dgraph.io>' 
+__author__ = "Garvit Pahal"
+__maintainer__ = "Dgraph Labs <contact@dgraph.io>"
 
 import os
 import time
@@ -23,8 +23,7 @@ import unittest
 
 import pydgraph
 
-
-SERVER_ADDR = 'localhost:9180'
+SERVER_ADDR = "localhost:9180"
 
 
 def create_client(addr=SERVER_ADDR):
@@ -65,6 +64,6 @@ class ClientIntegrationTestCase(unittest.TestCase):
                 self.client.login("groot", "password")
                 break
             except Exception as e:
-                if not "user not found" in str(e):
+                if "user not found" not in str(e):
                     raise e
             time.sleep(0.1)

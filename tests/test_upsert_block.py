@@ -13,14 +13,15 @@
 # limitations under the License.
 
 """Tests to verify upsert block."""
-__author__ = 'Animesh Pathak <animesh@dgrpah.io>'
-__maintainer__ = 'Animesh Pathak <animesh@dgrpah.io>'
+__author__ = "Animesh Pathak <animesh@dgrpah.io>"
+__maintainer__ = "Animesh Pathak <animesh@dgrpah.io>"
 
-import unittest
-import logging
 import json
+import logging
+import unittest
 
 from . import helper
+
 
 class TestUpsertBlock(helper.ClientIntegrationTestCase):
     """Tests for Upsert Block"""
@@ -28,7 +29,7 @@ class TestUpsertBlock(helper.ClientIntegrationTestCase):
     def setUp(self):
         super(TestUpsertBlock, self).setUp()
         helper.drop_all(self.client)
-        helper.set_schema(self.client, 'name: string @index(term) @upsert .')
+        helper.set_schema(self.client, "name: string @index(term) @upsert .")
 
     def test_upsert_block_one_mutation(self):
         txn = self.client.txn()
@@ -97,7 +98,9 @@ class TestUpsertBlock(helper.ClientIntegrationTestCase):
                 }
                 """
 
-        mutation = txn.create_mutation(cond="@if(gt(len(u), 0))", set_nquads='uid(u) <name> "Ashish" .')
+        mutation = txn.create_mutation(
+            cond="@if(gt(len(u), 0))", set_nquads='uid(u) <name> "Ashish" .'
+        )
         request = txn.create_request(mutations=[mutation], query=query, commit_now=True)
         txn.do_request(request)
         self.was_upsert_successful()
@@ -135,7 +138,7 @@ class TestUpsertBlock(helper.ClientIntegrationTestCase):
 
         txn = self.client.txn()
         response = txn.query(query)
-        data = json.loads(response.json)['me']
+        data = json.loads(response.json)["me"]
         if len(data) > 0:
             self.fail("Upsert block test failed: Couldn't do bulk set")
 
