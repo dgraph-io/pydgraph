@@ -3,12 +3,14 @@ import json
 
 import pydgraph
 
+
 # Helper function for parsing dgraph's iso strings
 def parse_datetime(s):
     try:
         return datetime.datetime.strptime(s, "%Y-%m-%dT%H:%M:%SZ")
     except:
         return s
+
 
 # json decoder object_hook function
 def datetime_hook(obj):
@@ -23,7 +25,7 @@ def datetime_hook(obj):
 
 # Create a client stub.
 def create_client_stub():
-    return pydgraph.DgraphClientStub('localhost:9080')
+    return pydgraph.DgraphClientStub("localhost:9080")
 
 
 # Create a client.
@@ -64,32 +66,31 @@ def create_data(client):
     try:
         # Create data.
         p = {
-            'uid': '_:alice',
-            'dgraph.type': 'Person',
-            'name': 'Alice',
-            'dob': datetime.datetime(1980, 1, 1, 23, 0, 0, 0).isoformat(),
-            'distance': 12.3,
-            'married': True,
-            'married|date': datetime.datetime(2005, 6, 1, 10, 10, 0, 0).isoformat(),
-            'loc': {
-                'type': 'Point',
-                'coordinates': [1.1, 2],
+            "uid": "_:alice",
+            "dgraph.type": "Person",
+            "name": "Alice",
+            "dob": datetime.datetime(1980, 1, 1, 23, 0, 0, 0).isoformat(),
+            "distance": 12.3,
+            "married": True,
+            "married|date": datetime.datetime(2005, 6, 1, 10, 10, 0, 0).isoformat(),
+            "loc": {
+                "type": "Point",
+                "coordinates": [1.1, 2],
             },
-
-            'friend': [
+            "friend": [
                 {
-                    'uid': '_:bob',
-                    'dgraph.type': 'Person',
-                    'name': 'Bob',
-                    'distance': 55.4,
-                    'dob': datetime.datetime(1962, 2, 3, 23, 0, 0, 0).isoformat()
+                    "uid": "_:bob",
+                    "dgraph.type": "Person",
+                    "name": "Bob",
+                    "distance": 55.4,
+                    "dob": datetime.datetime(1962, 2, 3, 23, 0, 0, 0).isoformat(),
                 }
             ],
-            'school': [
+            "school": [
                 {
-                    'name': 'Crown Public School',
+                    "name": "Crown Public School",
                 }
-            ]
+            ],
         }
 
         # Run mutation.
@@ -105,7 +106,6 @@ def create_data(client):
     finally:
         # Clean up. Calling this after txn.commit() is a no-op and hence safe.
         txn.discard()
-
 
 
 # Query for data.
@@ -131,15 +131,17 @@ def query_alice(client):
         }
     }"""
 
-    variables = {'$a': 'Alice'}
+    variables = {"$a": "Alice"}
     res = client.txn(read_only=True).query(query, variables=variables)
     ppl = json.loads(res.json, object_hook=datetime_hook)
-    alice_dob = ppl['all'][0]['dob']
-    alice_marriedsince = ppl['all'][0]['married|date']
-    bob_dob = ppl['all'][0]['friend'][0]['dob']
+    alice_dob = ppl["all"][0]["dob"]
+    alice_marriedsince = ppl["all"][0]["married|date"]
+    bob_dob = ppl["all"][0]["friend"][0]["dob"]
 
     # Print results.
-    print(f'{ppl["all"][0]["name"]} is {datetime.date.today().year - alice_dob.year} years old.')
+    print(
+        f'{ppl["all"][0]["name"]} is {datetime.date.today().year - alice_dob.year} years old.'
+    )
     print(f'She married on {alice_marriedsince.strftime("%B, %d %Y")}.')
     print(f'Bob was born on a {bob_dob.strftime("%A")}.')
 
@@ -156,9 +158,9 @@ def main():
     client_stub.close()
 
 
-if __name__ == '__main__':
+if __name__ == "__main__":
     try:
         main()
-        print('DONE!')
+        print("DONE!")
     except Exception as e:
-        print(f'Error: {e}')
+        print(f"Error: {e}")

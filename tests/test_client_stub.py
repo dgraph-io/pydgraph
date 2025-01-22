@@ -14,14 +14,16 @@
 
 """Tests client stub."""
 
-__author__ = 'Garvit Pahal'
-__maintainer__ = 'Dgraph Labs <contact@dgraph.io>' 
+__author__ = "Garvit Pahal"
+__maintainer__ = "Dgraph Labs <contact@dgraph.io>"
 
-import unittest
 import sys
+import unittest
 
 import pydgraph
+
 from . import helper
+
 
 class TestDgraphClientStub(helper.ClientIntegrationTestCase):
     """Tests client stub."""
@@ -43,7 +45,8 @@ class TestDgraphClientStub(helper.ClientIntegrationTestCase):
     def test_timeout(self):
         with self.assertRaises(Exception):
             pydgraph.DgraphClientStub(self.TEST_SERVER_ADDR).check_version(
-                pydgraph.Check(), timeout=-1)
+                pydgraph.Check(), timeout=-1
+            )
 
     def test_close(self):
         client_stub = pydgraph.DgraphClientStub(addr=self.TEST_SERVER_ADDR)
@@ -52,8 +55,10 @@ class TestDgraphClientStub(helper.ClientIntegrationTestCase):
         with self.assertRaises(Exception):
             client_stub.check_version(pydgraph.Check())
 
+
 class TestFromCloud(unittest.TestCase):
     """Tests the from_cloud function"""
+
     def test_from_cloud(self):
         testcases = [
             {"endpoint": "godly.grpc.region.aws.cloud.dgraph.io"},
@@ -73,7 +78,8 @@ class TestFromCloud(unittest.TestCase):
             except IndexError as e:
                 if not case["error"]:
                     # we didn't expect an error
-                    raise(e)
+                    raise (e)
+
 
 def suite():
     """Returns a test suite object."""
@@ -81,6 +87,7 @@ def suite():
     suite_obj.addTest(TestDgraphClientStub())
     return suite_obj
 
-if __name__ == '__main__':
+
+if __name__ == "__main__":
     runner = unittest.TextTestRunner()
     runner.run(suite())

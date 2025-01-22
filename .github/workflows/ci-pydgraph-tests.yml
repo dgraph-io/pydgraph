@@ -1,4 +1,5 @@
 name: ci-pydgraph-tests
+
 on:
   push:
     branches:
@@ -12,23 +13,29 @@ on:
     branches:
       - master
   schedule:
-    - cron: "1 0 * * *" # run workflow daily
+    - cron: 1 0 * * * # run workflow daily
+
+permissions:
+  contents: read
+
 jobs:
-  build:
-    name: pydgraph-tests
-    runs-on: ubuntu-20.04
+  pydgraph-tests:
+    runs-on: ubuntu-latest
+    strategy:
+      matrix:
+        python-version: [3.9, 3.10, 3.11, 3.12, 3.13]
     steps:
       - name: Checkout pydgraph repo
         uses: actions/checkout@v4
         with:
           path: pydgraph
-          repository: dgraph-io/pydgraph
+          repository: hypermodeinc/pydgraph
           ref: ${{ github.ref }}
       - name: Checkout Dgraph repo # needed for acl tests
         uses: actions/checkout@v4
         with:
           path: dgraph
-          repository: dgraph-io/dgraph
+          repository: hypermodeinc/dgraph
           ref: main
       - name: Set up Go
         uses: actions/setup-go@v5
@@ -38,16 +45,10 @@ jobs:
         run: cd dgraph && make docker-image # also builds dgraph binary
       - name: Move dgraph binary to gopath
         run: cd dgraph && mv dgraph/dgraph ~/go/bin/dgraph
-      - name: Get Python Version
-        run: |
-          #!/bin/bash
-          cd pydgraph
-          PYTHON_VERSION=$({ [ -f .python-version ] && cat .python-version; })
-          echo "PYTHON_VERSION=$PYTHON_VERSION" >> $GITHUB_ENV
       - name: Set up Python
         uses: actions/setup-python@v5
         with:
-          python-version: ${{ env.PYTHON_VERSION }}
+          python-version-file: pyproject.toml
       - name: Install dependencies
         run: |
           cd pydgraph

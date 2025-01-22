@@ -1,27 +1,27 @@
 name: cd-pydgraph
+
 on:
   workflow_dispatch:
     inputs:
       releasetag:
-        description: 'releasetag'
+        description: releasetag
         required: true
         type: string
+
+permissions:
+  contents: read
+
 jobs:
   pydgraph-build:
-    runs-on: ubuntu-20.04
+    runs-on: ubuntu-latest
     steps:
       - uses: actions/checkout@v4
         with:
-          ref: '${{ github.event.inputs.releasetag }}'
-      - name: Get Python Version
-        run: |
-          #!/bin/bash
-          PYTHON_VERSION=$({ [ -f .python-version ] && cat .python-version; })
-          echo "PYTHON_VERSION=$PYTHON_VERSION" >> $GITHUB_ENV
+          ref: "${{ github.event.inputs.releasetag }}"
       - name: Set up Python
         uses: actions/setup-python@v5
         with:
-          python-version: ${{ env.PYTHON_VERSION }}
+          python-version-file: pyproject.toml
       - name: Install dependencies
         run: |
           python -m pip install --upgrade pip
@@ -38,4 +38,6 @@ jobs:
           # build binary wheel and a source tarball
           python -m build
       - name: Upload to PyPi
-        run: twine upload --username ${{ secrets.DGRAPH_PYPI_USERNAME }} --password ${{ secrets.DGRAPH_PYPI_PASSWORD }} dist/*
+        run:
+          twine upload --username ${{ secrets.DGRAPH_PYPI_USERNAME }} --password ${{
+          secrets.DGRAPH_PYPI_PASSWORD }} dist/*

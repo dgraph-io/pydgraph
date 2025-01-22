@@ -13,14 +13,15 @@
 # limitations under the License.
 
 """Tests to verify type system."""
-__author__ = 'Animesh Pathak <animesh@dgrpah.io>'
-__maintainer__ = 'Animesh Pathak <animesh@dgrpah.io>'
+__author__ = "Animesh Pathak <animesh@dgrpah.io>"
+__maintainer__ = "Animesh Pathak <animesh@dgrpah.io>"
 
 import json
 import logging
 import unittest
 
 from tests import helper
+
 
 class TestTypeSystem(helper.ClientIntegrationTestCase):
     def setUp(self):
@@ -69,7 +70,7 @@ class TestTypeSystem(helper.ClientIntegrationTestCase):
                 """
 
         txn = self.client.txn()
-        mutation = txn.create_mutation(del_nquads='uid(u) * * .')
+        mutation = txn.create_mutation(del_nquads="uid(u) * * .")
         request = txn.create_request(mutations=[mutation], query=query, commit_now=True)
         txn.do_request(request)
 

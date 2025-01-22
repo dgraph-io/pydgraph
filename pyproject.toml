@@ -4,41 +4,32 @@ build-backend = "setuptools.build_meta"
 
 [project]
 name = "pydgraph"
-authors = [
-  { name="Dgraph Labs", email="contact@dgraph.io" },
-]
-license = {file = "LICENSE" }
+authors = [{ name = "Dgraph Labs", email = "contact@dgraph.io" }]
+license = { file = "LICENSE" }
 description = "Official Dgraph client implementation for Python"
 readme = "README.md"
 requires-python = ">=3.7"
-classifiers=[
-    'Intended Audience :: Developers',
-    'License :: OSI Approved :: Apache Software License',
-    'Operating System :: OS Independent',
-    'Topic :: Database',
-    'Topic :: Software Development',
-    'Programming Language :: Python :: 3.7',
-    'Programming Language :: Python :: 3.8',
-    'Programming Language :: Python :: 3.9',
-    'Programming Language :: Python :: 3.10',
-    'Programming Language :: Python :: 3.11',
-    'Programming Language :: Python :: 3.12',
+classifiers = [
+  'Intended Audience :: Developers',
+  'License :: OSI Approved :: Apache Software License',
+  'Operating System :: OS Independent',
+  'Topic :: Database',
+  'Topic :: Software Development',
+  'Programming Language :: Python :: 3.7',
+  'Programming Language :: Python :: 3.8',
+  'Programming Language :: Python :: 3.9',
+  'Programming Language :: Python :: 3.10',
+  'Programming Language :: Python :: 3.11',
+  'Programming Language :: Python :: 3.12',
 ]
-dependencies = [
-    "grpcio>=1.56.0,<2.0.0",
-    "protobuf>=4.23.0,<6.0.0"
-]
+dependencies = ["grpcio>=1.56.0,<2.0.0", "protobuf>=4.23.0,<6.0.0"]
 dynamic = ["version"]
 
 [tool.setuptools.dynamic]
-version = {attr = "pydgraph.meta.VERSION"}
+version = { attr = "pydgraph.meta.VERSION" }
 
 [project.optional-dependencies]
-dev = [
-  "build>=1.2.2.post1",
-  "grpcio-tools>=1.68.0",
-  "pytest>=8.3.3",
-]
+dev = ["build>=1.2.2.post1", "grpcio-tools>=1.68.0", "pytest>=8.3.3"]
 
 [project.urls]
-"Homepage" = "https://github.com/dgraph-io/pydgraph"
+"Homepage" = "https://github.com/hypermodeinc/pydgraph"

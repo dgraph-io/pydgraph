@@ -1,15 +1,15 @@
 # !pip install pydgraph pybars3 sentence_transformers mistralai openai
-import sys
 import json
 import os
 import re
-import pydgraph
-from openai import OpenAI
-from mistralai.client import MistralClient
+import sys
 
+from mistralai.client import MistralClient
+from openai import OpenAI
 from pybars import Compiler
 from sentence_transformers import SentenceTransformer
 
+import pydgraph
 
 # Example of embeddings.json
 # {
