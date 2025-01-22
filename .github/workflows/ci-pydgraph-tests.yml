@@ -45,10 +45,10 @@ jobs:
         run: cd dgraph && make docker-image # also builds dgraph binary
       - name: Move dgraph binary to gopath
         run: cd dgraph && mv dgraph/dgraph ~/go/bin/dgraph
-      - name: Set up Python
+      - name: Set up Python ${{ matrix.python-version }}
         uses: actions/setup-python@v5
         with:
-          python-version-file: pyproject.toml
+          python-version: ${{ matrix.python-version }}
       - name: Install dependencies
         run: |
           cd pydgraph
