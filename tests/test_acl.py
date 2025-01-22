@@ -16,26 +16,26 @@
 import subprocess
 import time
 
-__author__ = 'Animesh Pathak <animesh@dgrpah.io>'
-__maintainer__ = 'Animesh Pathak <animesh@dgrpah.io>'
+__author__ = "Animesh Pathak <animesh@dgrpah.io>"
+__maintainer__ = "Animesh Pathak <animesh@dgrpah.io>"
 
 import logging
 import shutil
 import unittest
 
 from . import helper
-import pydgraph
 
-@unittest.skipIf(shutil.which('dgraph') is None, 'Dgraph binary not found.')
+
+@unittest.skipIf(shutil.which("dgraph") is None, "Dgraph binary not found.")
 class TestACL(helper.ClientIntegrationTestCase):
-    user_id = 'alice'
-    group_id = 'dev'
-    user_password = 'simplepassword'
+    user_id = "alice"
+    group_id = "dev"
+    user_password = "simplepassword"
 
     def setUp(self):
         super(TestACL, self).setUp()
         helper.drop_all(self.client)
-        helper.set_schema(self.client, 'name: string .')
+        helper.set_schema(self.client, "name: string .")
         self.insert_sample_data()
         self.add_user()
         self.add_group()
@@ -66,8 +66,15 @@ class TestACL(helper.ClientIntegrationTestCase):
         self.change_permission(0)
 
     def change_permission(self, permission):
-        bash_command = "dgraph acl -a " + self.TEST_SERVER_ADDR + " mod -g " + self.group_id + \
-                       " -p name -m " + str(permission) + " --guardian-creds user=groot;password=password"
+        bash_command = (
+            "dgraph acl -a "
+            + self.TEST_SERVER_ADDR
+            + " mod -g "
+            + self.group_id
+            + " -p name -m "
+            + str(permission)
+            + " --guardian-creds user=groot;password=password"
+        )
         self.run_command(bash_command)
         # wait for ACL cache to be refreshed.
         time.sleep(6)
@@ -77,24 +84,49 @@ class TestACL(helper.ClientIntegrationTestCase):
         txn.mutate(set_nquads='_:animesh <name> "Animesh" .', commit_now=True)
 
     def add_user(self):
-        bash_command = "dgraph acl -a " + self.TEST_SERVER_ADDR + " add -u " + self.user_id + \
-                       " -p " + self.user_password + " --guardian-creds user=groot;password=password"
+        bash_command = (
+            "dgraph acl -a "
+            + self.TEST_SERVER_ADDR
+            + " add -u "
+            + self.user_id
+            + " -p "
+            + self.user_password
+            + " --guardian-creds user=groot;password=password"
+        )
         self.run_command(bash_command)
 
     def add_group(self):
-        bash_command = "dgraph acl -a " + self.TEST_SERVER_ADDR + " add -g " + self.group_id + " --guardian-creds user=groot;password=password"
+        bash_command = (
+            "dgraph acl -a "
+            + self.TEST_SERVER_ADDR
+            + " add -g "
+            + self.group_id
+            + " --guardian-creds user=groot;password=password"
+        )
         self.run_command(bash_command)
 
     def add_user_to_group(self):
-        bash_command = "dgraph acl -a " + self.TEST_SERVER_ADDR + " mod -u " + \
-                       self.user_id + " -l " + self.group_id + " --guardian-creds user=groot;password=password"
+        bash_command = (
+            "dgraph acl -a "
+            + self.TEST_SERVER_ADDR
+            + " mod -u "
+            + self.user_id
+            + " -l "
+            + self.group_id
+            + " --guardian-creds user=groot;password=password"
+        )
         self.run_command(bash_command)
 
     def run_command(self, bash_command):
         try:
             subprocess.check_output(bash_command.split())
         except subprocess.CalledProcessError as e:
-            self.fail("Acl test failed: Unable to execute command " + bash_command + "\n" + str(e))
+            self.fail(
+                "Acl test failed: Unable to execute command "
+                + bash_command
+                + "\n"
+                + str(e)
+            )
 
     def try_reading(self, expected):
         txn = self.alice_client.txn()
@@ -113,7 +145,9 @@ class TestACL(helper.ClientIntegrationTestCase):
                 self.fail("Acl test failed: Read successful without permission")
         except Exception as e:
             if expected:
-                self.fail("Acl test failed: Read failed for readable predicate.\n" + str(e))
+                self.fail(
+                    "Acl test failed: Read failed for readable predicate.\n" + str(e)
+                )
 
     def try_writing(self, expected):
         txn = self.alice_client.txn()
@@ -124,16 +158,20 @@ class TestACL(helper.ClientIntegrationTestCase):
                 self.fail("Acl test failed: Write successful without permission")
         except Exception as e:
             if expected:
-                self.fail("Acl test failed: Write failed for writable predicate.\n" + str(e))
+                self.fail(
+                    "Acl test failed: Write failed for writable predicate.\n" + str(e)
+                )
 
     def try_altering(self, expected):
         try:
-            helper.set_schema(self.alice_client, 'name: string @index(exact, term) .')
+            helper.set_schema(self.alice_client, "name: string @index(exact, term) .")
             if not expected:
                 self.fail("Acl test failed: Alter successful without permission")
         except Exception as e:
             if expected:
-                self.fail("Acl test failed: Alter failed for alterable predicate.\n" + str(e))
+                self.fail(
+                    "Acl test failed: Alter failed for alterable predicate.\n" + str(e)
+                )
 
 
 def suite():
