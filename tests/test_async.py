@@ -4,7 +4,7 @@
 """Tests to verify async client methods."""
 
 __author__ = "Martin Martinez Rivera"
-__maintainer__ = "Dgraph Labs <contact@dgraph.io>"
+__maintainer__ = "Hypermode Inc. <hello@hypermode.com>"
 
 import json
 

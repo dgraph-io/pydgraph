@@ -4,7 +4,7 @@
 """Tests client stub."""
 
 __author__ = "Garvit Pahal"
-__maintainer__ = "Dgraph Labs <contact@dgraph.io>"
+__maintainer__ = "Hypermode Inc. <hello@hypermode.com>"
 
 import sys
 import unittest

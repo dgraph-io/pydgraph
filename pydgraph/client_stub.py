@@ -14,7 +14,7 @@ except ImportError:
     from urlparse import urlparse
 
 __author__ = "Garvit Pahal"
-__maintainer__ = "Dgraph Labs <contact@dgraph.io>"
+__maintainer__ = "Hypermode Inc. <hello@hypermode.com>"
 __version__ = VERSION
 __status__ = "development"
 

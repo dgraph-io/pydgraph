@@ -10,7 +10,7 @@ import grpc
 from pydgraph.meta import VERSION
 
 __author__ = "Shailesh Kochhar <shailesh.kochhar@gmail.com>"
-__maintainer__ = "Dgraph Labs <contact@dgraph.io>"
+__maintainer__ = "Hypermode Inc. <hello@hypermode.com>"
 __version__ = VERSION
 __status__ = "development"
 

@@ -4,7 +4,7 @@
 """Tests utility functions."""
 
 __author__ = "Garvit Pahal"
-__maintainer__ = "Dgraph Labs <contact@dgraph.io>"
+__maintainer__ = "Hypermode Inc. <hello@hypermode.com>"
 
 import unittest
 

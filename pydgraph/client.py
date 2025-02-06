@@ -10,7 +10,7 @@ from pydgraph.meta import VERSION
 from pydgraph.proto import api_pb2 as api
 
 __author__ = "Mohit Ranka <mohitranka@gmail.com>"
-__maintainer__ = "Dgraph Labs <contact@dgraph.io>"
+__maintainer__ = "Hypermode Inc. <hello@hypermode.com>"
 __version__ = VERSION
 __status__ = "development"
 

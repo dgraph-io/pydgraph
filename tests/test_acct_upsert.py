@@ -4,7 +4,7 @@
 """Tests to verify upsert directive."""
 
 __author__ = "Shailesh Kochhar <shailesh.kochhar@gmail.com>"
-__maintainer__ = "Dgraph Labs <contact@dgraph.io>"
+__maintainer__ = "Hypermode Inc. <hello@hypermode.com>"
 
 import json
 import logging
