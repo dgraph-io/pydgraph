@@ -4,7 +4,7 @@ build-backend = "setuptools.build_meta"
 
 [project]
 name = "pydgraph"
-authors = [{ name = "Dgraph Labs", email = "contact@dgraph.io" }]
+authors = [{ name = "Hypermode Inc.", email = "hello@hypermode.com" }]
 license = { file = "LICENSE" }
 description = "Official Dgraph client implementation for Python"
 readme = "README.md"

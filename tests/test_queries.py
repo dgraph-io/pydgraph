@@ -4,7 +4,7 @@
 """Tests behavior of queries after mutation in the same transaction."""
 
 __author__ = "Mohit Ranka <mohitranka@gmail.com>"
-__maintainer__ = "Dgraph Labs <contact@dgraph.io>"
+__maintainer__ = "Hypermode Inc. <hello@hypermode.com>"
 
 import json
 import logging
