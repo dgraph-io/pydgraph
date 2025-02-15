@@ -10,7 +10,6 @@ import unittest
 
 from pydgraph import util
 
-
 class TestUtil(unittest.TestCase):
     """Tests util utility functions."""
 

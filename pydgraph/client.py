@@ -3,6 +3,7 @@
 
 """Dgraph python client."""
 
+import contextlib
 import random
 
 from pydgraph import errors, txn, util
@@ -151,9 +152,9 @@ class DgraphClient(object):
         except Exception as error:
             DgraphClient._common_except_alter(error)
 
-    def txn(self, read_only=False, best_effort=False):
+    def txn(self, read_only=False, best_effort=False, **commit_kwargs):
         """Creates a transaction."""
-        return txn.Txn(self, read_only=read_only, best_effort=best_effort)
+        return txn.Txn(self, read_only=read_only, best_effort=best_effort, **commit_kwargs)
 
     def any_client(self):
         """Returns a random gRPC client so that requests are distributed evenly among them."""
@@ -165,3 +166,23 @@ class DgraphClient(object):
             return new_metadata
         new_metadata.extend(metadata)
         return new_metadata
+
+    @contextlib.contextmanager
+    def begin(self, 
+              read_only:bool=False, best_effort:bool=False,
+              timeout = None, metadata = None, credentials = None):
+        '''Start a managed transaction.
+        
+        Note
+        ----
+        Only use this function in ``with-as`` blocks. 
+        '''
+        tx = self.txn(read_only=read_only, best_effort=best_effort)
+        try:
+            yield tx
+            if read_only == False and tx._finished == False:
+                tx.commit(timeout=timeout, metadata=metadata, credentials=credentials)
+        except Exception as e:
+            raise e
+        finally:
+            tx.discard()

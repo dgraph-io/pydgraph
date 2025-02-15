@@ -9,7 +9,7 @@ import json
 import logging
 import unittest
 
-from . import helper
+from tests import helper
 
 
 class TestUpsertBlock(helper.ClientIntegrationTestCase):
