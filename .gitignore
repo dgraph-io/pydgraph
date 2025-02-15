@@ -39,3 +39,5 @@ pydgraph.iml
 venv
 .venv
 pyvenv.cfg
+.DS_Store
+examples/notebook/RAG/.env

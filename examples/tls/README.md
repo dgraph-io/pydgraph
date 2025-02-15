@@ -1,15 +1,14 @@
 ## TLS Example Project
 
-Project demonstrating the use of [pydgraph][] and Dgraph set up with client-server
-mutual TLS. The following guide shows how to set up a single-group six-node
-cluster (3 Dgraph Zero and 3 Dgraph Alpha) configured with mutual TLS.
+Project demonstrating the use of pydgraph and Dgraph set up with client-server mutual TLS. The
+following guide shows how to set up a single-group six-node cluster (3 Dgraph Zero and 3 Dgraph
+Alpha) configured with mutual TLS.
 
 ### Create TLS certificates
 
-Dgraph provides a `dgraph cert` tool to create and manage self-signed
-server and client certificates using a generated Dgraph Root CA. See the [TLS
-documentation](https://docs.dgraph.io/deploy/#tls-configuration) for more
-information.
+Dgraph provides a `dgraph cert` tool to create and manage self-signed server and client certificates
+using a generated Dgraph Root CA. See the
+[TLS documentation](https://docs.dgraph.io/deploy/#tls-configuration) for more information.
 
 Create the root CA. All certificates and keys are created in the `tls` directory.
 
@@ -17,9 +16,8 @@ Create the root CA. All certificates and keys are created in the `tls` directory
 docker run -t --volume $PWD/tls:/dgraph-tls dgraph/dgraph:latest dgraph cert --dir /dgraph-tls
 ```
 
-
-Now create the Alpha server certificate (node.crt) and key (node.key) and client
-certificate (client.user.crt) key (client.user.key).
+Now create the Alpha server certificate (node.crt) and key (node.key) and client certificate
+(client.user.crt) key (client.user.key).
 
 ```sh
 docker run -t --volume $PWD/tls:/dgraph-tls dgraph/dgraph:latest dgraph cert --nodes localhost --dir /dgraph-tls
@@ -40,9 +38,8 @@ ca.crt  ca.key  client.user.crt  client.user.key  node.crt  node.key
 sudo chmod +r tls/*
 ```
 
-Using `dgraph cert ls` provides more details about each file. For instance, it
-shows that the `node.crt` is valid only for the host named `localhost` and the
-corresponding file permissions.
+Using `dgraph cert ls` provides more details about each file. For instance, it shows that the
+`node.crt` is valid only for the host named `localhost` and the corresponding file permissions.
 
 ```sh
 $ dgraph cert ls
@@ -78,11 +75,13 @@ Expiration: 21 Feb 24 01:00 UTC
 ```
 
 ### Run Dgraph Cluster
-```
+
+```bash
 docker compose up
 ```
 
 ### Run Example Code
-```
-python3 tls_example.py
+
+```bash
+python tls_example.py
 ```

@@ -1,27 +1,16 @@
-# Copyright 2023 Dgraph Labs, Inc.
-#
-# Licensed under the Apache License, Version 2.0 (the "License");
-# you may not use this file except in compliance with the License.
-# You may obtain a copy of the License at
-#
-#    http://www.apache.org/licenses/LICENSE-2.0
-#
-# Unless required by applicable law or agreed to in writing, software
-# distributed under the License is distributed on an "AS IS" BASIS,
-# WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
-# See the License for the specific language governing permissions and
-# limitations under the License.
+# SPDX-FileCopyrightText: © Hypermode Inc. <hello@hypermode.com>
+# SPDX-License-Identifier: Apache-2.0
 
 """Tests client stub."""
 
-__author__ = 'Garvit Pahal <garvit@dgraph.io>'
-__maintainer__ = 'Martin Martinez Rivera <martinmr@dgraph.io>'
+__author__ = "Garvit Pahal"
+__maintainer__ = "Hypermode Inc. <hello@hypermode.com>"
 
-import unittest
 import sys
+import unittest
 
 import pydgraph
-from tests import helper
+from . import helper
 
 class TestDgraphClientStub(helper.ClientIntegrationTestCase):
     """Tests client stub."""
@@ -43,7 +32,8 @@ class TestDgraphClientStub(helper.ClientIntegrationTestCase):
     def test_timeout(self):
         with self.assertRaises(Exception):
             pydgraph.DgraphClientStub(self.TEST_SERVER_ADDR).check_version(
-                pydgraph.Check(), timeout=-1)
+                pydgraph.Check(), timeout=-1
+            )
 
     def test_close(self):
         client_stub = pydgraph.DgraphClientStub(addr=self.TEST_SERVER_ADDR)
@@ -52,12 +42,15 @@ class TestDgraphClientStub(helper.ClientIntegrationTestCase):
         with self.assertRaises(Exception):
             client_stub.check_version(pydgraph.Check())
 
+
 class TestFromCloud(unittest.TestCase):
     """Tests the from_cloud function"""
+
     def test_from_cloud(self):
         testcases = [
             {"endpoint": "godly.grpc.region.aws.cloud.dgraph.io"},
             {"endpoint": "godly.grpc.region.aws.cloud.dgraph.io:443"},
+            {"endpoint": "https://godly.grpc.region.aws.cloud.dgraph.io:443"},
             {"endpoint": "https://godly.region.aws.cloud.dgraph.io/graphql"},
             {"endpoint": "godly.region.aws.cloud.dgraph.io"},
             {"endpoint": "https://godly.region.aws.cloud.dgraph.io"},
@@ -72,7 +65,8 @@ class TestFromCloud(unittest.TestCase):
             except IndexError as e:
                 if not case["error"]:
                     # we didn't expect an error
-                    raise(e)
+                    raise (e)
+
 
 class TestDgraphClientStubContextManager(helper.ClientIntegrationTestCase):
     def setUp(self):
@@ -101,6 +95,7 @@ def suite():
     suite_obj.addTest(TestDgraphClientStubContextManager())
     return suite_obj
 
-if __name__ == '__main__':
+
+if __name__ == "__main__":
     runner = unittest.TextTestRunner()
     runner.run(suite())

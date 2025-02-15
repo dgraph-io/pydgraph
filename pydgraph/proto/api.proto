@@ -1,17 +1,6 @@
 /*
- * Copyright (C) 2023 Dgraph Labs, Inc. and Contributors
- *
- * Licensed under the Apache License, Version 2.0 (the "License");
- * you may not use this file except in compliance with the License.
- * You may obtain a copy of the License at
- *
- *    http://www.apache.org/licenses/LICENSE-2.0
- *
- * Unless required by applicable law or agreed to in writing, software
- * distributed under the License is distributed on an "AS IS" BASIS,
- * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
- * See the License for the specific language governing permissions and
- * limitations under the License.
+ * SPDX-FileCopyrightText: © Hypermode Inc. <hello@hypermode.com>
+ * SPDX-License-Identifier: Apache-2.0
  */
 
 // Style guide for Protocol Buffer 3.
@@ -23,12 +12,7 @@ syntax = "proto3";
 
 package api;
 
-/* import "gogoproto/gogo.proto"; */
-
-/* option (gogoproto.marshaler_all) = true; */
-/* option (gogoproto.sizer_all) = true; */
-/* option (gogoproto.unmarshaler_all) = true; */
-/* option (gogoproto.goproto_getters_all) = true; */
+option go_package = "github.com/dgraph-io/dgo/v240/protos/api";
 
 option java_package = "io.dgraph";
 option java_outer_classname = "DgraphProto";
@@ -175,6 +159,8 @@ message Value {
 		bytes datetime_val = 9;
 		string password_val = 10;
 		uint64 uid_val=11;
+		bytes bigfloat_val=12;
+		bytes vfloat32_val=13;
 	}
 }
 

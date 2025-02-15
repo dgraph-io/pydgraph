@@ -1,26 +1,16 @@
-# Copyright 2023 Dgraph Labs, Inc.
-#
-# Licensed under the Apache License, Version 2.0 (the "License");
-# you may not use this file except in compliance with the License.
-# You may obtain a copy of the License at
-#
-#    http://www.apache.org/licenses/LICENSE-2.0
-#
-# Unless required by applicable law or agreed to in writing, software
-# distributed under the License is distributed on an "AS IS" BASIS,
-# WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
-# See the License for the specific language governing permissions and
-# limitations under the License.
+# SPDX-FileCopyrightText: © Hypermode Inc. <hello@hypermode.com>
+# SPDX-License-Identifier: Apache-2.0
 
 """Tests to verify upsert block."""
-__author__ = 'Animesh Pathak <animesh@dgrpah.io>'
-__maintainer__ = 'Animesh Pathak <animesh@dgrpah.io>'
+__author__ = "Animesh Pathak <animesh@dgrpah.io>"
+__maintainer__ = "Animesh Pathak <animesh@dgrpah.io>"
 
-import unittest
-import logging
 import json
+import logging
+import unittest
 
 from tests import helper
+
 
 class TestUpsertBlock(helper.ClientIntegrationTestCase):
     """Tests for Upsert Block"""
@@ -28,7 +18,7 @@ class TestUpsertBlock(helper.ClientIntegrationTestCase):
     def setUp(self):
         super(TestUpsertBlock, self).setUp()
         helper.drop_all(self.client)
-        helper.set_schema(self.client, 'name: string @index(term) @upsert .')
+        helper.set_schema(self.client, "name: string @index(term) @upsert .")
 
     def test_upsert_block_one_mutation(self):
         txn = self.client.txn()
@@ -97,7 +87,9 @@ class TestUpsertBlock(helper.ClientIntegrationTestCase):
                 }
                 """
 
-        mutation = txn.create_mutation(cond="@if(gt(len(u), 0))", set_nquads='uid(u) <name> "Ashish" .')
+        mutation = txn.create_mutation(
+            cond="@if(gt(len(u), 0))", set_nquads='uid(u) <name> "Ashish" .'
+        )
         request = txn.create_request(mutations=[mutation], query=query, commit_now=True)
         txn.do_request(request)
         self.was_upsert_successful()
@@ -135,7 +127,7 @@ class TestUpsertBlock(helper.ClientIntegrationTestCase):
 
         txn = self.client.txn()
         response = txn.query(query)
-        data = json.loads(response.json)['me']
+        data = json.loads(response.json)["me"]
         if len(data) > 0:
             self.fail("Upsert block test failed: Couldn't do bulk set")
 

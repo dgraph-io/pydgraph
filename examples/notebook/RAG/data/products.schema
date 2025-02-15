@@ -1,0 +1,55 @@
+<Product.characteristic>: [uid] .
+<Product.category>: uid @reverse .
+<Product.brand>: uid @reverse .
+<Product.color>: uid @reverse .
+<Product.material>: uid @reverse .
+<Product.measurement>: uid @reverse .
+<Product.age_group>: uid @reverse .
+<Product.Title>: String @index(hash) .
+<Product.Name>: String @index(hash) .
+<Product.ID>: String .
+<Product.embedding>: float32vector @index(hnsw) .
+
+
+type <Product> {
+	<Product.Name>
+	<Product.Title>
+	<Product.age_group>
+	<Product.brand>
+	<Product.category>
+	<Product.characteristic>
+	<Product.color>
+	<Product.material>
+	<Product.measurement>
+    <Product.embedding>
+}
+<category.embedding>: float32vector @index(hnsw) .
+<category.Value>: String .
+type <category> {
+	<category.Value>
+    <category.embedding>
+}
+<brand.Value>: String .
+type <brand> {
+	<brand.Value>
+}
+<age_group.Value>: String .
+type <age_group> {
+	<age_group.Value>
+}
+<characteristic.Value>: String .
+type <characteristic> {
+	<characteristic.Value>
+}
+<color.Value>: String .
+type <color> {
+	<color.Value>
+}
+<material.Value>: String .
+type <material> {
+	<material.Value>
+}
+<measurement.Value>: String .
+type <measurement> {
+	<measurement.Value>
+}
