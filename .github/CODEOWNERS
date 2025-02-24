@@ -2,4 +2,4 @@
 # Owners are automatically requested for review for PRs that changes code
 # that they own.
 
-* @hypermodeinc/database
+* @hypermodeinc/database @johnymontana @meghalims @rarvikar
