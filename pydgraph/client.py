@@ -174,7 +174,7 @@ class DgraphClient(object):
             client.close()
 
 
-def Open(connection_string: str) -> DgraphClient:
+def open(connection_string: str) -> DgraphClient:
     """Open a new Dgraph client. Use client.close() to close the client.
 
     Args:
