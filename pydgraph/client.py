@@ -4,6 +4,9 @@
 """Dgraph python client."""
 
 import random
+import urllib.parse
+
+import grpc
 
 from pydgraph import errors, txn, util
 from pydgraph.meta import VERSION
@@ -157,7 +160,7 @@ class DgraphClient(object):
 
     def any_client(self):
         """Returns a random gRPC client so that requests are distributed evenly among them."""
-        return random.choice(self._clients)
+        return random.choice(self._clients)  # nosec # pylint: disable=insecure-random
 
     def add_login_metadata(self, metadata):
         new_metadata = list(self._login_metadata)
@@ -165,3 +168,86 @@ class DgraphClient(object):
             return new_metadata
         new_metadata.extend(metadata)
         return new_metadata
+
+    def close(self):
+        for client in self._clients:
+            client.close()
+
+
+def Open(connection_string: str) -> DgraphClient:
+    """Open a new Dgraph client. Use client.close() to close the client.
+
+    Args:
+        connection_string: A connection string in the format of "dgraph://<username:password>@<host>:<port>?<params>"
+
+    Returns:
+        A new Dgraph client.
+
+    Raises:
+        ValueError: If the connection string is invalid.
+    """
+    try:
+        parsed_url = urllib.parse.urlparse(connection_string)
+        if not parsed_url.scheme == "dgraph":
+            raise ValueError("Invalid connection string: scheme must be 'dgraph'")
+        if not parsed_url.hostname:
+            raise ValueError("Invalid connection string: hostname required")
+        if not parsed_url.port:
+            raise ValueError("Invalid connection string: port required")
+    except Exception as e:
+        raise ValueError(f"Failed to parse connection string: {e}") from e
+
+    host = parsed_url.hostname
+    port = parsed_url.port
+    username = parsed_url.username
+    password = parsed_url.password
+    if username and not password:
+        raise ValueError(
+            "Invalid connection string: password required when username is provided"
+        )
+
+    params = dict(urllib.parse.parse_qsl(parsed_url.query))
+    credentials = None
+    options = None
+    auth_header = None
+
+    if "sslmode" in params:
+        sslmode = params["sslmode"]
+        if sslmode == "disable":
+            credentials = None
+        elif sslmode == "require":
+            raise ValueError(
+                "sslmode=require is not supported in pydgraph, use verify-ca"
+            )
+        elif sslmode == "verify-ca":
+            credentials = grpc.ssl_channel_credentials()
+        else:
+            raise ValueError(f"Invalid sslmode: {sslmode}")
+
+    if "apikey" in params and "bearertoken" in params:
+        raise ValueError("apikey and bearertoken cannot both be provided")
+
+    if "apikey" in params:
+        auth_header = params["apikey"]
+    elif "bearertoken" in params:
+        auth_header = f"Bearer {params['bearertoken']}"
+
+    if auth_header:
+        options = [("grpc.enable_http_proxy", 0)]
+        call_credentials = grpc.metadata_call_credentials(
+            lambda context, callback: callback((("authorization", auth_header),), None)
+        )
+        credentials = grpc.composite_channel_credentials(
+            grpc.ssl_channel_credentials(), call_credentials
+        )
+
+    from pydgraph.client_stub import DgraphClientStub
+
+    client_stub = DgraphClientStub(f"{host}:{port}", credentials, options)
+    client = DgraphClient(client_stub)
+
+    if username:
+        thirty_seconds = 30
+        client.login(username, password, timeout=thirty_seconds)
+
+    return client
