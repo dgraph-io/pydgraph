@@ -5,16 +5,6 @@ import json
 import pydgraph
 
 
-# Create a client stub.
-def create_client_stub():
-    return pydgraph.DgraphClientStub("localhost:9080")
-
-
-# Create a client.
-def create_client(client_stub):
-    return pydgraph.DgraphClient(client_stub)
-
-
 # Drop All - discard all data and start from a clean slate.
 def drop_all(client):
     return client.alter(pydgraph.Operation(drop_all=True))
@@ -174,8 +164,7 @@ def query_bob(client):
 
 
 def main():
-    client_stub = create_client_stub()
-    client = create_client(client_stub)
+    client = pydgraph.open("dgraph://localhost:9080")
     drop_all(client)
     set_schema(client)
     create_data(client)
@@ -185,8 +174,8 @@ def main():
     query_alice(client)  # query for Alice
     query_bob(client)  # query for Bob
 
-    # Close the client stub.
-    client_stub.close()
+    # Close the client.
+    client.close()
 
 
 if __name__ == "__main__":
