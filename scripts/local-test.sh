@@ -43,7 +43,7 @@ alphaGrpcPort=$(DockerCompose port alpha1 9080 | awk -F: '{print $2}')
 popd || exit
 export TEST_SERVER_ADDR="localhost:${alphaGrpcPort}"
 echo "Using TEST_SERVER_ADDR=${TEST_SERVER_ADDR}"
-if [ $# -eq 0 ]; then
+if [[ $# -eq 0 ]]; then
 	# No arguments provided, run all tests
 	pytest
 else
