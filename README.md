@@ -86,13 +86,56 @@ client_stub = pydgraph.DgraphClientStub('localhost:9080')
 client = pydgraph.DgraphClient(client_stub)
 ```
 
+### Using Dgraph Connection Strings
+
+The pydgraph package supports connecting to a Dgraph cluster using connection strings. Dgraph
+connections strings take the form `dgraph://{username:password@}host:port?args`.
+
+`username` and `password` are optional. If username is provided, a password must also be present. If
+supplied, these credentials are used to log into a Dgraph cluster through the ACL mechanism.
+
+Valid connection string args:
+
+| Arg         | Value                           | Description                                                                                                                                                   |
+| ----------- | ------------------------------- | ------------------------------------------------------------------------------------------------------------------------------------------------------------- |
+| apikey      | \<key\>                         | a Dgraph Cloud API Key                                                                                                                                        |
+| bearertoken | \<token\>                       | an access token                                                                                                                                               |
+| sslmode     | disable \| require \| verify-ca | TLS option, the default is `disable`. If `verify-ca` is set, the TLS certificate configured in the Dgraph cluster must be from a valid certificate authority. |
+
+Note the `sslmode=require` pair is not supported and will throw an Exception if used. Python grpc
+does not support traffic over TLS that does not fully verify the certificate and domain. Developers
+should use the existing stub/client initialization steps for self-signed certs as demonstrated in
+/examples/tls/tls_example.py
+
+Some example connection strings:
+
+| Value                                                                                                        | Explanation                                                                         |
+| ------------------------------------------------------------------------------------------------------------ | ----------------------------------------------------------------------------------- |
+| dgraph://localhost:9080                                                                                      | Connect to localhost, no ACL, no TLS                                                |
+| dgraph://sally:supersecret@dg.example.com:443?sslmode=verify-ca                                              | Connect to remote server, use ACL and require TLS and a valid certificate from a CA |
+| dgraph://foo-bar.grpc.us-west-2.aws.cloud.dgraph.io:443?sslmode=verify-ca&apikey=\<your-api-connection-key\> | Connect to a Dgraph Cloud cluster                                                   |
+| dgraph://foo-bar.grpc.hypermode.com:443?sslmode=verify-ca&bearertoken=\<some access token\>                  | Connect to a Dgraph cluster protected by a secure gateway                           |
+
+Using the `Open` function with a connection string:
+
+```go
+// open a connection to an ACL-enabled, non-TLS cluster and login as groot
+client = pydgraph.open("dgraph://groot:password@localhost:8090")
+
+// Use the client
+...
+
+client.close()
+```
+
 ### Login into a Namespace
 
 If your server has Access Control Lists enabled (Dgraph v1.1 or above), the client must be logged in
-for accessing data. Use `login` endpoint:
+for accessing data. If you didn't use the `open` function with credentials, use the `login`
+endpoint.
 
-Calling login will obtain and remember the access and refresh JWT tokens. All subsequent operations
-via the logged in client will send along the stored access token.
+Calling `login` will obtain and remember the access and refresh JWT tokens. All subsequent
+operations via the logged in client will send along the stored access token.
 
 ```python3
 client.login("groot", "password")
@@ -117,6 +160,16 @@ the Setting section). Create the `client_stub` using the gRPC endpoint and the A
 client_stub = pydgraph.DgraphClientStub.from_cloud(
     "https://morning-glade.grpc.us-east-1.aws.cloud.dgraph.io:443", "<api-key>")
 client = pydgraph.DgraphClient(client_stub)
+```
+
+Alternatively, you can simply use a Dgraph connection string with the `open` function. For example:
+
+```python
+conn_str = "dgraph://foo-bar.grpc.us-west-2.aws.cloud.dgraph.io:443?sslmode=verify-ca&apikey=<your-api-connection-key>"
+client = pydgraph.open(conn_str)
+
+# some time later...
+client.close()
 ```
 
 The `DgraphClientStub.from_slash_endpoint()` method has been removed v23.0. Please use
@@ -561,9 +614,19 @@ To run the tests in your local machine, run:
 bash scripts/local-test.sh
 ```
 
-This script assumes dgraph is located on your path. Dgraph release binaries can be found
-[here](https://github.com/hypermodeinc/dgraph/releases). The test script also requires that `docker`
-and `docker compose` are installed on your machine.
+You can run a specific test suite:
+
+```bash
+bash scripts/local-test.sh -v tests/test_connect.py::TestOpen
+```
+
+or an individual test:
+
+```bash
+bash scripts/local-test.sh -v tests/test_connect.py::TestOpen::test_connection_with_auth
+```
+
+The test script requires that `docker` and `docker compose` are installed on your machine.
 
 The script will take care of bringing up a Dgraph cluster and bringing it down after the tests are
 executed. The script connects to randomly selected ports for HTTP and gRPC requests to prevent
