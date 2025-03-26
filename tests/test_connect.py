@@ -27,7 +27,6 @@ class TestOpen(unittest.TestCase):
             self.skipTest("Username and password not configured")
 
         url = f"dgraph://{self.username}:{self.password}@{self.dgraph_host}:{self.dgraph_port}"
-        print("URL", url)
         client = open(url)
 
         # Verify connection works with credentials
