@@ -22,7 +22,7 @@ classifiers = [
   'Programming Language :: Python :: 3.11',
   'Programming Language :: Python :: 3.12',
 ]
-dependencies = ["grpcio>=1.56.0,<2.0.0", "protobuf>=4.23.0,<6.0.0"]
+dependencies = ["grpcio>=1.56.0,<2.0.0", "protobuf>=4.23.0,<6.31.0"]
 dynamic = ["version"]
 
 [tool.setuptools.dynamic]
