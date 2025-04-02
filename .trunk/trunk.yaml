@@ -17,6 +17,11 @@ runtimes:
     - python@3.10.8
 # This is the section where you manage your linters. (https://docs.trunk.io/check/configuration)
 lint:
+  ignore:
+    - linters: [ALL]
+      paths:
+        - pydgraph/proto/api_pb*.py
+
   enabled:
     - trivy@0.59.1
     - trivy@0.58.2
