@@ -56,6 +56,7 @@ jobs:
           python -m pip install .[dev]
       - name: Verify that updated protobufs are checked in
         run: |
+          cd pydgraph
           python scripts/protogen.py
           git diff --exit-code -- .
       - name: Run tests
