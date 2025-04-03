@@ -3,7 +3,7 @@ name: ci-pydgraph-tests
 on:
   push:
     branches:
-      - master
+      - main
   pull_request:
     types:
       - opened
@@ -11,7 +11,7 @@ on:
       - synchronize
       - ready_for_review
     branches:
-      - master
+      - main
   schedule:
     - cron: 1 0 * * * # run workflow daily
 
@@ -54,5 +54,10 @@ jobs:
           cd pydgraph
           python -m pip install --upgrade pip
           python -m pip install .[dev]
+      - name: Verify that updated protobufs are checked in
+        run: |
+          cd pydgraph
+          python scripts/protogen.py
+          git diff --exit-code -- .
       - name: Run tests
         run: cd pydgraph && DGRAPH_IMAGE_TAG=local bash scripts/local-test.sh
