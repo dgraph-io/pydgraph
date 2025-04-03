@@ -1,12 +1,9 @@
-name: cd-pydgraph
+name: ci-pydgraph-check-protos
 
 on:
-  workflow_dispatch:
-    inputs:
-      releasetag:
-        description: releasetag
-        required: true
-        type: string
+  push:
+    branches:
+      - any
 
 permissions:
   contents: read
@@ -32,12 +29,3 @@ jobs:
         run: |
           python scripts/protogen.py
           git diff --exit-code -- .
-      - name: Build pydgraph
-        run: |
-          rm -rf dist
-          # build binary wheel and a source tarball
-          python -m build
-      - name: Upload to PyPi
-        run:
-          twine upload --username ${{ secrets.DGRAPH_PYPI_USERNAME }} --password ${{
-          secrets.DGRAPH_PYPI_PASSWORD }} dist/*
