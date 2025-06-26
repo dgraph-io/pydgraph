@@ -61,7 +61,7 @@ class TestV2Ops(unittest.TestCase):
         self.assertIsNotNone(self.client, "Client is not initialized")
 
         # generate a random namespace name
-        namespace = "test_" + str(random.randint(0, 10000))
+        namespace = "test_" + str(random.randint(0, 10000))  # trunk-ignore(bandit/B311)
         version_info = self.client.check_version()
         major_version_str = version_info.lstrip("v").split(".")[0]
         is_v1 = int(major_version_str) < 25
