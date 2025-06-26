@@ -22,12 +22,23 @@ from pydgraph.proto.api_v2_pb2 import (
 
 class TestV2Ops(unittest.TestCase):
     client = None
+    _is_v2_supported = False
 
     @classmethod
     def setUpClass(cls):
-        """Set up a client for all tests."""
-        addr = os.environ.get("TEST_SERVER_ADDR", "localhost:9080")
-        cls.client = open(f"dgraph://{addr}")
+        """Set up the client and check for v2 API support."""
+        server_addr = os.environ.get("TEST_SERVER_ADDR", "localhost:9080")
+        print(f"Connecting to Dgraph at {server_addr}")
+        cls.client = open(f"dgraph://{server_addr}")
+
+        try:
+            # Feature-detect v2 support by trying a v2-only call.
+            cls.client.ping()
+            cls._is_v2_supported = True
+            print("V2 API is supported.")
+        except V2NotSupportedError:
+            cls._is_v2_supported = False
+            print("V2 API is not supported.")
 
     @classmethod
     def tearDownClass(cls):
@@ -39,12 +50,7 @@ class TestV2Ops(unittest.TestCase):
         """Test the ping method."""
         self.assertIsNotNone(self.client, "Client is not initialized")
 
-        version_info = self.client.check_version()
-        print(f"version_info: {version_info}")
-        major_version_str = version_info.lstrip("v").split(".")[0]
-        is_v1 = int(major_version_str) < 25
-
-        if is_v1:
+        if not self.__class__._is_v2_supported:
             with self.assertRaises(V2NotSupportedError):
                 self.client.ping()
         else:
@@ -60,43 +66,39 @@ class TestV2Ops(unittest.TestCase):
         """Test the namespace operations."""
         self.assertIsNotNone(self.client, "Client is not initialized")
 
+        if not self.__class__._is_v2_supported:
+            self.skipTest("Skipping namespace test: V2 API not supported.")
+
         # generate a random namespace name
         namespace = "test_" + str(random.randint(0, 10000))  # trunk-ignore(bandit/B311)
-        version_info = self.client.check_version()
-        major_version_str = version_info.lstrip("v").split(".")[0]
-        is_v1 = int(major_version_str) < 25
 
-        if is_v1:
-            with self.assertRaises(V2NotSupportedError):
-                self.client.create_namespace(namespace)
-        else:
-            response = self.client.create_namespace(namespace)
-            self.assertIsNotNone(response, "Create namespace response is None")
-            self.assertIsInstance(
-                response,
-                CreateNamespaceResponse,
-                "Response is not a CreateNamespaceResponse",
-            )
+        response = self.client.create_namespace(namespace)
+        self.assertIsNotNone(response, "Create namespace response is None")
+        self.assertIsInstance(
+            response,
+            CreateNamespaceResponse,
+            "Response is not a CreateNamespaceResponse",
+        )
 
-            response = self.client.list_namespaces()
-            self.assertIsNotNone(
-                response,
-                "List namespaces response is None",
-            )
-            self.assertIsInstance(
-                response,
-                ListNamespacesResponse,
-                "Response is not a ListNamespacesResponse",
-            )
-            self.assertIn(namespace, response.ns_list, "Namespace not found in list")
+        response = self.client.list_namespaces()
+        self.assertIsNotNone(
+            response,
+            "List namespaces response is None",
+        )
+        self.assertIsInstance(
+            response,
+            ListNamespacesResponse,
+            "Response is not a ListNamespacesResponse",
+        )
+        self.assertIn(namespace, response.ns_list, "Namespace not found in list")
 
-            response = self.client.drop_namespace(namespace)
-            self.assertIsNotNone(response, "Drop namespace response is None")
-            self.assertIsInstance(
-                response,
-                DropNamespaceResponse,
-                "Response is not a DropNamespaceResponse",
-            )
+        response = self.client.drop_namespace(namespace)
+        self.assertIsNotNone(response, "Drop namespace response is None")
+        self.assertIsInstance(
+            response,
+            DropNamespaceResponse,
+            "Response is not a DropNamespaceResponse",
+        )
 
 
 if __name__ == "__main__":

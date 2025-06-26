@@ -146,6 +146,7 @@ class DgraphClient(object):
 
     def ping(self, timeout=None, metadata=None, credentials=None):
         """Runs a ping via this client."""
+        """Note this is only supported on Dgraph v25.0.0 and above."""
         new_metadata = self.add_login_metadata(metadata)
         req = api_v2.PingRequest()
         try:
@@ -172,6 +173,7 @@ class DgraphClient(object):
         self, how_many, lease_type, timeout=None, metadata=None, credentials=None
     ):
         """Runs an AllocateIDs via this client."""
+        """Note this is only supported on Dgraph v25.0.0 and above."""
         new_metadata = self.add_login_metadata(metadata)
         req = AllocateIDsRequest(how_many=how_many, lease_type=lease_type)
         try:
@@ -204,6 +206,7 @@ class DgraphClient(object):
         credentials=None,
     ):
         """Runs a SignInUser via this client."""
+        """Note this is only supported on Dgraph v25.0.0 and above."""
         new_metadata = self.add_login_metadata(metadata)
         req = SignInUserRequest(
             user_id=user_id, password=password, refresh_token=refresh_token
@@ -241,6 +244,7 @@ class DgraphClient(object):
         credentials=None,
     ):
         """Runs an Alter (v2) via this client."""
+        """Note this is only supported on Dgraph v25.0.0 and above."""
         new_metadata = self.add_login_metadata(metadata)
         req = AlterRequestV2(
             op=op,
@@ -283,6 +287,7 @@ class DgraphClient(object):
         credentials=None,
     ):
         """Runs a RunDQL via this client."""
+        """Note this is only supported on Dgraph v25.0.0 and above."""
         new_metadata = self.add_login_metadata(metadata)
         req = RunDQLRequest(
             dql_query=dql_query,
@@ -314,6 +319,7 @@ class DgraphClient(object):
 
     def create_namespace(self, ns_name, timeout=None, metadata=None, credentials=None):
         """Runs a CreateNamespace via this client."""
+        """Note this is only supported on Dgraph v25.0.0 and above."""
         new_metadata = self.add_login_metadata(metadata)
         req = CreateNamespaceRequest(ns_name=ns_name)
         try:
@@ -338,6 +344,7 @@ class DgraphClient(object):
 
     def drop_namespace(self, ns_name, timeout=None, metadata=None, credentials=None):
         """Runs a DropNamespace via this client."""
+        """Note this is only supported on Dgraph v25.0.0 and above."""
         new_metadata = self.add_login_metadata(metadata)
         req = DropNamespaceRequest(ns_name=ns_name)
         try:
@@ -364,6 +371,7 @@ class DgraphClient(object):
         self, ns_name, rename_to_ns, timeout=None, metadata=None, credentials=None
     ):
         """Runs an UpdateNamespace via this client."""
+        """Note this is only supported on Dgraph v25.0.0 and above."""
         new_metadata = self.add_login_metadata(metadata)
         req = UpdateNamespaceRequest(ns_name=ns_name, rename_to_ns=rename_to_ns)
         try:
@@ -388,6 +396,7 @@ class DgraphClient(object):
 
     def list_namespaces(self, timeout=None, metadata=None, credentials=None):
         """Runs a ListNamespaces via this client."""
+        """Note this is only supported on Dgraph v25.0.0 and above."""
         new_metadata = self.add_login_metadata(metadata)
         req = ListNamespacesRequest()
         try:
@@ -420,6 +429,7 @@ class DgraphClient(object):
         credentials=None,
     ):
         """Runs an UpdateExtSnapshotStreamingState via this client."""
+        """Note this is only supported on Dgraph v25.0.0 and above."""
         new_metadata = self.add_login_metadata(metadata)
         req = UpdateExtSnapshotStreamingStateRequest(
             start=start, finish=finish, drop_data=drop_data
@@ -448,9 +458,9 @@ class DgraphClient(object):
         self, request_iterator, timeout=None, metadata=None, credentials=None
     ):
         """Runs a StreamExtSnapshot via this client. This is a client-streaming RPC.
-
         The caller is responsible for handling JWT expiry and retries for this streaming call.
         """
+        """Note this is only supported on Dgraph v25.0.0 and above."""
         new_metadata = self.add_login_metadata(metadata)
         try:
             # The underlying gRPC stub expects an iterator for client-streaming RPCs.
@@ -477,6 +487,7 @@ class DgraphClient(object):
 
     def async_alter(self, operation, timeout=None, metadata=None, credentials=None):
         """The async version of alter."""
+        """Note this is only supported on Dgraph v25.0.0 and above."""
         new_metadata = self.add_login_metadata(metadata)
         return self.any_client().async_alter(
             operation, timeout=timeout, metadata=new_metadata, credentials=credentials
