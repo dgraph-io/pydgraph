@@ -17,5 +17,6 @@ protoc.main(
         "--python_out=" + protopath,
         "--grpc_python_out=" + protopath,
         os.path.join(protopath, "api.proto"),
+        os.path.join(protopath, "api_v2.proto"),
     )
 )

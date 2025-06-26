@@ -4,7 +4,7 @@
 # Instead it assumes dgraph is already installed.
 
 function DockerCompose() {
-	docker compose -p pydgraph $@
+	docker compose -p pydgraph "$@"
 }
 
 function wait-for-healthy() {

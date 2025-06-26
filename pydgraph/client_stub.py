@@ -3,10 +3,14 @@
 
 """Stub for RPC request."""
 
+import logging
+
 import grpc
 
+from pydgraph.errors import V2NotSupportedError
 from pydgraph.meta import VERSION
 from pydgraph.proto import api_pb2_grpc as api_grpc
+from pydgraph.proto import api_v2_pb2_grpc as api_v2_grpc
 
 try:
     from urllib.parse import urlparse
@@ -29,6 +33,7 @@ class DgraphClientStub(object):
             self.channel = grpc.secure_channel(addr, credentials, options)
 
         self.stub = api_grpc.DgraphStub(self.channel)
+        self.stub_v2 = api_v2_grpc.DgraphStub(self.channel)
 
     def login(self, login_req, timeout=None, metadata=None, credentials=None):
         return self.stub.Login(
@@ -71,14 +76,138 @@ class DgraphClientStub(object):
             check, timeout=timeout, metadata=metadata, credentials=credentials
         )
 
+    def ping(self, req, timeout=None, metadata=None, credentials=None):
+        """Runs ping operation."""
+        try:
+            return self.stub_v2.Ping(
+                req, timeout=timeout, metadata=metadata, credentials=credentials
+            )
+        except grpc.RpcError as e:
+            if e.code() == grpc.StatusCode.UNIMPLEMENTED:
+                raise V2NotSupportedError() from e
+            raise
+
+    def allocate_ids(self, req, timeout=None, metadata=None, credentials=None):
+        """Runs AllocateIDs operation."""
+        try:
+            return self.stub_v2.AllocateIDs(
+                req, timeout=timeout, metadata=metadata, credentials=credentials
+            )
+        except grpc.RpcError as e:
+            if e.code() == grpc.StatusCode.UNIMPLEMENTED:
+                raise V2NotSupportedError() from e
+            raise
+
+    def sign_in_user(self, req, timeout=None, metadata=None, credentials=None):
+        """Runs SignInUser operation."""
+        try:
+            return self.stub_v2.SignInUser(
+                req, timeout=timeout, metadata=metadata, credentials=credentials
+            )
+        except grpc.RpcError as e:
+            if e.code() == grpc.StatusCode.UNIMPLEMENTED:
+                raise V2NotSupportedError() from e
+            raise
+
+    def alter_v2(self, req, timeout=None, metadata=None, credentials=None):
+        """Runs Alter operation."""
+        try:
+            return self.stub_v2.Alter(
+                req, timeout=timeout, metadata=metadata, credentials=credentials
+            )
+        except grpc.RpcError as e:
+            if e.code() == grpc.StatusCode.UNIMPLEMENTED:
+                raise V2NotSupportedError() from e
+            raise
+
+    def run_dql(self, req, timeout=None, metadata=None, credentials=None):
+        """Runs RunDQL operation."""
+        try:
+            return self.stub_v2.RunDQL(
+                req, timeout=timeout, metadata=metadata, credentials=credentials
+            )
+        except grpc.RpcError as e:
+            if e.code() == grpc.StatusCode.UNIMPLEMENTED:
+                raise V2NotSupportedError() from e
+            raise
+
+    def create_namespace(self, req, timeout=None, metadata=None, credentials=None):
+        """Runs CreateNamespace operation."""
+        try:
+            return self.stub_v2.CreateNamespace(
+                req, timeout=timeout, metadata=metadata, credentials=credentials
+            )
+        except grpc.RpcError as e:
+            if e.code() == grpc.StatusCode.UNIMPLEMENTED:
+                raise V2NotSupportedError() from e
+            raise
+
+    def drop_namespace(self, req, timeout=None, metadata=None, credentials=None):
+        """Runs DropNamespace operation."""
+        try:
+            return self.stub_v2.DropNamespace(
+                req, timeout=timeout, metadata=metadata, credentials=credentials
+            )
+        except grpc.RpcError as e:
+            if e.code() == grpc.StatusCode.UNIMPLEMENTED:
+                raise V2NotSupportedError() from e
+            raise
+
+    def update_namespace(self, req, timeout=None, metadata=None, credentials=None):
+        """Runs UpdateNamespace operation."""
+        try:
+            return self.stub_v2.UpdateNamespace(
+                req, timeout=timeout, metadata=metadata, credentials=credentials
+            )
+        except grpc.RpcError as e:
+            if e.code() == grpc.StatusCode.UNIMPLEMENTED:
+                raise V2NotSupportedError() from e
+            raise
+
+    def list_namespaces(self, req, timeout=None, metadata=None, credentials=None):
+        """Runs ListNamespaces operation."""
+        try:
+            return self.stub_v2.ListNamespaces(
+                req, timeout=timeout, metadata=metadata, credentials=credentials
+            )
+        except grpc.RpcError as e:
+            if e.code() == grpc.StatusCode.UNIMPLEMENTED:
+                raise V2NotSupportedError() from e
+            raise
+
+    def update_ext_snapshot_streaming_state(
+        self, req, timeout=None, metadata=None, credentials=None
+    ):
+        """Runs UpdateExtSnapshotStreamingState operation."""
+        try:
+            return self.stub_v2.UpdateExtSnapshotStreamingState(
+                req, timeout=timeout, metadata=metadata, credentials=credentials
+            )
+        except grpc.RpcError as e:
+            if e.code() == grpc.StatusCode.UNIMPLEMENTED:
+                raise V2NotSupportedError() from e
+            raise
+
+    def stream_ext_snapshot(self, req, timeout=None, metadata=None, credentials=None):
+        """Runs StreamExtSnapshot operation."""
+        try:
+            return self.stub_v2.StreamExtSnapshot(
+                req, timeout=timeout, metadata=metadata, credentials=credentials
+            )
+        except grpc.RpcError as e:
+            if e.code() == grpc.StatusCode.UNIMPLEMENTED:
+                raise V2NotSupportedError() from e
+            raise
+
     def close(self):
         """Deletes channel and stub."""
         try:
             self.channel.close()
-        except:
-            pass
+        except Exception:
+            logging.debug("Failed to close gRPC channel, ignoring.", exc_info=True)
         del self.channel
         del self.stub
+        del self.stub_v2
 
     @staticmethod
     def parse_host(cloud_endpoint):

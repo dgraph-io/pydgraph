@@ -1,3 +1,11 @@
+# SPDX-FileCopyrightText: © Hypermode Inc. <hello@hypermode.com>
+# SPDX-License-Identifier: Apache-2.0
+
+"""Tests construction of Dgraph client."""
+
+__author__ = "Matthew McNeely"
+__maintainer__ = "Hypermode Inc. <hello@hypermode.com>"
+
 import json
 import os
 import unittest

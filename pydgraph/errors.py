@@ -43,3 +43,12 @@ class TransactionError(Exception):
 
     def __init__(self, msg):
         super(TransactionError, self).__init__(msg)
+
+
+class V2NotSupportedError(Exception):
+    """Error thrown when a v2 API is called on a server that doesn't support it."""
+
+    def __init__(self):
+        super(V2NotSupportedError, self).__init__(
+            "The Dgraph server does not support v2 API calls. Please upgrade your Dgraph instance."
+        )
