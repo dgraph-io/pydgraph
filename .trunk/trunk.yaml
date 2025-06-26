@@ -20,7 +20,7 @@ lint:
   ignore:
     - linters: [ALL]
       paths:
-        - pydgraph/proto/api_pb*.py
+        - pydgraph/proto/*_pb2*.py
 
   enabled:
     - trivy@0.59.1
