@@ -29,7 +29,7 @@ class TestV2Ops(unittest.TestCase):
         """Set up the client and check for v2 API support."""
         server_addr = os.environ.get("TEST_SERVER_ADDR", "localhost:9080")
         print(f"Connecting to Dgraph at {server_addr}")
-        cls.client = open(f"dgraph://{server_addr}")
+        cls.client = open(f"dgraph://groot:password@{server_addr}")
 
         try:
             # Feature-detect v2 support by trying a v2-only call.
