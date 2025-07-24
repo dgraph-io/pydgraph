@@ -29,7 +29,9 @@ dynamic = ["version"]
 version = { attr = "pydgraph.meta.VERSION" }
 
 [project.optional-dependencies]
-dev = ["build>=1.2.2.post1", "grpcio-tools>=1.68.0", "pytest>=8.3.3"]
+# grpcio-tools 1.66.0 breaks compatibility with grpcio <1.66.0
+# but does not change the generated gRPC output for pydgraph
+dev = ["build>=1.2.2.post1", "grpcio-tools>=1.65.0,<1.66.0", "pytest>=8.3.3"]
 
 [project.urls]
 "Homepage" = "https://github.com/hypermodeinc/pydgraph"

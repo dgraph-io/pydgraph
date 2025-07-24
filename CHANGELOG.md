@@ -5,11 +5,12 @@ All notable changes to this project will be documented in this file.
 The format is based on [Keep a Changelog](http://keepachangelog.com/en/1.0.0/) and this project
 adheres to [Semantic Versioning](http://semver.org/spec/v2.0.0.html).
 
-## [v24.2.1] 2025-04-02
+## [v24.2.1] 2025-07-23
 
 **_Chore_**
 
 - Updated generated modules following a grpc deps update
+- Bump down dev dependency `grpcio-tools` to <1.66.0 to allow `grpcio` compatibility with <1.66.0 (broken in v24.0.2) (#270)
 
 ## [v24.2.0] - 2025-04-01
 
