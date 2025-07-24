@@ -33,6 +33,24 @@ function stopCluster() {
 	DockerCompose down -t 5
 }
 
+function displayDgraphVersion() {
+	python3 -c "
+import sys
+sys.path.insert(0, '.')
+from pydgraph.client_stub import DgraphClientStub
+from pydgraph.client import DgraphClient
+
+try:
+    client_stub = DgraphClientStub('${TEST_SERVER_ADDR}')
+    client = DgraphClient(client_stub)
+    version = client.check_version()
+    print(f'Dgraph server version: {version}')
+    client.close()
+except Exception as e:
+    print(f'Failed to get Dgraph version: {e}')
+"
+}
+
 readonly SRCDIR=$(readlink -f "${BASH_SOURCE[0]%/*}")
 
 # Run cluster and tests
@@ -43,6 +61,8 @@ alphaGrpcPort=$(DockerCompose port alpha1 9080 | awk -F: '{print $2}')
 popd || exit
 export TEST_SERVER_ADDR="localhost:${alphaGrpcPort}"
 echo "Using TEST_SERVER_ADDR=${TEST_SERVER_ADDR}"
+displayDgraphVersion
+
 if [[ $# -eq 0 ]]; then
 	# No arguments provided, run all tests
 	pytest

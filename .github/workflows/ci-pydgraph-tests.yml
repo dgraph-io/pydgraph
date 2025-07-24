@@ -23,7 +23,7 @@ jobs:
     runs-on: warp-ubuntu-latest-x64-4x
     strategy:
       matrix:
-        python-version: ["3.9", "3.10", "3.11", "3.12", "3.13"]
+        python-version: ["3.9", "3.10", "3.11", "3.12"]
     steps:
       - name: Checkout pydgraph repo
         uses: actions/checkout@v4
