@@ -23,7 +23,7 @@ jobs:
     runs-on: warp-ubuntu-latest-x64-4x
     strategy:
       matrix:
-        python-version: ["3.9", "3.10", "3.11", "3.12"]
+        python-version: ["3.9", "3.10", "3.11", "3.12", "3.13"]
     steps:
       - name: Checkout pydgraph repo
         uses: actions/checkout@v4
@@ -55,6 +55,8 @@ jobs:
           python -m pip install --upgrade pip
           python -m pip install .[dev]
       - name: Verify that updated protobufs are checked in
+        if: matrix.python-version != '3.13'
+        # Python 3.13 uses grpcio-tools >= 1.66.2, which generates backwards incompatible source files
         run: |
           cd pydgraph
           python scripts/protogen.py

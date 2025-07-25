@@ -11,8 +11,7 @@ adheres to [Semantic Versioning](http://semver.org/spec/v2.0.0.html).
 
 - Updated generated modules following a grpc deps update
 - Bump down dev dependency `grpcio-tools` to <1.66.0 to allow `grpcio` compatibility with <1.66.0
-  (broken in v24.0.2) (#270). Note this change removes our forward looking support for python 3.13
-  until grpcio-tools is updated to support python 3.13.
+  (broken in v24.0.2) (#270).
 
 ## [v24.2.0] - 2025-04-01
 
