@@ -31,20 +31,6 @@ jobs:
           path: pydgraph
           repository: hypermodeinc/pydgraph
           ref: ${{ github.ref }}
-      - name: Checkout Dgraph repo # needed for acl tests
-        uses: actions/checkout@v4
-        with:
-          path: dgraph
-          repository: hypermodeinc/dgraph
-          ref: main
-      - name: Set up Go
-        uses: actions/setup-go@v5
-        with:
-          go-version-file: dgraph/go.mod
-      - name: Build dgraph binary
-        run: cd dgraph && make docker-image # also builds dgraph binary
-      - name: Move dgraph binary to gopath
-        run: cd dgraph && mv dgraph/dgraph ~/go/bin/dgraph
       - name: Set up Python ${{ matrix.python-version }}
         uses: actions/setup-python@v5
         with:
@@ -59,5 +45,19 @@ jobs:
           cd pydgraph
           python scripts/protogen.py
           git diff --exit-code -- .
+      - name: Checkout Dgraph repo # needed for acl tests
+        uses: actions/checkout@v4
+        with:
+          path: dgraph
+          repository: hypermodeinc/dgraph
+          ref: main
+      - name: Set up Go
+        uses: actions/setup-go@v5
+        with:
+          go-version-file: dgraph/go.mod
+      - name: Build dgraph binary
+        run: cd dgraph && make docker-image # also builds dgraph binary
+      - name: Move dgraph binary to gopath
+        run: cd dgraph && mv dgraph/dgraph ~/go/bin/dgraph
       - name: Run tests
         run: cd pydgraph && DGRAPH_IMAGE_TAG=local bash scripts/local-test.sh
