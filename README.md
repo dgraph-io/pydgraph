@@ -610,7 +610,7 @@ python scripts/protogen.py
 supported grpcio version (1.65.0). This version generates code that issues warnings (not errors) for
 users with older grpcio versions, providing a graceful upgrade path. It also uses protobuf 5.x which
 eliminates Python 3.12+ deprecation warnings. The dev dependencies in `pyproject.toml` are pinned to
-the correct version ("grpcio-tools>=1.65.0,<1.66.0")
+the correct version (grpcio-tools 1.65.x)
 
 #### grpcio 1.65.0 is the minimum version
 
