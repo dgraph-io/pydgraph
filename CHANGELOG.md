@@ -9,7 +9,7 @@ adheres to [Semantic Versioning](http://semver.org/spec/v2.0.0.html).
 
 **Chore**
 
-- Bumped in minimum grpcio version to 1.65.0
+- Bumped minimum grpcio version to 1.65.0
 - Pinned the grpcio-tools version to 1.65.x
 - Updated generated modules following a grpc deps update
 
