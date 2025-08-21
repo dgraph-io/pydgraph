@@ -13,7 +13,7 @@ permissions:
 
 jobs:
   pydgraph-build:
-    runs-on: warp-ubuntu-latest-x64-16x
+    runs-on: ubuntu-latest
     steps:
       - uses: actions/checkout@v5
         with:
