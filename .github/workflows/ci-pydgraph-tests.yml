@@ -20,19 +20,35 @@ permissions:
 
 jobs:
   pydgraph-tests:
-    runs-on: warp-ubuntu-latest-x64-4x
+    runs-on: ubuntu-latest
     strategy:
       matrix:
         python-version: ["3.9", "3.10", "3.11", "3.12", "3.13"]
     steps:
       - name: Checkout pydgraph repo
-        uses: actions/checkout@v4
+        uses: actions/checkout@v5
         with:
           path: pydgraph
           repository: hypermodeinc/pydgraph
           ref: ${{ github.ref }}
+      - name: Set up Python ${{ matrix.python-version }}
+        uses: actions/setup-python@v5
+        with:
+          python-version: ${{ matrix.python-version }}
+      - name: Install dependencies
+        run: |
+          cd pydgraph
+          python -m pip install --upgrade pip
+          python -m pip install .[dev]
+      - name: Verify that updated protobufs are checked in
+        if: ${{ matrix.python-version == '3.9' || matrix.python-version == '3.10' ||
+          matrix.python-version == '3.11' || matrix.python-version == '3.12' }} # Skip for Python 3.13+ due to grpcio-tools compatibility
+        run: |
+          cd pydgraph
+          python scripts/protogen.py
+          git diff --exit-code -- .
       - name: Checkout Dgraph repo # needed for acl tests
-        uses: actions/checkout@v4
+        uses: actions/checkout@v5
         with:
           path: dgraph
           repository: hypermodeinc/dgraph
@@ -45,19 +61,5 @@ jobs:
         run: cd dgraph && make docker-image # also builds dgraph binary
       - name: Move dgraph binary to gopath
         run: cd dgraph && mv dgraph/dgraph ~/go/bin/dgraph
-      - name: Set up Python ${{ matrix.python-version }}
-        uses: actions/setup-python@v5
-        with:
-          python-version: ${{ matrix.python-version }}
-      - name: Install dependencies
-        run: |
-          cd pydgraph
-          python -m pip install --upgrade pip
-          python -m pip install .[dev]
-      - name: Verify that updated protobufs are checked in
-        run: |
-          cd pydgraph
-          python scripts/protogen.py
-          git diff --exit-code -- .
       - name: Run tests
         run: cd pydgraph && DGRAPH_IMAGE_TAG=local bash scripts/local-test.sh

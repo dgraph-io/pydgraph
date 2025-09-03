@@ -21,14 +21,20 @@ classifiers = [
   'Programming Language :: Python :: 3.11',
   'Programming Language :: Python :: 3.12',
 ]
-dependencies = ["grpcio~=1.71.0", "protobuf>=5.29.4,<7.0.0"]
+dependencies = ["grpcio>=1.65.0,<2.0.0", "protobuf>=4.23.0,<7.0.0"]
 dynamic = ["version"]
 
 [tool.setuptools.dynamic]
 version = { attr = "pydgraph.meta.VERSION" }
 
 [project.optional-dependencies]
-dev = ["build>=1.2.2.post1", "grpcio-tools~=1.71.0", "pytest>=8.3.3"]
+dev = [
+  "build>=1.2.2.post1",
+  "grpcio-tools>=1.65.0,<1.66.0; python_version<'3.13'",
+  # Python 3.13 requires grpcio-tools >=1.66.2
+  "grpcio-tools>=1.66.2; python_version>='3.13'",
+  "pytest>=8.3.3",
+]
 
 [project.urls]
 "Homepage" = "https://github.com/hypermodeinc/pydgraph"
