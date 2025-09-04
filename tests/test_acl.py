@@ -15,7 +15,7 @@ import unittest
 from . import helper
 
 
-@unittest.skipIf(shutil.which("dgraph") is None, "Dgraph binary not found.")
+@unittest.skipIf(shutil.which("docker") is None, "Docker not found.")
 class TestACL(helper.ClientIntegrationTestCase):
     user_id = "alice"
     group_id = "dev"
@@ -56,8 +56,7 @@ class TestACL(helper.ClientIntegrationTestCase):
 
     def change_permission(self, permission):
         bash_command = (
-            "dgraph acl -a "
-            + self.TEST_SERVER_ADDR
+            "dgraph acl -a alpha1:9080"
             + " mod -g "
             + self.group_id
             + " -p name -m "
@@ -74,8 +73,7 @@ class TestACL(helper.ClientIntegrationTestCase):
 
     def add_user(self):
         bash_command = (
-            "dgraph acl -a "
-            + self.TEST_SERVER_ADDR
+            "dgraph acl -a alpha1:9080"
             + " add -u "
             + self.user_id
             + " -p "
@@ -86,8 +84,7 @@ class TestACL(helper.ClientIntegrationTestCase):
 
     def add_group(self):
         bash_command = (
-            "dgraph acl -a "
-            + self.TEST_SERVER_ADDR
+            "dgraph acl -a alpha1:9080"
             + " add -g "
             + self.group_id
             + " --guardian-creds user=groot;password=password"
@@ -96,8 +93,7 @@ class TestACL(helper.ClientIntegrationTestCase):
 
     def add_user_to_group(self):
         bash_command = (
-            "dgraph acl -a "
-            + self.TEST_SERVER_ADDR
+            "dgraph acl -a alpha1:9080"
             + " mod -u "
             + self.user_id
             + " -l "
@@ -107,14 +103,29 @@ class TestACL(helper.ClientIntegrationTestCase):
         self.run_command(bash_command)
 
     def run_command(self, bash_command):
+        # Execute the dgraph command inside the Docker container
+        docker_command = [
+            "docker",
+            "compose",
+            "-p",
+            "pydgraph",
+            "exec",
+            "-T",
+            "alpha1",
+        ] + bash_command.split()
+
         try:
-            subprocess.check_output(bash_command.split())
+            subprocess.check_output(docker_command, stderr=subprocess.STDOUT)
         except subprocess.CalledProcessError as e:
+            output_msg = ""
+            if e.output:
+                output_msg = "\nOutput: " + e.output.decode()
             self.fail(
                 "Acl test failed: Unable to execute command "
-                + bash_command
+                + " ".join(docker_command)
                 + "\n"
                 + str(e)
+                + output_msg
             )
 
     def try_reading(self, expected):
