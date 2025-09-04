@@ -8,7 +8,6 @@ __maintainer__ = "Hypermode Inc. <hello@hypermode.com>"
 
 import json
 import logging
-import sys
 import unittest
 
 import pydgraph
@@ -39,7 +38,6 @@ class TestQueries(helper.ClientIntegrationTestCase):
 
     def test_mutation_and_query(self):
         """Runs mutation and verifies queries see the results."""
-
         txn = self.client.txn()
         _ = txn.mutate(
             pydgraph.Mutation(commit_now=True),
@@ -94,17 +92,25 @@ class TestQueries(helper.ClientIntegrationTestCase):
         )
         self.assertEqual(expected_rdf, response.rdf.decode("utf-8"))
 
+        """ Call run_dql and verify the result """
+        response = self.client.run_dql(
+            dql_query=query,
+            vars={"$a": "Alice"},
+            resp_format="JSON",
+            read_only=True,
+        )
+        self.assertEqual(
+            [{"name": "Alice", "follows": [{"name": "Greg"}]}],
+            json.loads(response.json).get("me"),
+        )
+
 
 def is_number(number):
-    """Returns true if object is a number. Compatible with Python 2 and 3."""
-    if sys.version_info[0] < 3:
-        return isinstance(number, (int, long))
-
+    """Returns true if object is a number"""
     return isinstance(number, int)
 
 
 def suite():
-    """Returns a test suite object."""
     suite_obj = unittest.TestSuite()
     suite_obj.addTest(TestQueries())
     return suite_obj

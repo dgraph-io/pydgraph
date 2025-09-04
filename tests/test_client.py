@@ -1,10 +1,10 @@
-# SPDX-FileCopyrightText: © Hypermode Inc. <hello@hypermode.com>
+# SPDX-FileCopyrightText: Hypermode Inc.
 # SPDX-License-Identifier: Apache-2.0
 
 """Tests construction of Dgraph client."""
 
 __author__ = "Garvit Pahal"
-__maintainer__ = "Hypermode Inc. <hello@hypermode.com>"
+__maintainer__ = "Hypermode Inc. "
 
 import unittest
 
@@ -22,7 +22,7 @@ class TestDgraphClient(unittest.TestCase):
 def suite():
     """Returns a tests suite object."""
     suite_obj = unittest.TestSuite()
-    suite_obj.addTest(TestDgraphClient())
+    suite_obj.addTest(unittest.makeSuite(TestDgraphClient))
     return suite_obj
 
 
