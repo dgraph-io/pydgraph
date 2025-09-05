@@ -20,9 +20,18 @@ class TestQueries(helper.ClientIntegrationTestCase):
 
     def setUp(self):
         super(TestQueries, self).setUp()
-
         helper.drop_all(self.client)
         helper.set_schema(self.client, "name: string @index(term) .")
+        self.query = """query me($a: string) {
+            me(func: anyofterms(name, "Alice"))
+            {
+                name
+                follows
+                {
+                    name
+                }
+            }
+        }"""
 
     def test_check_version(self):
         """Verifies the check_version method correctly returns the cluster version"""
@@ -48,17 +57,6 @@ class TestQueries(helper.ClientIntegrationTestCase):
         """,
         )
 
-        query = """query me($a: string) {
-            me(func: anyofterms(name, "Alice"))
-            {
-                name
-                follows
-                {
-                    name
-                }
-            }
-        }"""
-
         queryRDF = """query q($a: string) {
             q(func: anyofterms(name, "Alice"))
             {
@@ -67,7 +65,7 @@ class TestQueries(helper.ClientIntegrationTestCase):
             }
         }"""
 
-        response = self.client.txn().query(query, variables={"$a": "Alice"})
+        response = self.client.txn().query(self.query, variables={"$a": "Alice"})
         self.assertEqual(
             [{"name": "Alice", "follows": [{"name": "Greg"}]}],
             json.loads(response.json).get("me"),
@@ -92,9 +90,22 @@ class TestQueries(helper.ClientIntegrationTestCase):
         )
         self.assertEqual(expected_rdf, response.rdf.decode("utf-8"))
 
-        """ Call run_dql and verify the result """
+    def test_run_dql(self):
+        """Call run_dql (a version 25+ feature) and verify the result"""
+        helper.skip_if_dgraph_version_below(self.client, "25.0.0", self)
+        _ = self.client.run_dql(
+            dql_query="""
+            {
+                set {
+                    _:alice <name> "Alice" .
+                    _:greg <name> "Greg" .
+                    _:alice <follows> _:greg .
+                }
+            }
+            """
+        )
         response = self.client.run_dql(
-            dql_query=query,
+            dql_query=self.query,
             vars={"$a": "Alice"},
             resp_format="JSON",
             read_only=True,

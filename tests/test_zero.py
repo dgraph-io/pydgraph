@@ -17,6 +17,7 @@ class TestAllocations(helper.ClientIntegrationTestCase):
 
     def setUp(self):
         super(TestAllocations, self).setUp()
+        helper.skip_if_dgraph_version_below(self.client, "25.0.0", self)
         helper.drop_all(self.client)
 
     def test_allocate_uids(self):
