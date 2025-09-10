@@ -25,20 +25,20 @@ lint:
   enabled:
     - trivy@0.66.0
     - trivy@0.58.2
-    - renovate@41.96.1
+    - renovate@41.99.6
     - actionlint@1.7.7
     - bandit@1.8.6
     - black@25.1.0
-    - checkov@3.2.469
+    - checkov@3.2.470
     - git-diff-check
     - isort@6.0.1
     - markdownlint@0.45.0
     - prettier@3.6.2
-    - ruff@0.12.11
+    - ruff@0.12.12
     - shellcheck@0.11.0
     - shfmt@3.6.0
     - taplo@0.10.0
-    - trufflehog@3.90.5
+    - trufflehog@3.90.6
     - yamllint@1.37.1
 actions:
   enabled:
