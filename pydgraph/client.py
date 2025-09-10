@@ -46,9 +46,6 @@ class DgraphClient(object):
                 metadata=new_metadata,
                 credentials=credentials,
             )
-            import logging
-
-            logging.warning(f"Check version response: {response.tag}")
             return response.tag
         except Exception as error:
             if util.is_jwt_expired(error):
