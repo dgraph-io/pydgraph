@@ -101,6 +101,7 @@ Valid connection string args:
 | apikey      | \<key\>                         | a Dgraph Cloud API Key                                                                                                                                        |
 | bearertoken | \<token\>                       | an access token                                                                                                                                               |
 | sslmode     | disable \| require \| verify-ca | TLS option, the default is `disable`. If `verify-ca` is set, the TLS certificate configured in the Dgraph cluster must be from a valid certificate authority. |
+| namespace   | \<namespace\>                   | a previously created integer-based namespace, username and password must be supplied                                                                          |
 
 Note the `sslmode=require` pair is not supported and will throw an Exception if used. Python grpc
 does not support traffic over TLS that does not fully verify the certificate and domain. Developers
@@ -115,6 +116,7 @@ Some example connection strings:
 | dgraph://sally:supersecret@dg.example.com:443?sslmode=verify-ca                                              | Connect to remote server, use ACL and require TLS and a valid certificate from a CA |
 | dgraph://foo-bar.grpc.us-west-2.aws.cloud.dgraph.io:443?sslmode=verify-ca&apikey=\<your-api-connection-key\> | Connect to a Dgraph Cloud cluster                                                   |
 | dgraph://foo-bar.grpc.hypermode.com:443?sslmode=verify-ca&bearertoken=\<some access token\>                  | Connect to a Dgraph cluster protected by a secure gateway                           |
+| dgraph://sally:supersecret@dg.example.com:443?namespace=2                                                    | Connect to a ACL enabled Dgraph cluster in namespace 2                              |
 
 Using the `Open` function with a connection string:
 
