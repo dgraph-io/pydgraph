@@ -5,6 +5,22 @@ All notable changes to this project will be documented in this file.
 The format is based on [Keep a Changelog](http://keepachangelog.com/en/1.0.0/) and this project
 adheres to [Semantic Versioning](http://semver.org/spec/v2.0.0.html).
 
+## Unreleased
+
+**Added**
+
+- Add v25 Dgraph API
+  - Added new `run_dql()` method for executing DQL queries directly
+  - Added `allocate_uids()` method for allocating unique identifiers
+  - Added `allocate_timestamps()` method for allocating timestamps
+  - Added `allocate_namespaces()` method for allocating namespace IDs
+  - Added namespace management methods:
+    - `create_namespace()` - Creates a new namespace and returns its ID
+    - `drop_namespace()` - Drops the specified namespace
+    - `list_namespaces()` - Lists all available namespaces
+  - Updated proto definitions to support Dgraph v25 API
+  - Enhanced client functionality with new gRPC service methods
+
 ## [v24.3.0] - 2025-07-29
 
 **Chore**
