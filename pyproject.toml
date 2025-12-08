@@ -37,6 +37,7 @@ dev = [
   # Python 3.13 requires grpcio-tools >=1.66.2
   "grpcio-tools>=1.66.2; python_version>='3.13'",
   "pytest>=8.3.3",
+  "pytest-asyncio>=0.23.0",
 ]
 
 
