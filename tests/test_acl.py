@@ -13,6 +13,7 @@ import shutil
 import unittest
 
 from . import helper
+import pydgraph
 
 
 @unittest.skipIf(shutil.which("dgraph") is None, "Dgraph binary not found.")

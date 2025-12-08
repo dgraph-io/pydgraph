@@ -10,7 +10,7 @@ import json
 
 import pydgraph
 
-from . import helper
+from tests import helper
 
 
 class TestAsync(helper.ClientIntegrationTestCase):
