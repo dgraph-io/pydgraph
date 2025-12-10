@@ -3,6 +3,7 @@
 
 """Dgraph async atomic transaction support."""
 
+import asyncio
 import json
 
 from pydgraph import errors, util
@@ -58,6 +59,7 @@ class AsyncTxn:
         self._mutated = False
         self._read_only = read_only
         self._best_effort = best_effort
+        self._lock = asyncio.Lock()  # Protect transaction state from concurrent access
 
     async def query(
         self,
@@ -153,60 +155,69 @@ class AsyncTxn:
             TransactionError: If transaction is already finished or read-only with mutations
             Various gRPC errors on failure
         """
-        if self._finished:
-            raise errors.TransactionError(
-                "Transaction has already been committed or discarded"
-            )
-
-        if len(request.mutations) > 0:
-            if self._read_only:
+        async with self._lock:
+            if self._finished:
                 raise errors.TransactionError(
-                    "Readonly transaction cannot run mutations"
+                    "Transaction has already been committed or discarded"
                 )
-            self._mutated = True
 
-        request.hash = self._ctx.hash
-        new_metadata = self._dg.add_login_metadata(metadata)
-        query_error = None
-
-        try:
-            response = await self._dc.query(
-                request, timeout=timeout, metadata=new_metadata, credentials=credentials
-            )
-        except Exception as error:
-            # Handle JWT expiration with automatic retry
-            if util.is_jwt_expired(error):
-                await self._dg.retry_login()
-                new_metadata = self._dg.add_login_metadata(metadata)
-                try:
-                    response = await self._dc.query(
-                        request,
-                        timeout=timeout,
-                        metadata=new_metadata,
-                        credentials=credentials,
+            if len(request.mutations) > 0:
+                if self._read_only:
+                    raise errors.TransactionError(
+                        "Readonly transaction cannot run mutations"
                     )
-                except Exception as error:
-                    query_error = error
-            else:
-                query_error = error
+                self._mutated = True
 
-        if query_error is not None:
-            # Try to discard the transaction on error
+            request.start_ts = self._ctx.start_ts
+            request.hash = self._ctx.hash
+            new_metadata = self._dg.add_login_metadata(metadata)
+            query_error = None
+
             try:
-                await self.discard(
-                    timeout=timeout, metadata=metadata, credentials=credentials
+                response = await self._dc.query(
+                    request, timeout=timeout, metadata=new_metadata, credentials=credentials
                 )
-            except:
-                # Ignore discard error - user should see the original error
-                pass
+            except asyncio.CancelledError:
+                # Preserve cancellation - don't catch or wrap it
+                raise
+            except Exception as error:
+                # Handle JWT expiration with automatic retry
+                if util.is_jwt_expired(error):
+                    await self._dg.retry_login()
+                    new_metadata = self._dg.add_login_metadata(metadata)
+                    try:
+                        response = await self._dc.query(
+                            request,
+                            timeout=timeout,
+                            metadata=new_metadata,
+                            credentials=credentials,
+                        )
+                    except asyncio.CancelledError:
+                        raise
+                    except Exception as error:
+                        query_error = error
+                else:
+                    query_error = error
 
-            self._common_except_mutate(query_error)
+            if query_error is not None:
+                # Try to discard the transaction on error
+                try:
+                    await self.discard(
+                        timeout=timeout, metadata=metadata, credentials=credentials
+                    )
+                except asyncio.CancelledError:
+                    raise
+                except Exception:
+                    # Ignore discard error - user should see the original error
+                    pass
 
-        if request.commit_now:
-            self._finished = True
+                self._common_except_mutate(query_error)
 
-        self.merge_context(response.txn)
-        return response
+            if request.commit_now:
+                self._finished = True
+
+            self.merge_context(response.txn)
+            return response
 
     def create_mutation(
         self,
@@ -337,33 +348,38 @@ class AsyncTxn:
             TransactionError: If transaction is read-only or already finished
             AbortedError: If transaction was aborted
         """
-        if not self._common_commit():
-            return
+        async with self._lock:
+            if not self._common_commit():
+                return
 
-        new_metadata = self._dg.add_login_metadata(metadata)
-        try:
-            return await self._dc.commit_or_abort(
-                self._ctx,
-                timeout=timeout,
-                metadata=new_metadata,
-                credentials=credentials,
-            )
-        except Exception as error:
-            # Handle JWT expiration with automatic retry
-            if util.is_jwt_expired(error):
-                await self._dg.retry_login()
-                new_metadata = self._dg.add_login_metadata(metadata)
-                try:
-                    return await self._dc.commit_or_abort(
-                        self._ctx,
-                        timeout=timeout,
-                        metadata=new_metadata,
-                        credentials=credentials,
-                    )
-                except Exception as error:
-                    return self._common_except_commit(error)
+            new_metadata = self._dg.add_login_metadata(metadata)
+            try:
+                return await self._dc.commit_or_abort(
+                    self._ctx,
+                    timeout=timeout,
+                    metadata=new_metadata,
+                    credentials=credentials,
+                )
+            except asyncio.CancelledError:
+                raise
+            except Exception as error:
+                # Handle JWT expiration with automatic retry
+                if util.is_jwt_expired(error):
+                    await self._dg.retry_login()
+                    new_metadata = self._dg.add_login_metadata(metadata)
+                    try:
+                        return await self._dc.commit_or_abort(
+                            self._ctx,
+                            timeout=timeout,
+                            metadata=new_metadata,
+                            credentials=credentials,
+                        )
+                    except asyncio.CancelledError:
+                        raise
+                    except Exception as error:
+                        return self._common_except_commit(error)
 
-            self._common_except_commit(error)
+                self._common_except_commit(error)
 
     def _common_commit(self):
         """Validates and prepares for commit.
@@ -415,30 +431,33 @@ class AsyncTxn:
         Raises:
             Various gRPC errors on failure
         """
-        if not self._common_discard():
-            return
+        async with self._lock:
+            if not self._common_discard():
+                return
 
-        new_metadata = self._dg.add_login_metadata(metadata)
-        try:
-            await self._dc.commit_or_abort(
-                self._ctx,
-                timeout=timeout,
-                metadata=new_metadata,
-                credentials=credentials,
-            )
-        except Exception as error:
-            # Handle JWT expiration with automatic retry
-            if util.is_jwt_expired(error):
-                await self._dg.retry_login()
-                new_metadata = self._dg.add_login_metadata(metadata)
+            new_metadata = self._dg.add_login_metadata(metadata)
+            try:
                 await self._dc.commit_or_abort(
                     self._ctx,
                     timeout=timeout,
                     metadata=new_metadata,
                     credentials=credentials,
                 )
-            else:
-                raise error
+            except asyncio.CancelledError:
+                raise
+            except Exception as error:
+                # Handle JWT expiration with automatic retry
+                if util.is_jwt_expired(error):
+                    await self._dg.retry_login()
+                    new_metadata = self._dg.add_login_metadata(metadata)
+                    await self._dc.commit_or_abort(
+                        self._ctx,
+                        timeout=timeout,
+                        metadata=new_metadata,
+                        credentials=credentials,
+                    )
+                else:
+                    raise error
 
     def _common_discard(self):
         """Validates and prepares for discard.
@@ -503,8 +522,13 @@ class AsyncTxn:
         """
         if not self._finished:
             try:
-                await self.discard()
-            except:
+                # Use a reasonable timeout to prevent hangs
+                thirty_seconds = 30
+                await self.discard(timeout=thirty_seconds)
+            except asyncio.CancelledError:
+                # Preserve cancellation during cleanup
+                raise
+            except Exception:
                 # Suppress discard errors during cleanup
                 pass
         return False

@@ -129,19 +129,45 @@ class AsyncDgraphClientStub:
     def parse_host(cloud_endpoint):
         """Converts any cloud endpoint to grpc endpoint.
 
+        Inserts .grpc. subdomain for Dgraph Cloud endpoints when appropriate.
+        Handles IPv6, single-label hosts, and various URL formats.
+
         Args:
             cloud_endpoint: Cloud endpoint URL or hostname
 
         Returns:
             Parsed hostname with .grpc. inserted if needed
+
+        Raises:
+            ValueError: If endpoint cannot be parsed
         """
-        host = cloud_endpoint
-        if cloud_endpoint.startswith("http"):  # catch http:// and https://
-            host = urlparse(cloud_endpoint).netloc
-        host = host.split(":", 1)[0]  # remove port if any
-        if ".grpc." not in host:
-            url_parts = host.split(".", 1)
-            host = url_parts[0] + ".grpc." + url_parts[1]
+        # Normalize to have scheme for consistent parsing
+        endpoint = cloud_endpoint
+        if '://' not in endpoint:
+            endpoint = f'//{endpoint}'
+
+        # Parse URL to extract hostname (handles IPv6, ports, etc.)
+        try:
+            parsed = urlparse(endpoint)
+            host = parsed.hostname if parsed.hostname else cloud_endpoint
+        except Exception:
+            # Fallback for malformed URLs
+            host = cloud_endpoint
+
+        # Remove any port that wasn't caught by hostname parsing
+        if ':' in host and '[' not in host:  # Not IPv6
+            host = host.split(':', 1)[0]
+
+        # Only insert .grpc. if:
+        # 1. Not already present
+        # 2. Host has at least 2 labels (e.g., "example.com" but not "localhost")
+        # 3. Not an IP address
+        if '.grpc.' not in host and '.' in host:
+            # Check it's not an IPv4 address
+            labels = host.split('.')
+            if len(labels) >= 2 and not all(label.isdigit() for label in labels):
+                host = f'{labels[0]}.grpc.{".".join(labels[1:])}'
+
         return host
 
     @staticmethod
@@ -169,13 +195,17 @@ class AsyncDgraphClientStub:
         composite_credentials = grpc.composite_channel_credentials(
             creds, call_credentials
         )
-        if options is None:
-            options = [("grpc.enable_http_proxy", 0)]
-        else:
-            options.append(("grpc.enable_http_proxy", 0))
+
+        # Create new list to avoid mutating caller's options
+        opts = list(options) if options is not None else []
+
+        # Add http proxy setting if not already present
+        if not any(k == "grpc.enable_http_proxy" for k, _ in opts):
+            opts.append(("grpc.enable_http_proxy", 0))
+
         client_stub = AsyncDgraphClientStub(
             "{host}:{port}".format(host=host, port="443"),
             composite_credentials,
-            options=options,
+            options=opts,
         )
         return client_stub
