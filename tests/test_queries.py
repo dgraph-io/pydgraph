@@ -115,6 +115,53 @@ class TestQueries(helper.ClientIntegrationTestCase):
             json.loads(response.json).get("me"),
         )
 
+    def test_run_dql_with_vars(self):
+        """Call run_dql_with_vars (a version 25+ feature) and verify the result"""
+        helper.skip_if_dgraph_version_below(self.client, "25.0.0", self)
+        helper.drop_all(self.client)
+        # Set up schema
+        schema = """
+            name: string @index(exact) .
+            email: string @index(exact) .
+            age: int .
+        """
+        helper.set_schema(self.client, schema)
+
+        # Add data
+        _ = self.client.run_dql(
+            dql_query="""
+            {
+                set {
+                    _:alice <name> "Alice" .
+                    _:alice <email> "alice@example.com" .
+                    _:alice <age> "29" .
+                }
+            }
+            """
+        )
+
+        # Query with variables using run_dql_with_vars
+        query_dql_with_var = """query Alice($name: string) {
+            alice(func: eq(name, $name)) {
+                name
+                email
+                age
+            }
+        }"""
+        vars = {"$name": "Alice"}
+        resp = self.client.run_dql_with_vars(query_dql_with_var, vars, read_only=True)
+
+        m = json.loads(resp.json)
+        self.assertEqual(len(m.get("alice", [])), 1)
+        self.assertEqual(m["alice"][0]["name"], "Alice")
+        self.assertEqual(m["alice"][0]["email"], "alice@example.com")
+        self.assertEqual(m["alice"][0]["age"], 29)
+
+        # Test that vars=None raises ValueError
+        with self.assertRaises(ValueError) as context:
+            self.client.run_dql_with_vars(query_dql_with_var, None, read_only=True)
+        self.assertIn("vars parameter is required", str(context.exception))
+
 
 def is_number(number):
     """Returns true if object is a number"""
