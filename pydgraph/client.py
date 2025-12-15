@@ -159,6 +159,114 @@ class DgraphClient(object):
         except Exception as error:
             DgraphClient._common_except_alter(error)
 
+    def drop_all(self, timeout=None, metadata=None, credentials=None):
+        """Drops all data and schema from the Dgraph instance.
+
+        Args:
+            timeout: Optional timeout for the request.
+            metadata: Optional metadata to send with the request.
+            credentials: Optional credentials for the request.
+
+        Returns:
+            Payload: The response from Dgraph.
+
+        Raises:
+            Exception: If the request fails.
+        """
+        operation = api.Operation(drop_all=True)
+        return self.alter(
+            operation, timeout=timeout, metadata=metadata, credentials=credentials
+        )
+
+    def drop_data(self, timeout=None, metadata=None, credentials=None):
+        """Drops all data from the Dgraph instance while preserving the schema.
+
+        Args:
+            timeout: Optional timeout for the request.
+            metadata: Optional metadata to send with the request.
+            credentials: Optional credentials for the request.
+
+        Returns:
+            Payload: The response from Dgraph.
+
+        Raises:
+            Exception: If the request fails.
+        """
+        operation = api.Operation(drop_op="DATA")
+        return self.alter(
+            operation, timeout=timeout, metadata=metadata, credentials=credentials
+        )
+
+    def drop_predicate(self, predicate, timeout=None, metadata=None, credentials=None):
+        """Drops a predicate and its associated data from the Dgraph instance.
+
+        Args:
+            predicate: The name of the predicate to drop.
+            timeout: Optional timeout for the request.
+            metadata: Optional metadata to send with the request.
+            credentials: Optional credentials for the request.
+
+        Returns:
+            Payload: The response from Dgraph.
+
+        Raises:
+            Exception: If the request fails.
+        """
+        if not predicate:
+            raise ValueError("predicate cannot be empty")
+        operation = api.Operation(drop_op="ATTR", drop_value=predicate)
+        return self.alter(
+            operation, timeout=timeout, metadata=metadata, credentials=credentials
+        )
+
+    def drop_type(self, type_name, timeout=None, metadata=None, credentials=None):
+        """Drops a type definition from the DQL schema.
+
+        Note: This only removes the type definition from the schema. No data is
+        removed from the cluster. The operation does not drop the predicates
+        associated with the type.
+
+        Args:
+            type_name: The name of the type to drop.
+            timeout: Optional timeout for the request.
+            metadata: Optional metadata to send with the request.
+            credentials: Optional credentials for the request.
+
+        Returns:
+            Payload: The response from Dgraph.
+
+        Raises:
+            Exception: If the request fails.
+        """
+        if not type_name:
+            raise ValueError("type_name cannot be empty")
+        operation = api.Operation(drop_op="TYPE", drop_value=type_name)
+        return self.alter(
+            operation, timeout=timeout, metadata=metadata, credentials=credentials
+        )
+
+    def set_schema(self, schema, timeout=None, metadata=None, credentials=None):
+        """Sets the DQL schema for the Dgraph instance.
+
+        Args:
+            schema: The DQL schema string to set.
+            timeout: Optional timeout for the request.
+            metadata: Optional metadata to send with the request.
+            credentials: Optional credentials for the request.
+
+        Returns:
+            Payload: The response from Dgraph.
+
+        Raises:
+            Exception: If the request fails.
+        """
+        if not schema:
+            raise ValueError("schema cannot be empty")
+        operation = api.Operation(schema=schema)
+        return self.alter(
+            operation, timeout=timeout, metadata=metadata, credentials=credentials
+        )
+
     def txn(self, read_only=False, best_effort=False):
         """Creates a transaction."""
 
@@ -251,6 +359,51 @@ class DgraphClient(object):
                 )
             else:
                 raise error
+
+    def run_dql_with_vars(
+        self,
+        dql_query,
+        vars,
+        read_only=False,
+        best_effort=False,
+        resp_format="JSON",
+        timeout=None,
+        metadata=None,
+        credentials=None,
+    ):
+        """
+        Runs a DQL query or mutation with variables via this client.
+
+        This is similar to run_dql but requires variables to be provided.
+
+        Args:
+            dql_query: The DQL query string to execute
+            vars: Variables to substitute in the query (required, dict mapping string to string)
+            read_only: Whether this is a read-only query
+            best_effort: Whether to use best effort for read queries
+            resp_format: Response format, either "JSON" or "RDF"
+            timeout: Request timeout
+            metadata: Additional metadata for the request
+            credentials: gRPC credentials
+
+        Returns:
+            Response: The query response from Dgraph
+
+        This is only supported on Dgraph v25.0.0 and above.
+        """
+        if vars is None:
+            raise ValueError("vars parameter is required for run_dql_with_vars")
+
+        return self.run_dql(
+            dql_query=dql_query,
+            vars=vars,
+            read_only=read_only,
+            best_effort=best_effort,
+            resp_format=resp_format,
+            timeout=timeout,
+            metadata=metadata,
+            credentials=credentials,
+        )
 
     def allocate_uids(self, how_many, timeout=None, metadata=None, credentials=None):
         """
