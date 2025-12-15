@@ -1,15 +1,11 @@
 # SPDX-FileCopyrightText: © Hypermode Inc. <hello@hypermode.com>
 # SPDX-License-Identifier: Apache-2.0
 
-"""Tests for convenience methods in DgraphClient (drop_all, drop_data, drop_predicate, drop_type, set_schema)."""
-
 __author__ = "Hypermode Inc."
 __maintainer__ = "Hypermode Inc. <hello@hypermode.com>"
 
 import json
 import unittest
-
-import pydgraph
 
 from . import helper
 
