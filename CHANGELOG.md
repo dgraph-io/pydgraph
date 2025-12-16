@@ -45,30 +45,29 @@ adheres to [Semantic Versioning](http://semver.org/spec/v2.0.0.html).
 
 **Added**
 
-- add RAG notebooks by @rderbier in https://github.com/hypermodeinc/pydgraph/pull/240
+- add RAG notebooks by @rderbier in https://github.com/dgraph-io/pydgraph/pull/240
 - Bump grpcio-tools from 1.65.2 to 1.68.0 in the minor-and-patch group by @dependabot in #242 #243
   #244 #245 #247 #251
 - Bump the minor-and-patch group with 2 updates by @dependabot in
-  https://github.com/hypermodeinc/pydgraph/pull/246
+  https://github.com/dgraph-io/pydgraph/pull/246
 - Bump build from 1.2.2 to 1.2.2.post1 by @dependabot in
-  https://github.com/hypermodeinc/pydgraph/pull/248
+  https://github.com/dgraph-io/pydgraph/pull/248
 - Bump setuptools from 67.7.2 to 75.6.0 by @dependabot in
-  https://github.com/hypermodeinc/pydgraph/pull/252
+  https://github.com/dgraph-io/pydgraph/pull/252
 - update proto file to support bigfloat data type by @mangalaman93 in
-  https://github.com/hypermodeinc/pydgraph/pull/255
+  https://github.com/dgraph-io/pydgraph/pull/255
 
 ## [v24.0.2] - 2024-07-24
 
 **Added**
 
-- Create example computeEmbeddings.py by @rderbier in
-  https://github.com/hypermodeinc/pydgraph/pull/221
+- Create example computeEmbeddings.py by @rderbier in https://github.com/dgraph-io/pydgraph/pull/221
 - Allow flexible dependency versions by @gautambhat in
-  https://github.com/hypermodeinc/pydgraph/pull/233
+  https://github.com/dgraph-io/pydgraph/pull/233
 - update proto to make it consistent with dgraph-io/dgo by @mangalaman93 in
-  https://github.com/hypermodeinc/pydgraph/pull/237
+  https://github.com/dgraph-io/pydgraph/pull/237
 - Bump protobuf from 4.22.3 to 5.27.2 by @dependabot in
-  https://github.com/hypermodeinc/pydgraph/pull/231
+  https://github.com/dgraph-io/pydgraph/pull/231
 - Minor and patch dependency upgrades
 
 ## [v23.0.2] - 2023-11-08
@@ -250,12 +249,12 @@ easier to identify which version of Dgraph a client version supports.
 
 - Full compatibility with Dgraph v1.0.0
 
-[v2.0.0]: https://github.com/hypermodeinc/pydgraph/compare/v1.2.0...v2.0.0
-[v1.2.0]: https://github.com/hypermodeinc/pydgraph/compare/v1.1.2...v1.2.0
-[v1.1.2]: https://github.com/hypermodeinc/pydgraph/compare/v1.1.1...v1.1.2
-[v1.1.1]: https://github.com/hypermodeinc/pydgraph/compare/v1.1...v1.1.1
-[v1.1]: https://github.com/hypermodeinc/pydgraph/compare/v1.0.3...v1.1
-[v1.0.3]: https://github.com/hypermodeinc/pydgraph/compare/v1.0.2...v1.0.3
-[v1.0.2]: https://github.com/hypermodeinc/pydgraph/compare/v1.0.1...v1.0.2
-[v1.0.1]: https://github.com/hypermodeinc/pydgraph/compare/v1.0.0...v1.0.1
-[v1.0.0]: https://github.com/hypermodeinc/pydgraph/releases/tag/v1.0.0
+[v2.0.0]: https://github.com/dgraph-io/pydgraph/compare/v1.2.0...v2.0.0
+[v1.2.0]: https://github.com/dgraph-io/pydgraph/compare/v1.1.2...v1.2.0
+[v1.1.2]: https://github.com/dgraph-io/pydgraph/compare/v1.1.1...v1.1.2
+[v1.1.1]: https://github.com/dgraph-io/pydgraph/compare/v1.1...v1.1.1
+[v1.1]: https://github.com/dgraph-io/pydgraph/compare/v1.0.3...v1.1
+[v1.0.3]: https://github.com/dgraph-io/pydgraph/compare/v1.0.2...v1.0.3
+[v1.0.2]: https://github.com/dgraph-io/pydgraph/compare/v1.0.1...v1.0.2
+[v1.0.1]: https://github.com/dgraph-io/pydgraph/compare/v1.0.0...v1.0.1
+[v1.0.0]: https://github.com/dgraph-io/pydgraph/releases/tag/v1.0.0

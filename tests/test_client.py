@@ -1,10 +1,10 @@
-# SPDX-FileCopyrightText: Hypermode Inc.
+# SPDX-FileCopyrightText: Istari Digital, Inc.
 # SPDX-License-Identifier: Apache-2.0
 
 """Tests construction of Dgraph client."""
 
 __author__ = "Garvit Pahal"
-__maintainer__ = "Hypermode Inc. "
+__maintainer__ = "Istari Digital, Inc. "
 
 import unittest
 

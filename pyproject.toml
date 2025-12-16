@@ -4,7 +4,9 @@ build-backend = "setuptools.build_meta"
 
 [project]
 name = "pydgraph"
-authors = [{ name = "Hypermode Inc.", email = "hello@hypermode.com" }]
+authors = [
+  { name = "Istari Digital, Inc.", email = "dgraph-admin@istaridigital.com" },
+]
 license = { file = "LICENSE" }
 description = "Official Dgraph client implementation for Python"
 readme = "README.md"
@@ -39,4 +41,4 @@ dev = [
 
 
 [project.urls]
-"Homepage" = "https://github.com/hypermodeinc/pydgraph"
+"Homepage" = "https://github.com/dgraph-io/pydgraph"
