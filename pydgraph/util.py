@@ -1,4 +1,4 @@
-# SPDX-FileCopyrightText: © Hypermode Inc. <hello@hypermode.com>
+# SPDX-FileCopyrightText: © 2017-2025 Istari Digital, Inc.
 # SPDX-License-Identifier: Apache-2.0
 
 """Various utility functions."""
@@ -10,7 +10,7 @@ import grpc
 from pydgraph.meta import VERSION
 
 __author__ = "Shailesh Kochhar <shailesh.kochhar@gmail.com>"
-__maintainer__ = "Hypermode Inc. <hello@hypermode.com>"
+__maintainer__ = "Istari Digital, Inc. <dgraph-admin@istaridigital.com>"
 __version__ = VERSION
 __status__ = "development"
 

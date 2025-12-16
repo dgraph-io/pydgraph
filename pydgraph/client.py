@@ -1,4 +1,4 @@
-# SPDX-FileCopyrightText: © Hypermode Inc. <hello@hypermode.com>
+# SPDX-FileCopyrightText: © 2017-2025 Istari Digital, Inc.
 # SPDX-License-Identifier: Apache-2.0
 
 """Dgraph python client."""
@@ -13,7 +13,7 @@ from pydgraph.meta import VERSION
 from pydgraph.proto import api_pb2 as api
 
 __author__ = "Mohit Ranka <mohitranka@gmail.com>"
-__maintainer__ = "Hypermode Inc. <hello@hypermode.com>"
+__maintainer__ = "Istari Digital, Inc. <dgraph-admin@istaridigital.com>"
 __version__ = VERSION
 __status__ = "development"
 
