@@ -1,8 +1,8 @@
-# SPDX-FileCopyrightText: © Hypermode Inc. <hello@hypermode.com>
+# SPDX-FileCopyrightText: © 2017-2025 Istari Digital, Inc.
 # SPDX-License-Identifier: Apache-2.0
 
 __author__ = "Garvit Pahal"
-__maintainer__ = "Hypermode Inc. <hello@hypermode.com>"
+__maintainer__ = "Istari Digital, Inc. <dgraph-admin@istaridigital.com>"
 
 import json
 import logging
@@ -242,7 +242,7 @@ class TestTxn(helper.ClientIntegrationTestCase):
 
         # We sleep here so that rollups do not move the MaxAssigned.
         # Starting Dgraph v23, rollups can move the MaxAssigned too.
-        # PR: https://github.com/hypermodeinc/dgraph/pull/8774
+        # PR: https://github.com/dgraph-io/dgraph/pull/8774
         time.sleep(1)
 
         query = "{ me() {} }"

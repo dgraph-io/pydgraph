@@ -1,10 +1,10 @@
-# SPDX-FileCopyrightText: © Hypermode Inc. <hello@hypermode.com>
+# SPDX-FileCopyrightText: © 2017-2025 Istari Digital, Inc.
 # SPDX-License-Identifier: Apache-2.0
 
 """Tests for the allocation methods (allocate_uids, allocate_timestamps, allocate_namespaces)."""
 
-__author__ = "Hypermode Inc. <hello@hypermode.com>"
-__maintainer__ = "Hypermode Inc. <hello@hypermode.com>"
+__author__ = "Istari Digital, Inc. <dgraph-admin@istaridigital.com>"
+__maintainer__ = "Istari Digital, Inc. <dgraph-admin@istaridigital.com>"
 
 import logging
 import unittest

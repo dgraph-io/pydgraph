@@ -29,7 +29,7 @@ jobs:
         uses: actions/checkout@v5
         with:
           path: pydgraph
-          repository: hypermodeinc/pydgraph
+          repository: dgraph-io/pydgraph
           ref: ${{ github.ref }}
       - name: Set up Python ${{ matrix.python-version }}
         uses: actions/setup-python@v6
@@ -51,7 +51,7 @@ jobs:
         uses: actions/checkout@v5
         with:
           path: dgraph
-          repository: hypermodeinc/dgraph
+          repository: dgraph-io/dgraph
           ref: main
       - name: Set up Go
         uses: actions/setup-go@v6
