@@ -47,7 +47,7 @@ class TestQueries(helper.ClientIntegrationTestCase):
                 tag = self.client.check_version()
                 self.assertGreater(len(tag), 0)
                 success += 1
-            except Exception:
+            except Exception:  # nosec B112
                 continue
         self.assertGreater(success, 0)
 
@@ -262,7 +262,7 @@ class TestQueries(helper.ClientIntegrationTestCase):
             if namespace_client is not None:
                 try:
                     namespace_client.close()
-                except Exception:
+                except Exception:  # nosec B110
                     pass
                 self.client = original_client
 
