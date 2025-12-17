@@ -27,10 +27,15 @@ This document contains instructions to create a new pydgraph release and publish
 
 1. Update the `CHANGELOG.md` file to reflect new changes. Sonnet 4.5 does a great job of doing this.
    Example prompt:
-   `I'm releasing vXX.X.X off the main branch, add a new entry for this release. Conform to the  "Keep a Changelog" format, use past entries as a formatting guide. Run the trunk linter on your changes.`
+
+   ```text
+   I'm releasing vXX.X.X off the main branch, add a new entry for this release. Conform to the
+   "Keep a Changelog" format, use past entries as a formatting guide. Run the trunk linter on your changes.
+   ```
+
 1. Commit all this on your "prepare-for-release" branch and push up and create a PR
 1. Once that's merged to the main branch, create a new draft release on GitHub from the
    [releases page](https://github.com/dgraph-io/pydgraph/releases). This step creates the new tag.
 1. Run CD pipeline from
-   [here](https://github.com/dgraph-io/pydgraph/actions/workflows/cd-pydgraph.yml). The CD pipeline
-   will build and publish to PyPI.
+   [Github](https://github.com/dgraph-io/pydgraph/actions/workflows/cd-pydgraph.yml). The CD
+   pipeline will build and publish to PyPI.
