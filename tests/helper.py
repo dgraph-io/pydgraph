@@ -18,8 +18,19 @@ import pydgraph
 SERVER_ADDR = "localhost:9180"
 
 
-def create_client(addr=SERVER_ADDR):
-    """Creates a new client object using the given address."""
+def create_client(addr=SERVER_ADDR, username=None, password=None, namespace=None):
+    """Creates a new client object using the given address.
+
+    If username/password are provided, uses pydgraph.open() with login.
+    If namespace is also provided, logs into that namespace.
+    """
+    if username and password:
+        # Build connection string for pydgraph.open()
+        host, port = addr.split(":")
+        conn_str = f"dgraph://{username}:{password}@{host}:{port}"
+        if namespace is not None:
+            conn_str += f"?namespace={namespace}"
+        return pydgraph.open(conn_str)
     return pydgraph.DgraphClient(pydgraph.DgraphClientStub(addr))
 
 
