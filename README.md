@@ -53,13 +53,15 @@ pip install pydgraph
 
 ## Supported Versions
 
-Depending on the version of Dgraph that you are connecting to, you will have to use a different
-version of this client.
+Depending on the version of Dgraph that you are connecting to, you should use a different version of
+this client. Using an incompatible version may lead to unexpected behavior or errors.
 
 | Dgraph version | pydgraph version |
 | :------------: | :--------------: |
 |    21.03.x     |    _21.03.x_     |
 |    23.0.x+     |     _23.0.x_     |
+|    24.0.x+     |     _24.0.x_     |
+|    25.0.x+     |     _25.0.x_     |
 
 ## Quickstart
 
@@ -589,6 +591,9 @@ There are many ways to set up your local Python environment. We suggest some san
   located in `.python-version`
 - Create a Python virtual environment using `python -m venv .venv`
 - Activate virtual environment via `source .venv/bin/activate`
+- Install
+  [trunk](https://docs.trunk.io/code-quality/overview/getting-started/install#install-the-launcher).
+  Our CI uses trunk to lint and check code, having it installed locally will save you time.
 
 ### Build from source
 
