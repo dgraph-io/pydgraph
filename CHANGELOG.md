@@ -5,7 +5,16 @@ All notable changes to this project will be documented in this file.
 The format is based on [Keep a Changelog](http://keepachangelog.com/en/1.0.0/) and this project
 adheres to [Semantic Versioning](http://semver.org/spec/v2.0.0.html).
 
+
 ## Unreleased
+
+- Native async/await client support with `AsyncDgraphClient`, `AsyncDgraphClientStub`, and `AsyncTxn` classes ([#280](https://github.com/dgraph-io/pydgraph/pull/280))
+  - True asynchronous operations using Python's asyncio and grpc.aio
+  - Async context manager support for client and transactions
+  - Connection string support via `async_open()` function
+  - Automatic JWT refresh handling
+
+## [v25.0.0]
 
 **Added**
 
