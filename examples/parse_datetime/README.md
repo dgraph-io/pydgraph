@@ -8,4 +8,4 @@ the return object. You can explore the source code in the `parse_datetime.py` fi
 ## Running
 
 The conditions for running this example are the same as described in the
-[simple example](https://github.com/hypermodeinc/pydgraph/tree/master/examples/simple).
+[simple example](https://github.com/dgraph-io/pydgraph/tree/master/examples/simple).

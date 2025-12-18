@@ -1,4 +1,4 @@
-# SPDX-FileCopyrightText: © Hypermode Inc. <hello@hypermode.com>
+# SPDX-FileCopyrightText: © 2017-2025 Istari Digital, Inc.
 # SPDX-License-Identifier: Apache-2.0
 
 """Stub for RPC request."""
@@ -14,7 +14,7 @@ except ImportError:
     from urlparse import urlparse
 
 __author__ = "Garvit Pahal"
-__maintainer__ = "Hypermode Inc. <hello@hypermode.com>"
+__maintainer__ = "Istari Digital, Inc. <dgraph-admin@istaridigital.com>"
 __version__ = VERSION
 __status__ = "development"
 
@@ -69,6 +69,35 @@ class DgraphClientStub(object):
         """Returns the version of the Dgraph instance."""
         return self.stub.CheckVersion(
             check, timeout=timeout, metadata=metadata, credentials=credentials
+        )
+
+    def run_dql(self, req, timeout=None, metadata=None, credentials=None):
+        return self.stub.RunDQL(
+            req, timeout=timeout, metadata=metadata, credentials=credentials
+        )
+
+    def allocate_ids(self, req, timeout=None, metadata=None, credentials=None):
+        """Allocates IDs (UIDs, timestamps, or namespaces)."""
+        return self.stub.AllocateIDs(
+            req, timeout=timeout, metadata=metadata, credentials=credentials
+        )
+
+    def create_namespace(self, req, timeout=None, metadata=None, credentials=None):
+        """Creates a new namespace."""
+        return self.stub.CreateNamespace(
+            req, timeout=timeout, metadata=metadata, credentials=credentials
+        )
+
+    def drop_namespace(self, req, timeout=None, metadata=None, credentials=None):
+        """Drops a namespace."""
+        return self.stub.DropNamespace(
+            req, timeout=timeout, metadata=metadata, credentials=credentials
+        )
+
+    def list_namespaces(self, req, timeout=None, metadata=None, credentials=None):
+        """Lists all namespaces."""
+        return self.stub.ListNamespaces(
+            req, timeout=timeout, metadata=metadata, credentials=credentials
         )
 
     def close(self):

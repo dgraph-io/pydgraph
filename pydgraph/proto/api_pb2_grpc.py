@@ -65,6 +65,41 @@ class DgraphStub(object):
                 request_serializer=api__pb2.Check.SerializeToString,
                 response_deserializer=api__pb2.Version.FromString,
                 _registered_method=True)
+        self.RunDQL = channel.unary_unary(
+                '/api.Dgraph/RunDQL',
+                request_serializer=api__pb2.RunDQLRequest.SerializeToString,
+                response_deserializer=api__pb2.Response.FromString,
+                _registered_method=True)
+        self.AllocateIDs = channel.unary_unary(
+                '/api.Dgraph/AllocateIDs',
+                request_serializer=api__pb2.AllocateIDsRequest.SerializeToString,
+                response_deserializer=api__pb2.AllocateIDsResponse.FromString,
+                _registered_method=True)
+        self.UpdateExtSnapshotStreamingState = channel.unary_unary(
+                '/api.Dgraph/UpdateExtSnapshotStreamingState',
+                request_serializer=api__pb2.UpdateExtSnapshotStreamingStateRequest.SerializeToString,
+                response_deserializer=api__pb2.UpdateExtSnapshotStreamingStateResponse.FromString,
+                _registered_method=True)
+        self.StreamExtSnapshot = channel.stream_unary(
+                '/api.Dgraph/StreamExtSnapshot',
+                request_serializer=api__pb2.StreamExtSnapshotRequest.SerializeToString,
+                response_deserializer=api__pb2.StreamExtSnapshotResponse.FromString,
+                _registered_method=True)
+        self.CreateNamespace = channel.unary_unary(
+                '/api.Dgraph/CreateNamespace',
+                request_serializer=api__pb2.CreateNamespaceRequest.SerializeToString,
+                response_deserializer=api__pb2.CreateNamespaceResponse.FromString,
+                _registered_method=True)
+        self.DropNamespace = channel.unary_unary(
+                '/api.Dgraph/DropNamespace',
+                request_serializer=api__pb2.DropNamespaceRequest.SerializeToString,
+                response_deserializer=api__pb2.DropNamespaceResponse.FromString,
+                _registered_method=True)
+        self.ListNamespaces = channel.unary_unary(
+                '/api.Dgraph/ListNamespaces',
+                request_serializer=api__pb2.ListNamespacesRequest.SerializeToString,
+                response_deserializer=api__pb2.ListNamespacesResponse.FromString,
+                _registered_method=True)
 
 
 class DgraphServicer(object):
@@ -101,6 +136,48 @@ class DgraphServicer(object):
         context.set_details('Method not implemented!')
         raise NotImplementedError('Method not implemented!')
 
+    def RunDQL(self, request, context):
+        """Missing associated documentation comment in .proto file."""
+        context.set_code(grpc.StatusCode.UNIMPLEMENTED)
+        context.set_details('Method not implemented!')
+        raise NotImplementedError('Method not implemented!')
+
+    def AllocateIDs(self, request, context):
+        """Missing associated documentation comment in .proto file."""
+        context.set_code(grpc.StatusCode.UNIMPLEMENTED)
+        context.set_details('Method not implemented!')
+        raise NotImplementedError('Method not implemented!')
+
+    def UpdateExtSnapshotStreamingState(self, request, context):
+        """Missing associated documentation comment in .proto file."""
+        context.set_code(grpc.StatusCode.UNIMPLEMENTED)
+        context.set_details('Method not implemented!')
+        raise NotImplementedError('Method not implemented!')
+
+    def StreamExtSnapshot(self, request_iterator, context):
+        """Missing associated documentation comment in .proto file."""
+        context.set_code(grpc.StatusCode.UNIMPLEMENTED)
+        context.set_details('Method not implemented!')
+        raise NotImplementedError('Method not implemented!')
+
+    def CreateNamespace(self, request, context):
+        """Missing associated documentation comment in .proto file."""
+        context.set_code(grpc.StatusCode.UNIMPLEMENTED)
+        context.set_details('Method not implemented!')
+        raise NotImplementedError('Method not implemented!')
+
+    def DropNamespace(self, request, context):
+        """Missing associated documentation comment in .proto file."""
+        context.set_code(grpc.StatusCode.UNIMPLEMENTED)
+        context.set_details('Method not implemented!')
+        raise NotImplementedError('Method not implemented!')
+
+    def ListNamespaces(self, request, context):
+        """Missing associated documentation comment in .proto file."""
+        context.set_code(grpc.StatusCode.UNIMPLEMENTED)
+        context.set_details('Method not implemented!')
+        raise NotImplementedError('Method not implemented!')
+
 
 def add_DgraphServicer_to_server(servicer, server):
     rpc_method_handlers = {
@@ -128,6 +205,41 @@ def add_DgraphServicer_to_server(servicer, server):
                     servicer.CheckVersion,
                     request_deserializer=api__pb2.Check.FromString,
                     response_serializer=api__pb2.Version.SerializeToString,
+            ),
+            'RunDQL': grpc.unary_unary_rpc_method_handler(
+                    servicer.RunDQL,
+                    request_deserializer=api__pb2.RunDQLRequest.FromString,
+                    response_serializer=api__pb2.Response.SerializeToString,
+            ),
+            'AllocateIDs': grpc.unary_unary_rpc_method_handler(
+                    servicer.AllocateIDs,
+                    request_deserializer=api__pb2.AllocateIDsRequest.FromString,
+                    response_serializer=api__pb2.AllocateIDsResponse.SerializeToString,
+            ),
+            'UpdateExtSnapshotStreamingState': grpc.unary_unary_rpc_method_handler(
+                    servicer.UpdateExtSnapshotStreamingState,
+                    request_deserializer=api__pb2.UpdateExtSnapshotStreamingStateRequest.FromString,
+                    response_serializer=api__pb2.UpdateExtSnapshotStreamingStateResponse.SerializeToString,
+            ),
+            'StreamExtSnapshot': grpc.stream_unary_rpc_method_handler(
+                    servicer.StreamExtSnapshot,
+                    request_deserializer=api__pb2.StreamExtSnapshotRequest.FromString,
+                    response_serializer=api__pb2.StreamExtSnapshotResponse.SerializeToString,
+            ),
+            'CreateNamespace': grpc.unary_unary_rpc_method_handler(
+                    servicer.CreateNamespace,
+                    request_deserializer=api__pb2.CreateNamespaceRequest.FromString,
+                    response_serializer=api__pb2.CreateNamespaceResponse.SerializeToString,
+            ),
+            'DropNamespace': grpc.unary_unary_rpc_method_handler(
+                    servicer.DropNamespace,
+                    request_deserializer=api__pb2.DropNamespaceRequest.FromString,
+                    response_serializer=api__pb2.DropNamespaceResponse.SerializeToString,
+            ),
+            'ListNamespaces': grpc.unary_unary_rpc_method_handler(
+                    servicer.ListNamespaces,
+                    request_deserializer=api__pb2.ListNamespacesRequest.FromString,
+                    response_serializer=api__pb2.ListNamespacesResponse.SerializeToString,
             ),
     }
     generic_handler = grpc.method_handlers_generic_handler(
@@ -266,6 +378,195 @@ class Dgraph(object):
             '/api.Dgraph/CheckVersion',
             api__pb2.Check.SerializeToString,
             api__pb2.Version.FromString,
+            options,
+            channel_credentials,
+            insecure,
+            call_credentials,
+            compression,
+            wait_for_ready,
+            timeout,
+            metadata,
+            _registered_method=True)
+
+    @staticmethod
+    def RunDQL(request,
+            target,
+            options=(),
+            channel_credentials=None,
+            call_credentials=None,
+            insecure=False,
+            compression=None,
+            wait_for_ready=None,
+            timeout=None,
+            metadata=None):
+        return grpc.experimental.unary_unary(
+            request,
+            target,
+            '/api.Dgraph/RunDQL',
+            api__pb2.RunDQLRequest.SerializeToString,
+            api__pb2.Response.FromString,
+            options,
+            channel_credentials,
+            insecure,
+            call_credentials,
+            compression,
+            wait_for_ready,
+            timeout,
+            metadata,
+            _registered_method=True)
+
+    @staticmethod
+    def AllocateIDs(request,
+            target,
+            options=(),
+            channel_credentials=None,
+            call_credentials=None,
+            insecure=False,
+            compression=None,
+            wait_for_ready=None,
+            timeout=None,
+            metadata=None):
+        return grpc.experimental.unary_unary(
+            request,
+            target,
+            '/api.Dgraph/AllocateIDs',
+            api__pb2.AllocateIDsRequest.SerializeToString,
+            api__pb2.AllocateIDsResponse.FromString,
+            options,
+            channel_credentials,
+            insecure,
+            call_credentials,
+            compression,
+            wait_for_ready,
+            timeout,
+            metadata,
+            _registered_method=True)
+
+    @staticmethod
+    def UpdateExtSnapshotStreamingState(request,
+            target,
+            options=(),
+            channel_credentials=None,
+            call_credentials=None,
+            insecure=False,
+            compression=None,
+            wait_for_ready=None,
+            timeout=None,
+            metadata=None):
+        return grpc.experimental.unary_unary(
+            request,
+            target,
+            '/api.Dgraph/UpdateExtSnapshotStreamingState',
+            api__pb2.UpdateExtSnapshotStreamingStateRequest.SerializeToString,
+            api__pb2.UpdateExtSnapshotStreamingStateResponse.FromString,
+            options,
+            channel_credentials,
+            insecure,
+            call_credentials,
+            compression,
+            wait_for_ready,
+            timeout,
+            metadata,
+            _registered_method=True)
+
+    @staticmethod
+    def StreamExtSnapshot(request_iterator,
+            target,
+            options=(),
+            channel_credentials=None,
+            call_credentials=None,
+            insecure=False,
+            compression=None,
+            wait_for_ready=None,
+            timeout=None,
+            metadata=None):
+        return grpc.experimental.stream_unary(
+            request_iterator,
+            target,
+            '/api.Dgraph/StreamExtSnapshot',
+            api__pb2.StreamExtSnapshotRequest.SerializeToString,
+            api__pb2.StreamExtSnapshotResponse.FromString,
+            options,
+            channel_credentials,
+            insecure,
+            call_credentials,
+            compression,
+            wait_for_ready,
+            timeout,
+            metadata,
+            _registered_method=True)
+
+    @staticmethod
+    def CreateNamespace(request,
+            target,
+            options=(),
+            channel_credentials=None,
+            call_credentials=None,
+            insecure=False,
+            compression=None,
+            wait_for_ready=None,
+            timeout=None,
+            metadata=None):
+        return grpc.experimental.unary_unary(
+            request,
+            target,
+            '/api.Dgraph/CreateNamespace',
+            api__pb2.CreateNamespaceRequest.SerializeToString,
+            api__pb2.CreateNamespaceResponse.FromString,
+            options,
+            channel_credentials,
+            insecure,
+            call_credentials,
+            compression,
+            wait_for_ready,
+            timeout,
+            metadata,
+            _registered_method=True)
+
+    @staticmethod
+    def DropNamespace(request,
+            target,
+            options=(),
+            channel_credentials=None,
+            call_credentials=None,
+            insecure=False,
+            compression=None,
+            wait_for_ready=None,
+            timeout=None,
+            metadata=None):
+        return grpc.experimental.unary_unary(
+            request,
+            target,
+            '/api.Dgraph/DropNamespace',
+            api__pb2.DropNamespaceRequest.SerializeToString,
+            api__pb2.DropNamespaceResponse.FromString,
+            options,
+            channel_credentials,
+            insecure,
+            call_credentials,
+            compression,
+            wait_for_ready,
+            timeout,
+            metadata,
+            _registered_method=True)
+
+    @staticmethod
+    def ListNamespaces(request,
+            target,
+            options=(),
+            channel_credentials=None,
+            call_credentials=None,
+            insecure=False,
+            compression=None,
+            wait_for_ready=None,
+            timeout=None,
+            metadata=None):
+        return grpc.experimental.unary_unary(
+            request,
+            target,
+            '/api.Dgraph/ListNamespaces',
+            api__pb2.ListNamespacesRequest.SerializeToString,
+            api__pb2.ListNamespacesResponse.FromString,
             options,
             channel_credentials,
             insecure,

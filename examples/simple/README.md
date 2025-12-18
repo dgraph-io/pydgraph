@@ -2,7 +2,7 @@
 
 Simple project demonstrating the use of [pydgraph], the official python client for Dgraph.
 
-[pydgraph]: https://github.com/hypermodeinc/pydgraph
+[pydgraph]: https://github.com/dgraph-io/pydgraph/pull/277
 
 ## Running
 

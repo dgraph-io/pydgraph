@@ -53,13 +53,15 @@ pip install pydgraph
 
 ## Supported Versions
 
-Depending on the version of Dgraph that you are connecting to, you will have to use a different
-version of this client.
+Depending on the version of Dgraph that you are connecting to, you should use a different version of
+this client. Using an incompatible version may lead to unexpected behavior or errors.
 
 | Dgraph version | pydgraph version |
 | :------------: | :--------------: |
 |    21.03.x     |    _21.03.x_     |
 |    23.0.x+     |     _23.0.x_     |
+|    24.0.x+     |     _24.0.x_     |
+|    25.0.x+     |     _25.0.x_     |
 
 ## Quickstart
 
@@ -101,6 +103,7 @@ Valid connection string args:
 | apikey      | \<key\>                         | a Dgraph Cloud API Key                                                                                                                                        |
 | bearertoken | \<token\>                       | an access token                                                                                                                                               |
 | sslmode     | disable \| require \| verify-ca | TLS option, the default is `disable`. If `verify-ca` is set, the TLS certificate configured in the Dgraph cluster must be from a valid certificate authority. |
+| namespace   | \<namespace\>                   | a previously created integer-based namespace, username and password must be supplied                                                                          |
 
 Note the `sslmode=require` pair is not supported and will throw an Exception if used. Python grpc
 does not support traffic over TLS that does not fully verify the certificate and domain. Developers
@@ -114,7 +117,8 @@ Some example connection strings:
 | dgraph://localhost:9080                                                                                      | Connect to localhost, no ACL, no TLS                                                |
 | dgraph://sally:supersecret@dg.example.com:443?sslmode=verify-ca                                              | Connect to remote server, use ACL and require TLS and a valid certificate from a CA |
 | dgraph://foo-bar.grpc.us-west-2.aws.cloud.dgraph.io:443?sslmode=verify-ca&apikey=\<your-api-connection-key\> | Connect to a Dgraph Cloud cluster                                                   |
-| dgraph://foo-bar.grpc.hypermode.com:443?sslmode=verify-ca&bearertoken=\<some access token\>                  | Connect to a Dgraph cluster protected by a secure gateway                           |
+| dgraph://foo-bar.grpc.dgraph-io.com:443?sslmode=verify-ca&bearertoken=\<some access token\>                  | Connect to a Dgraph cluster protected by a secure gateway                           |
+| dgraph://sally:supersecret@dg.example.com:443?namespace=2                                                    | Connect to a ACL enabled Dgraph cluster in namespace 2                              |
 
 Using the `Open` function with a connection string:
 
@@ -742,6 +746,9 @@ There are many ways to set up your local Python environment. We suggest some san
   located in `.python-version`
 - Create a Python virtual environment using `python -m venv .venv`
 - Activate virtual environment via `source .venv/bin/activate`
+- Install
+  [trunk](https://docs.trunk.io/code-quality/overview/getting-started/install#install-the-launcher).
+  Our CI uses trunk to lint and check code, having it installed locally will save you time.
 
 ### Build from source
 
