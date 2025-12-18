@@ -20,7 +20,7 @@ This document contains instructions to create a new pydgraph release and publish
 1. If you happen to have the testpypi access token, try a test upload to testpypi:
 
    ```sh
-   twine upload --repository testpypi dist/*`
+   twine upload --repository testpypi dist/*
    ```
 
    - Verify readme and metadata look correct at testpypi
