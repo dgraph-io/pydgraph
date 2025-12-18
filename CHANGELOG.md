@@ -5,21 +5,29 @@ All notable changes to this project will be documented in this file.
 The format is based on [Keep a Changelog](http://keepachangelog.com/en/1.0.0/) and this project
 adheres to [Semantic Versioning](http://semver.org/spec/v2.0.0.html).
 
-## Unreleased
+## [v25.0.0] - 2025-12-18
 
 **Added**
 
-- Add v25 Dgraph API
-  - Added new `run_dql()` method for executing DQL queries directly
-  - Added `allocate_uids()` method for allocating unique identifiers
-  - Added `allocate_timestamps()` method for allocating timestamps
-  - Added `allocate_namespaces()` method for allocating namespace IDs
-  - Added namespace management methods:
-    - `create_namespace()` - Creates a new namespace and returns its ID
-    - `drop_namespace()` - Drops the specified namespace
-    - `list_namespaces()` - Lists all available namespaces
-  - Updated proto definitions to support Dgraph v25 API
-  - Enhanced client functionality with new gRPC service methods
+- Dgraph v25 API support:
+  - `run_dql()` method for executing DQL queries and mutations directly
+  - `run_dql_with_vars()` method for DQL queries with variables
+  - `allocate_uids()` method for allocating unique identifiers
+  - `allocate_timestamps()` method for allocating timestamps
+  - `allocate_namespaces()` method for allocating namespace IDs
+  - Namespace management methods: `create_namespace()`, `drop_namespace()`, `list_namespaces()`
+- Convenience methods for schema and data management:
+  - `drop_all()` - Drops all data and schema
+  - `drop_data()` - Drops all data while preserving schema
+  - `drop_predicate()` - Drops a specific predicate
+  - `drop_type()` - Drops a specific type
+  - `set_schema()` - Sets the DQL schema
+- Updated proto definitions to support Dgraph v25 API
+
+**Chore**
+
+- Updated GitHub Actions workflows to v5/v6
+- Added comprehensive test coverage for new v25 API methods
 
 ## [v24.3.0] - 2025-07-29
 
