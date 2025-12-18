@@ -7,7 +7,7 @@ cli:
 plugins:
   sources:
     - id: trunk
-      ref: v1.7.2
+      ref: v1.7.4
       uri: https://github.com/trunk-io/plugins
 # Many linters and tools depend on runtimes - configure them here. (https://docs.trunk.io/runtimes)
 runtimes:
@@ -23,22 +23,22 @@ lint:
         - pydgraph/proto/api_pb*.py
 
   enabled:
-    - trivy@0.66.0
+    - trivy@0.68.2
     - trivy@0.58.2
-    - renovate@41.99.6
-    - actionlint@1.7.7
-    - bandit@1.8.6
-    - black@25.1.0
-    - checkov@3.2.470
+    - renovate@42.64.0
+    - actionlint@1.7.9
+    - bandit@1.9.2
+    - black@25.12.0
+    - checkov@3.2.495
     - git-diff-check
-    - isort@6.0.1
-    - markdownlint@0.45.0
-    - prettier@3.6.2
-    - ruff@0.12.12
+    - isort@7.0.0
+    - markdownlint@0.47.0
+    - prettier@3.7.4
+    - ruff@0.14.10
     - shellcheck@0.11.0
     - shfmt@3.6.0
     - taplo@0.10.0
-    - trufflehog@3.90.6
+    - trufflehog@3.92.3
     - yamllint@1.37.1
 actions:
   enabled:
