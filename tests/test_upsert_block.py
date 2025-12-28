@@ -3,7 +3,7 @@
 
 """Tests to verify upsert block."""
 __author__ = "Animesh Pathak <animesh@dgrpah.io>"
-__maintainer__ = "Animesh Pathak <animesh@dgrpah.io>"
+__maintainer__ = "Istari Digital <contact@istaridigital.com>"
 
 import json
 import logging
