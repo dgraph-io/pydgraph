@@ -143,8 +143,8 @@ class AsyncDgraphClientStub:
         """
         # Normalize to have scheme for consistent parsing
         endpoint = cloud_endpoint
-        if '://' not in endpoint:
-            endpoint = f'//{endpoint}'
+        if "://" not in endpoint:
+            endpoint = f"//{endpoint}"
 
         # Parse URL to extract hostname (handles IPv6, ports, etc.)
         try:
@@ -155,16 +155,16 @@ class AsyncDgraphClientStub:
             host = cloud_endpoint
 
         # Remove any port that wasn't caught by hostname parsing
-        if ':' in host and '[' not in host:  # Not IPv6
-            host = host.split(':', 1)[0]
+        if ":" in host and "[" not in host:  # Not IPv6
+            host = host.split(":", 1)[0]
 
         # Only insert .grpc. if:
         # 1. Not already present
         # 2. Host has at least 2 labels (e.g., "example.com" but not "localhost")
         # 3. Not an IP address
-        if '.grpc.' not in host and '.' in host:
+        if ".grpc." not in host and "." in host:
             # Check it's not an IPv4 address
-            labels = host.split('.')
+            labels = host.split(".")
             if len(labels) >= 2 and not all(label.isdigit() for label in labels):
                 host = f'{labels[0]}.grpc.{".".join(labels[1:])}'
 

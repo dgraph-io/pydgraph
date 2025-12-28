@@ -12,8 +12,9 @@ from grpc_tools import protoc
 if sys.version_info >= (3, 13):
     # Verify we have the correct grpcio-tools version for Python 3.13+
     import grpc_tools
-    if hasattr(grpc_tools, '__version__'):
-        version_parts = grpc_tools.__version__.split('.')
+
+    if hasattr(grpc_tools, "__version__"):
+        version_parts = grpc_tools.__version__.split(".")
         major, minor = int(version_parts[0]), int(version_parts[1])
         if major < 1 or (major == 1 and minor < 66):
             print("ERROR: Python 3.13+ requires grpcio-tools >=1.66.2")

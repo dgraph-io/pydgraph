@@ -89,7 +89,9 @@ class AsyncDgraphClient:
             else:
                 raise error
 
-    async def login(self, userid, password, timeout=None, metadata=None, credentials=None):
+    async def login(
+        self, userid, password, timeout=None, metadata=None, credentials=None
+    ):
         """Login to Dgraph with credentials.
 
         Args:

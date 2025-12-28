@@ -12,7 +12,6 @@ import pytest
 import pydgraph
 from pydgraph import AsyncDgraphClient, AsyncDgraphClientStub, async_open
 
-
 # Get test server address from environment
 TEST_SERVER_ADDR = os.getenv("TEST_SERVER_ADDR", "localhost:9180")
 
@@ -243,7 +242,9 @@ class TestAsyncContextManager:
     @pytest.mark.asyncio
     async def test_client_context_manager(self):
         """Test async client context manager."""
-        async with await async_open(f"dgraph://groot:password@{TEST_SERVER_ADDR}") as client:
+        async with await async_open(
+            f"dgraph://groot:password@{TEST_SERVER_ADDR}"
+        ) as client:
             version = await client.check_version()
             assert version is not None
         # Client should be closed automatically
@@ -358,7 +359,9 @@ class TestAsyncConnectionString:
     @pytest.mark.asyncio
     async def test_connection_string_with_auth(self):
         """Test connection string with username and password."""
-        async with await async_open(f"dgraph://groot:password@{TEST_SERVER_ADDR}") as client:
+        async with await async_open(
+            f"dgraph://groot:password@{TEST_SERVER_ADDR}"
+        ) as client:
             version = await client.check_version()
             assert version is not None
 
@@ -372,4 +375,6 @@ class TestAsyncConnectionString:
             await async_open("dgraph://localhost")  # Missing port
 
         with pytest.raises(ValueError):
-            await async_open("dgraph://groot@localhost:9080")  # Username without password
+            await async_open(
+                "dgraph://groot@localhost:9080"
+            )  # Username without password

@@ -175,7 +175,10 @@ class AsyncTxn:
 
             try:
                 response = await self._dc.query(
-                    request, timeout=timeout, metadata=new_metadata, credentials=credentials
+                    request,
+                    timeout=timeout,
+                    metadata=new_metadata,
+                    credentials=credentials,
                 )
             except asyncio.CancelledError:
                 # Preserve cancellation - don't catch or wrap it
