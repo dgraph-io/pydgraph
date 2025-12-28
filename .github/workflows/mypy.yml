@@ -1,0 +1,27 @@
+name: mypy type checking
+on:
+  pull_request:
+    branches: main
+  push:
+    branches: main
+permissions:
+  contents: read
+jobs:
+  mypy:
+    name: mypy type checking
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v5
+      - name: Set up Python
+        uses: actions/setup-python@v6
+        with:
+          python-version: '3.13'
+      - name: Install uv
+        run: curl -LsSf https://astral.sh/uv/install.sh | sh
+      - name: Install dependencies
+        run: |
+          uv sync --group dev --extra dev
+      - name: Run mypy
+        run: |
+          uv run mypy --config-file=pyproject.toml pydgraph/ tests/ scripts/

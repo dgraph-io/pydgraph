@@ -14,7 +14,7 @@ else
   RUN :=
 endif
 
-.PHONY: help setup sync deps deps-uv deps-ruff deps-docker test check protogen
+.PHONY: help setup sync deps deps-uv deps-ruff deps-ty deps-docker test check protogen
 
 .DEFAULT_GOAL := help
 
@@ -40,7 +40,7 @@ protogen: ## Regenerate protobuf files (requires Python 3.13+)
 test: deps-docker ## Run tests
 	bash scripts/local-test.sh
 
-deps: deps-uv deps-ruff deps-docker ## Install tool dependencies (uv, ruff, docker)
+deps: deps-uv deps-ruff deps-ty deps-docker ## Install tool dependencies (uv, ruff, ty, docker)
 
 deps-uv:
 	@(command -v uv >/dev/null 2>&1 && command -v uvx >/dev/null 2>&1) || { \
@@ -52,6 +52,12 @@ deps-ruff:
 	@command -v ruff >/dev/null 2>&1 || { \
 		echo "ruff not found, installing..."; \
 		curl -LsSf https://astral.sh/ruff/install.sh | sh; \
+	}
+
+deps-ty:
+	@command -v ty >/dev/null 2>&1 || { \
+		echo "ty not found, installing..."; \
+		curl -LsSf https://astral.sh/ty/install.sh | sh; \
 	}
 
 deps-docker: ## Check and install Docker if needed (requires Docker 20.10.0+)
