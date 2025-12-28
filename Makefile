@@ -14,7 +14,7 @@ else
   RUN :=
 endif
 
-.PHONY: help setup sync deps deps-uv deps-ruff test check protogen
+.PHONY: help setup sync deps deps-uv deps-ruff deps-docker test check protogen
 
 .DEFAULT_GOAL := help
 
@@ -37,10 +37,10 @@ check: ## Run pre-commit hooks on all files
 protogen: ## Regenerate protobuf files (requires Python 3.13+)
 	$(RUN) uv run python scripts/protogen.py
 
-test: ## Run tests
-	$(RUN) uv run pytest
+test: deps-docker ## Run tests
+	bash scripts/local-test.sh
 
-deps: deps-uv deps-ruff ## Install tool dependencies (uv, ruff)
+deps: deps-uv deps-ruff deps-docker ## Install tool dependencies (uv, ruff, docker)
 
 deps-uv:
 	@(command -v uv >/dev/null 2>&1 && command -v uvx >/dev/null 2>&1) || { \
@@ -53,3 +53,43 @@ deps-ruff:
 		echo "ruff not found, installing..."; \
 		curl -LsSf https://astral.sh/ruff/install.sh | sh; \
 	}
+
+deps-docker: ## Check and install Docker if needed (requires Docker 20.10.0+)
+	@if ! command -v docker >/dev/null 2>&1; then \
+		echo "Docker not found, installing..."; \
+		if [ "$$(uname)" = "Darwin" ]; then \
+			if ! command -v brew >/dev/null 2>&1; then \
+				echo "Homebrew not found. Please install Homebrew first: https://brew.sh"; \
+				exit 1; \
+			fi; \
+			brew install --cask docker; \
+			echo "Docker installed. Please start Docker Desktop and run 'make deps-docker' again."; \
+			exit 1; \
+		elif [ "$$(uname)" = "Linux" ]; then \
+			sudo apt-get update; \
+			sudo apt-get install -y docker.io docker-compose-plugin; \
+			sudo systemctl start docker; \
+			sudo systemctl enable docker; \
+			sudo usermod -aG docker $$USER; \
+			echo "Docker installed. Please log out and back in for group changes to take effect."; \
+		else \
+			echo "Unsupported OS. Please install Docker manually."; \
+			exit 1; \
+		fi; \
+	fi
+	@if ! docker compose version >/dev/null 2>&1; then \
+		echo "Error: 'docker compose' command not available. Please ensure Docker Compose v2 is installed."; \
+		exit 1; \
+	fi
+	@DOCKER_VERSION=$$(docker version --format '{{.Server.Version}}' 2>/dev/null); \
+	if [ -z "$$DOCKER_VERSION" ]; then \
+		echo "Error: Docker daemon is not running. Please start Docker Desktop."; \
+		exit 1; \
+	fi; \
+	DOCKER_VERSION_SHORT=$$(echo $$DOCKER_VERSION | cut -d. -f1,2); \
+	REQUIRED_VERSION="20.10"; \
+	if [ "$$(printf '%s\n%s\n' "$$REQUIRED_VERSION" "$$DOCKER_VERSION_SHORT" | sort -V | head -n1)" != "$$REQUIRED_VERSION" ]; then \
+		echo "Error: Docker version $$DOCKER_VERSION is less than required version $$REQUIRED_VERSION"; \
+		exit 1; \
+	fi; \
+	echo "Docker version check passed: $$DOCKER_VERSION"

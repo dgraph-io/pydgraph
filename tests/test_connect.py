@@ -27,8 +27,12 @@ class TestOpen(unittest.TestCase):
     @classmethod
     def setUpClass(cls):
         # Get connection details from environment or use defaults
-        host = os.environ.get("TEST_SERVER_ADDR", "localhost")
-        host, port = host.split(":")
+        server_addr = os.environ.get("TEST_SERVER_ADDR", "localhost:9080")
+        if ":" in server_addr:
+            host, port = server_addr.split(":", 1)
+        else:
+            host = server_addr
+            port = "9080"
         cls.dgraph_host = host
         cls.dgraph_port = port
         cls.username = os.environ.get("DGRAPH_USERNAME", "groot")
