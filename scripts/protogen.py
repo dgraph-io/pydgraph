@@ -1,20 +1,72 @@
 # SPDX-FileCopyrightText: © 2017-2025 Istari Digital, Inc.
 # SPDX-License-Identifier: Apache-2.0
 
-"""Runs protoc with the gRPC plugin to generate messages and gRPC stubs."""
+"""Runs protoc with the gRPC plugin to generate messages and gRPC stubs.
+
+This project uses Python 3.13+ as the canonical version for generating protobufs.
+The generated proto files are checked into the repository.
+
+Usage: uv run python scripts/protogen.py
+"""
 
 import os
 import sys
 
-from grpc_tools import protoc
+# Minimum required versions
+MIN_PYTHON_VERSION = (3, 13)
+MIN_GRPCIO_TOOLS_VERSION = "1.66.2"
 
-# Check Python version compatibility
-if sys.version_info >= (3, 13):
-    print("ERROR: Python 3.13+ requires grpcio-tools >=1.66.2, which generates")
-    print("protobufs that are incompatible with older grpcio-tools versions.")
-    print("Please use Python 3.12 or lower to generate compatible protobufs.")
-    print("Exiting without generating protobufs.")
+# Check Python version first
+if sys.version_info < MIN_PYTHON_VERSION:
+    print("ERROR: Proto generation requires Python 3.13 or higher")
+    print(
+        f"Current Python version: {sys.version_info.major}.{sys.version_info.minor}.{sys.version_info.micro}"
+    )
+    print(f"Required: Python {MIN_PYTHON_VERSION[0]}.{MIN_PYTHON_VERSION[1]}+")
+    print()
+    print("To set up the project with the correct Python version and dependencies:")
+    print("  Option 1: make setup")
+    print("  Option 2: uv python install 3.13 && uv sync --group dev --extra dev")
+    print()
+    print("Then retry: uv run python scripts/protogen.py")
     sys.exit(1)
+
+# Import grpc_tools after Python version check
+try:
+    from grpc_tools import protoc
+except ImportError:
+    print("ERROR: grpcio-tools is not installed")
+    print()
+    print("To install dependencies:")
+    print("  Option 1: make setup")
+    print("  Option 2: uv sync --group dev --extra dev")
+    print()
+    print("Then retry: uv run python scripts/protogen.py")
+    sys.exit(1)
+
+# Check grpcio version (grpcio-tools doesn't expose __version__)
+try:
+    import grpc
+    from packaging import version
+
+    current_version = version.parse(grpc.__version__)
+    required_version = version.parse(MIN_GRPCIO_TOOLS_VERSION)
+
+    if current_version < required_version:
+        print("ERROR: grpcio version is too old")
+        print(f"Current version: {grpc.__version__}")
+        print(f"Required: {MIN_GRPCIO_TOOLS_VERSION}+ (grpcio-tools should match)")
+        print()
+        print("To upgrade dependencies:")
+        print("  Option 1: make setup")
+        print("  Option 2: uv sync --group dev --extra dev")
+        print()
+        print("Then retry: uv run python scripts/protogen.py")
+        sys.exit(1)
+except ImportError:
+    # If we can't check version, trust that uv sync installed the correct version
+    print("Warning: Could not verify grpcio version, proceeding anyway...")
+    print("Ensure you ran 'make setup' or 'uv sync --group dev --extra dev' first.")
 
 dirpath = os.path.dirname(os.path.realpath(__file__))
 protopath = os.path.realpath(os.path.join(dirpath, "../pydgraph/proto"))
@@ -24,7 +76,9 @@ protoc.main(
         "",
         "-I" + protopath,
         "--python_out=" + protopath,
+        "--mypy_out=" + protopath,
         "--grpc_python_out=" + protopath,
+        "--mypy_grpc_out=" + protopath,
         os.path.join(protopath, "api.proto"),
     )
 )
