@@ -1,0 +1,63 @@
+repos:
+  - repo: https://github.com/pre-commit/pre-commit-hooks
+    rev: v6.0.0
+    hooks:
+      - id: check-added-large-files
+      - id: check-yaml
+      - id: check-toml
+      - id: check-json
+        exclude: '^(\.vscode/|\.idea/).*'
+      - id: end-of-file-fixer
+      - id: trailing-whitespace
+      - id: pretty-format-json
+        args:
+          - "--autofix"
+        exclude: '^(\.vscode/|\.idea/).*'
+      - id: no-commit-to-branch
+      - id: requirements-txt-fixer
+      - id: check-merge-conflict
+      - id: check-docstring-first
+  - repo: https://github.com/shellcheck-py/shellcheck-py
+    rev: v0.10.0.1
+    hooks:
+      - id: shellcheck
+  - repo: https://github.com/google/yamlfmt
+    rev: v0.14.0
+    hooks:
+      - id: yamlfmt
+  - repo: https://github.com/pre-commit/pygrep-hooks
+    rev: v1.10.0
+    hooks:
+      - id: python-check-blanket-noqa
+      - id: python-check-blanket-type-ignore
+      - id: python-no-eval
+      - id: python-use-type-annotations
+  - repo: https://github.com/sondrelg/pep585-upgrade
+    rev: v1.0.1
+    hooks:
+      - id: upgrade-type-hints
+  - repo: https://github.com/charliermarsh/ruff-pre-commit
+    rev: v0.14.0
+    hooks:
+      - id: ruff
+        args:
+          - "--fix"
+          - "--config=pyproject.toml"
+      - id: ruff-format
+  - repo: local
+    hooks:
+      - id: ty
+        name: ty check
+        entry: uvx ty check . --ignore unresolved-import --ignore unknown-argument --ignore too-many-positional-arguments
+        language: python
+        types: [python]
+        pass_filenames: false
+  - repo: https://github.com/pre-commit/mirrors-mypy
+    rev: v1.18.2
+    hooks:
+      - id: mypy
+        args:
+          - "--config-file=pyproject.toml"
+        additional_dependencies:
+          - "types-requests>=2.32.0"
+          - "pydantic-settings>=2.12.0"
