@@ -4,7 +4,7 @@
 # Instead it assumes dgraph is already installed.
 
 function DockerCompose() {
-	docker compose -p pydgraph $@
+	docker compose -p pydgraph "$@"
 }
 
 function wait-for-healthy() {
@@ -33,10 +33,11 @@ function stopCluster() {
 	DockerCompose down -t 5
 }
 
-readonly SRCDIR=$(readlink -f "${BASH_SOURCE[0]%/*}")
+SRCDIR=$(readlink -f "${BASH_SOURCE[0]%/*}")
+readonly SRCDIR
 
 # Run cluster and tests
-pushd $(dirname "${SRCDIR}") || exit
+pushd "$(dirname "${SRCDIR}")" || exit
 pushd "${SRCDIR}"/../tests || exit
 restartCluster
 alphaGrpcPort=$(DockerCompose port alpha1 9080 | awk -F: '{print $2}')
