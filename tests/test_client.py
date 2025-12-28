@@ -3,6 +3,8 @@
 
 """Tests construction of Dgraph client."""
 
+from __future__ import annotations
+
 __author__ = "Garvit Pahal"
 __maintainer__ = "Istari Digital, Inc. "
 
@@ -14,12 +16,12 @@ import pydgraph
 class TestDgraphClient(unittest.TestCase):
     """Tests construction of Dgraph client."""
 
-    def test_constructor(self):
+    def test_constructor(self) -> None:
         with self.assertRaises(ValueError):
             pydgraph.DgraphClient()
 
 
-def suite():
+def suite() -> unittest.TestSuite:
     """Returns a tests suite object."""
     suite_obj = unittest.TestSuite()
     suite_obj.addTest(unittest.makeSuite(TestDgraphClient))

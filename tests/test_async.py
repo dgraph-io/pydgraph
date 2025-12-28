@@ -3,6 +3,8 @@
 
 """Tests to verify async client methods."""
 
+from __future__ import annotations
+
 __author__ = "Martin Martinez Rivera"
 __maintainer__ = "Istari Digital, Inc. <dgraph-admin@istaridigital.com>"
 
@@ -16,11 +18,11 @@ from . import helper
 class TestAsync(helper.ClientIntegrationTestCase):
     server_addr = "localhost:9180"
 
-    def setUp(self):
+    def setUp(self) -> None:
         super(TestAsync, self).setUp()
         helper.drop_all(self.client)
 
-    def test_mutation_and_query(self):
+    def test_mutation_and_query(self) -> None:
         """Runs mutation and queries asyncronously."""
         alter_future = self.client.async_alter(
             pydgraph.Operation(schema="name: string @index(term) .")

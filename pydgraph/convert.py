@@ -26,7 +26,7 @@ def extract_dict(
     Note: this code is experimental and may change in the future.
     """
 
-    def update_node(nodes: dict, key: str, value: dict):
+    def update_node(nodes: dict, key: str, value: dict) -> None:
         if key not in nodes:
             nodes[key] = {}
         for k, v in value.items():

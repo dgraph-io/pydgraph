@@ -69,26 +69,49 @@ target-version = "py39"
 python_version = "3.9"
 warn_unused_configs = true
 disallow_untyped_defs = true
+disallow_incomplete_defs = true
 plugins = ["mypy_protobuf.main"]
 check_untyped_defs = true
 no_site_packages = true
 exclude = [
     ".venv",
     "build",
-    "pydgraph/proto/api_pb2\\.py$",
-    "pydgraph/proto/api_pb2_grpc\\.py$",
+    "pydgraph/proto/",
 ]
 
 [[tool.mypy.overrides]]
 module = "pydgraph.proto.api_pb2"
-disallow_untyped_defs = false
-disallow_incomplete_defs = false
+follow_imports = "skip"
 
 [[tool.mypy.overrides]]
 module = "pydgraph.proto.api_pb2_grpc"
-disallow_untyped_defs = false
-disallow_incomplete_defs = false
+follow_imports = "skip"
+disable_error_code = ["overload-cannot-match"]
 
 [[tool.mypy.overrides]]
 module = "examples.embeddings.computeEmbeddings"
+ignore_missing_imports = true
+
+[[tool.mypy.overrides]]
+module = "grpc_tools.*"
+ignore_missing_imports = true
+
+[[tool.mypy.overrides]]
+module = "packaging.*"
+ignore_missing_imports = true
+
+[[tool.mypy.overrides]]
+module = "pytest.*"
+ignore_missing_imports = true
+
+[[tool.mypy.overrides]]
+module = "grpc.*"
+ignore_missing_imports = true
+
+[[tool.mypy.overrides]]
+module = "google.*"
+ignore_missing_imports = true
+
+[[tool.mypy.overrides]]
+module = "google.protobuf.*"
 ignore_missing_imports = true

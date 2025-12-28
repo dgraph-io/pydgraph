@@ -3,6 +3,8 @@
 
 """Errors thrown by the Dgraph client."""
 
+from __future__ import annotations
+
 from pydgraph.meta import VERSION
 
 __author__ = "Garvit Pahal"
@@ -14,32 +16,32 @@ __status__ = "development"
 class AbortedError(Exception):
     """Error thrown by aborted transactions."""
 
-    def __init__(self):
+    def __init__(self) -> None:
         super(AbortedError, self).__init__("Transaction has been aborted. Please retry")
 
 
 class RetriableError(Exception):
     """Error thrown when the error return by Dgraph indicates the op should be retried."""
 
-    def __init__(self, exception):
+    def __init__(self, exception: Exception) -> None:
         self.exception = exception
 
-    def __str__(self):
+    def __str__(self) -> str:
         return str(self.exception)
 
 
 class ConnectionError(Exception):
     """Error thrown when the error return when the client has trouble connecting to Dgraph."""
 
-    def __init__(self, exception):
+    def __init__(self, exception: Exception) -> None:
         self.exception = exception
 
-    def __str__(self):
+    def __str__(self) -> str:
         return str(self.exception)
 
 
 class TransactionError(Exception):
     """Error thrown when the transaction is invalid (e.g trying to mutate in read-only mode)."""
 
-    def __init__(self, msg):
+    def __init__(self, msg: str) -> None:
         super(TransactionError, self).__init__(msg)

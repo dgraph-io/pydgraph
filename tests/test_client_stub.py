@@ -3,10 +3,13 @@
 
 """Tests client stub."""
 
+from __future__ import annotations
+
 __author__ = "Garvit Pahal"
 __maintainer__ = "Istari Digital, Inc. <dgraph-admin@istaridigital.com>"
 
 import unittest
+from typing import Any
 
 import pydgraph
 
@@ -16,23 +19,23 @@ from . import helper
 class TestDgraphClientStub(helper.ClientIntegrationTestCase):
     """Tests client stub."""
 
-    def validate_version_object(self, version):
+    def validate_version_object(self, version: Any) -> None:
         tag = version.tag
         self.assertIsInstance(tag, str)
 
-    def check_version(self, stub):
+    def check_version(self, stub: Any) -> None:
         self.validate_version_object(stub.check_version(pydgraph.Check()))
 
-    def test_constructor(self):
+    def test_constructor(self) -> None:
         self.check_version(pydgraph.DgraphClientStub(addr=self.TEST_SERVER_ADDR))
 
-    def test_timeout(self):
+    def test_timeout(self) -> None:
         with self.assertRaises(Exception):
             pydgraph.DgraphClientStub(self.TEST_SERVER_ADDR).check_version(
                 pydgraph.Check(), timeout=-1
             )
 
-    def test_close(self):
+    def test_close(self) -> None:
         client_stub = pydgraph.DgraphClientStub(addr=self.TEST_SERVER_ADDR)
         self.check_version(client_stub)
         client_stub.close()
@@ -43,8 +46,8 @@ class TestDgraphClientStub(helper.ClientIntegrationTestCase):
 class TestFromCloud(unittest.TestCase):
     """Tests the from_cloud function"""
 
-    def test_from_cloud(self):
-        testcases = [
+    def test_from_cloud(self) -> None:
+        testcases: list[dict[str, Any]] = [
             {"endpoint": "godly.grpc.region.aws.cloud.dgraph.io"},
             {"endpoint": "godly.grpc.region.aws.cloud.dgraph.io:443"},
             {"endpoint": "https://godly.grpc.region.aws.cloud.dgraph.io:443"},
@@ -58,14 +61,14 @@ class TestFromCloud(unittest.TestCase):
 
         for case in testcases:
             try:
-                pydgraph.DgraphClientStub.from_cloud(case["endpoint"], "api-key")
+                pydgraph.DgraphClientStub.from_cloud(case["endpoint"], "api-key")  # type: ignore[arg-type]
             except IndexError as e:
-                if not case["error"]:
+                if not case.get("error", False):
                     # we didn't expect an error
                     raise (e)
 
 
-def suite():
+def suite() -> unittest.TestSuite:
     """Returns a test suite object."""
     suite_obj = unittest.TestSuite()
     suite_obj.addTest(TestDgraphClientStub())

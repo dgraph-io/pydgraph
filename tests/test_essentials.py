@@ -3,6 +3,8 @@
 
 """Tests mutation after query behavior."""
 
+from __future__ import annotations
+
 __author__ = "Shailesh Kochhar <shailesh.kochhar@gmail.com>"
 __maintainer__ = "Istari Digital, Inc. <dgraph-admin@istaridigital.com>"
 
@@ -16,7 +18,7 @@ from . import helper
 class TestEssentials(helper.ClientIntegrationTestCase):
     """Tests mutation after query behavior."""
 
-    def testMutationAfterQuery(self):
+    def testMutationAfterQuery(self) -> None:
         """Tests what happens when making a mutation on a txn after querying."""
 
         _ = self.client.txn(read_only=True).query(
@@ -37,7 +39,7 @@ class TestEssentials(helper.ClientIntegrationTestCase):
         self.assertEqual(created, json.loads(reread.json).get("node")[0]["uid"])
 
 
-def suite():
+def suite() -> unittest.TestSuite:
     """Returns a test suite object."""
     suite_obj = unittest.TestSuite()
     suite_obj.addTest(TestEssentials())

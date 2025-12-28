@@ -1,6 +1,8 @@
 # SPDX-FileCopyrightText: © 2017-2025 Istari Digital, Inc.
 # SPDX-License-Identifier: Apache-2.0
 
+from __future__ import annotations
+
 __author__ = "Garvit Pahal"
 __maintainer__ = "Istari Digital, Inc. <dgraph-admin@istaridigital.com>"
 
@@ -15,13 +17,13 @@ from . import helper
 
 
 class TestTxn(helper.ClientIntegrationTestCase):
-    def setUp(self):
+    def setUp(self) -> None:
         super(TestTxn, self).setUp()
 
         helper.drop_all(self.client)
         helper.set_schema(self.client, "name: string @index(fulltext) @upsert .")
 
-    def test_query_after_commit(self):
+    def test_query_after_commit(self) -> None:
         txn = self.client.txn()
         response = txn.mutate(set_obj={"name": "Manish"})
         self.assertEqual(1, len(response.uids), "Nothing was assigned")
@@ -42,7 +44,7 @@ class TestTxn(helper.ClientIntegrationTestCase):
         with self.assertRaises(Exception):
             txn.query(query)
 
-    def test_mutate_after_commit(self):
+    def test_mutate_after_commit(self) -> None:
         txn = self.client.txn()
         response = txn.mutate(set_obj={"name": "Manish"})
         self.assertEqual(1, len(response.uids), "Nothing was assigned")
@@ -52,7 +54,7 @@ class TestTxn(helper.ClientIntegrationTestCase):
         with self.assertRaises(Exception):
             txn.mutate(set_obj={"name": "Manish2"})
 
-    def test_commit_now(self):
+    def test_commit_now(self) -> None:
         txn = self.client.txn()
         response = txn.mutate(set_obj={"name": "Manish"}, commit_now=True)
         self.assertEqual(1, len(response.uids), "Nothing was assigned")
@@ -71,7 +73,7 @@ class TestTxn(helper.ClientIntegrationTestCase):
         resp = self.client.txn(read_only=True).query(query)
         self.assertEqual([{"name": "Manish"}], json.loads(resp.json).get("me"))
 
-    def test_discard(self):
+    def test_discard(self) -> None:
         txn = self.client.txn()
         response = txn.mutate(set_obj={"name": "Manish"})
         self.assertEqual(1, len(response.uids), "Nothing was assigned")
@@ -96,7 +98,7 @@ class TestTxn(helper.ClientIntegrationTestCase):
         resp = self.client.txn(read_only=True).query(query)
         self.assertEqual([{"name": "Manish"}], json.loads(resp.json).get("me"))
 
-    def test_mutate_error(self):
+    def test_mutate_error(self) -> None:
         txn = self.client.txn()
         with self.assertRaises(Exception):
             # Following N-Quad is invalid
@@ -104,7 +106,7 @@ class TestTxn(helper.ClientIntegrationTestCase):
 
         self.assertRaises(Exception, txn.commit)
 
-    def test_read_at_start_ts(self):
+    def test_read_at_start_ts(self) -> None:
         """Tests read after write when readTs == startTs"""
 
         txn = self.client.txn()
@@ -124,7 +126,7 @@ class TestTxn(helper.ClientIntegrationTestCase):
         resp = txn.query(query)
         self.assertEqual([{"name": "Manish"}], json.loads(resp.json).get("me"))
 
-    def test_read_before_start_ts(self):
+    def test_read_before_start_ts(self) -> None:
         """Tests read before write when readTs < startTs"""
 
         txn = self.client.txn()
@@ -145,7 +147,7 @@ class TestTxn(helper.ClientIntegrationTestCase):
         resp = self.client.txn(read_only=True).query(query)
         self.assertEqual([], json.loads(resp.json).get("me"))
 
-    def test_read_after_start_ts(self):
+    def test_read_after_start_ts(self) -> None:
         """Tests read after committing a write when readTs > startTs"""
 
         txn = self.client.txn()
@@ -167,7 +169,7 @@ class TestTxn(helper.ClientIntegrationTestCase):
         resp = self.client.txn(read_only=True).query(query)
         self.assertEqual([{"name": "Manish"}], json.loads(resp.json).get("me"))
 
-    def test_read_before_and_after_start_ts(self):
+    def test_read_before_and_after_start_ts(self) -> None:
         """Test read before and after committing a transaction when
         readTs1 < startTs and readTs2 > startTs"""
 
@@ -203,7 +205,7 @@ class TestTxn(helper.ClientIntegrationTestCase):
         resp4 = self.client.txn(read_only=True).query(query)
         self.assertEqual([{"name": "Manish2"}], json.loads(resp4.json).get("me"))
 
-    def test_read_from_new_client(self):
+    def test_read_from_new_client(self) -> None:
         """Tests committed reads from a new client with startTs == 0."""
 
         txn = self.client.txn()
@@ -236,7 +238,7 @@ class TestTxn(helper.ClientIntegrationTestCase):
         resp = self.client.txn(read_only=True).query(query)
         self.assertEqual([{"name": "Manish2"}], json.loads(resp.json).get("me"))
 
-    def test_read_only_txn(self):
+    def test_read_only_txn(self) -> None:
         """Tests read-only transactions. Read-only transactions should
         not advance the start ts nor should allow mutations or commits."""
 
@@ -264,7 +266,7 @@ class TestTxn(helper.ClientIntegrationTestCase):
         with self.assertRaises(Exception):
             txn.commit()
 
-    def test_best_effort_txn(self):
+    def test_best_effort_txn(self) -> None:
         """Tests best-effort transactions."""
 
         helper.drop_all(self.client)
@@ -294,7 +296,7 @@ class TestTxn(helper.ClientIntegrationTestCase):
             self.assertEqual([{"name": "Manish"}], json.loads(resp.json).get("me"))
             break
 
-    def test_conflict(self):
+    def test_conflict(self) -> None:
         """Tests committing two transactions which conflict."""
 
         helper.drop_all(self.client)
@@ -324,7 +326,7 @@ class TestTxn(helper.ClientIntegrationTestCase):
         resp3 = txn3.query(query)
         self.assertEqual([{"name": "Manish"}], json.loads(resp3.json).get("me"))
 
-    def test_conflict_reverse_order(self):
+    def test_conflict_reverse_order(self) -> None:
         """Tests committing a transaction after a newer transaction has been
         committed."""
 
@@ -356,7 +358,7 @@ class TestTxn(helper.ClientIntegrationTestCase):
         resp = txn3.query(query)
         self.assertEqual([{"name": "Jan the man"}], json.loads(resp.json).get("me"))
 
-    def test_commit_conflict(self):
+    def test_commit_conflict(self) -> None:
         txn = self.client.txn()
         response = txn.mutate(set_obj={"name": "Manish"})
         self.assertEqual(1, len(response.uids), "Nothing was assigned")
@@ -385,7 +387,7 @@ class TestTxn(helper.ClientIntegrationTestCase):
         resp4 = self.client.txn(read_only=True).query(query)
         self.assertEqual([{"name": "Jan the man"}], json.loads(resp4.json).get("me"))
 
-    def test_mutate_conflict(self):
+    def test_mutate_conflict(self) -> None:
         txn = self.client.txn()
         response = txn.mutate(set_obj={"name": "Manish"})
         self.assertEqual(1, len(response.uids), "Nothing was assigned")
@@ -401,7 +403,7 @@ class TestTxn(helper.ClientIntegrationTestCase):
         _ = txn.mutate(set_obj={"uid": uid, "name": "Manish2"})
         self.assertRaises(pydgraph.AbortedError, txn.commit)
 
-    def test_read_index_key_same_txn(self):
+    def test_read_index_key_same_txn(self) -> None:
         """Tests reading an indexed field within a transaction. The read
         should return the results from before any writes of the same
         txn."""
@@ -427,7 +429,7 @@ class TestTxn(helper.ClientIntegrationTestCase):
             [], json.loads(resp.json).get("me"), "Expected 0 nodes read from index"
         )
 
-    def test_non_string_variable(self):
+    def test_non_string_variable(self) -> None:
         """Tests sending a variable map with non-string values or keys results
         in an Exception."""
         helper.drop_all(self.client)
@@ -442,18 +444,18 @@ class TestTxn(helper.ClientIntegrationTestCase):
                 }
             }
         """
-        variables = {"$a": 1234}
+        variables = {"$a": 1234}  # type: ignore[dict-item]
         with self.assertRaises(Exception):
-            _ = txn.query(query, variables=variables)
+            _ = txn.query(query, variables=variables)  # type: ignore[arg-type]
 
-    def test_finished(self):
+    def test_finished(self) -> None:
         txn = self.client.txn()
         txn.mutate(set_nquads='_:animesh <name> "Animesh" .', commit_now=True)
 
         with self.assertRaises(Exception):
             txn.mutate(set_nquads='_:aman <name> "Aman" .', commit_now=True)
 
-    def test_mutate_facet(self):
+    def test_mutate_facet(self) -> None:
         """Tests mutations that include facets work as expected."""
         helper.drop_all(self.client)
         helper.set_schema(
@@ -499,13 +501,13 @@ _:a <friend> _:b (close_friend=true).
 
 
 class TestSPStar(helper.ClientIntegrationTestCase):
-    def setUp(self):
+    def setUp(self) -> None:
         super(TestSPStar, self).setUp()
 
         helper.drop_all(self.client)
         helper.set_schema(self.client, "friend: [uid] .")
 
-    def test_sp_star(self):
+    def test_sp_star(self) -> None:
         """Tests a Subject Predicate Star query."""
 
         txn = self.client.txn()
@@ -549,7 +551,7 @@ class TestSPStar(helper.ClientIntegrationTestCase):
             json.loads(resp.json).get("me"),
         )
 
-    def test_sp_star2(self):
+    def test_sp_star2(self) -> None:
         """Second test of Subject Predicate Star"""
 
         txn = self.client.txn()
@@ -610,7 +612,7 @@ class TestSPStar(helper.ClientIntegrationTestCase):
         self.assertEqual([{"uid": uid1}], json.loads(resp.json).get("me"))
 
 
-def suite():
+def suite() -> unittest.TestSuite:
     s = unittest.TestSuite()
     s.addTest(TestTxn())
     s.addTest(TestSPStar())

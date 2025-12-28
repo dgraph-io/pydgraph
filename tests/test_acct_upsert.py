@@ -3,6 +3,10 @@
 
 """Tests to verify upsert directive."""
 
+from __future__ import annotations
+
+from collections.abc import Callable
+
 __author__ = "Shailesh Kochhar <shailesh.kochhar@gmail.com>"
 __maintainer__ = "Istari Digital, Inc. <dgraph-admin@istaridigital.com>"
 
@@ -12,6 +16,7 @@ import multiprocessing
 import multiprocessing.dummy as mpd
 import time
 import unittest
+from typing import Any
 
 import pydgraph
 
@@ -26,7 +31,7 @@ AGES = [20, 25, 30, 35]
 class TestAccountUpsert(helper.ClientIntegrationTestCase):
     """Tests to verify upsert directive."""
 
-    def setUp(self):
+    def setUp(self) -> None:
         super(TestAccountUpsert, self).setUp()
 
         self.accounts = [
@@ -48,24 +53,29 @@ class TestAccountUpsert(helper.ClientIntegrationTestCase):
         """,
         )
 
-    def test_account_upsert(self):
+    def test_account_upsert(self) -> None:
         """Run upserts concurrently."""
         self.do_upserts(self.accounts, CONCURRENCY, upsert_account)
         self.assert_changes(FIRSTS, self.accounts)
 
-    def test_account_upsert_block(self):
+    def test_account_upsert_block(self) -> None:
         """Run upserts concurrently using upsert block."""
         self.do_upserts(self.accounts, CONCURRENCY, upsert_account_upsert_block)
         self.assert_changes(FIRSTS, self.accounts)
 
-    def do_upserts(self, account_list, concurrency, upsert_func):
+    def do_upserts(
+        self,
+        account_list: list[dict[str, object]],
+        concurrency: int,
+        upsert_func: Callable[..., None],
+    ) -> None:
         """Runs the upsert command for the accounts in `account_list`. Execution
         happens in concurrent processes."""
 
         success_ctr = multiprocessing.Value("i", 0, lock=True)
         retry_ctr = multiprocessing.Value("i", 0, lock=True)
 
-        def _updater(acct):
+        def _updater(acct: dict[str, object]) -> None:
             upsert_func(
                 addr=self.TEST_SERVER_ADDR,
                 account=acct,
@@ -83,7 +93,9 @@ class TestAccountUpsert(helper.ClientIntegrationTestCase):
         _ = [res.get() for res in results]
         pool.close()
 
-    def assert_changes(self, firsts, accounts):
+    def assert_changes(
+        self, firsts: list[str], accounts: list[dict[str, object]]
+    ) -> None:
         """Will check to see changes have been made."""
 
         query = """{{
@@ -110,7 +122,9 @@ class TestAccountUpsert(helper.ClientIntegrationTestCase):
             self.assertTrue("{first}_{last}_{age}".format(**acct) in account_set)
 
 
-def upsert_account(addr, account, success_ctr, retry_ctr):
+def upsert_account(
+    addr: str, account: dict[str, object], success_ctr: Any, retry_ctr: Any
+) -> None:
     """Runs upsert operation."""
     client = helper.create_client(addr)
     client.login("groot", "password")
@@ -172,7 +186,9 @@ def upsert_account(addr, account, success_ctr, retry_ctr):
             txn.discard()
 
 
-def upsert_account_upsert_block(addr, account, success_ctr, retry_ctr):
+def upsert_account_upsert_block(
+    addr: str, account: dict[str, object], success_ctr: Any, retry_ctr: Any
+) -> None:
     """Runs upsert operation."""
     client = helper.create_client(addr)
     client.login("groot", "password")
@@ -226,7 +242,7 @@ def upsert_account_upsert_block(addr, account, success_ctr, retry_ctr):
             txn.discard()
 
 
-def suite():
+def suite() -> unittest.TestSuite:
     """Returns a test suite object."""
     suite_obj = unittest.TestSuite()
     suite_obj.addTest(TestAccountUpsert())

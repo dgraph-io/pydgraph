@@ -9,6 +9,8 @@ The generated proto files are checked into the repository.
 Usage: uv run python scripts/protogen.py
 """
 
+from __future__ import annotations
+
 import os
 import sys
 

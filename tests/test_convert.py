@@ -3,6 +3,7 @@
 
 """Tests conversion functions."""
 
+from __future__ import annotations
 import json
 import unittest
 
@@ -12,10 +13,10 @@ from pydgraph import convert
 class TestConvert(unittest.TestCase):
     """Tests conversion functions."""
 
-    def test_extract_nodes_edges(self):
+    def test_extract_nodes_edges(self) -> None:
         # no ids, no extraction
-        nodes = {}
-        edges = []
+        nodes: dict[str, dict[str, object]] = {}
+        edges: list[dict[str, object]] = []
         convert.extract_dict(
             nodes=nodes, edges=edges, data=json.loads(sample_json_empty_result)
         )
@@ -48,7 +49,7 @@ class TestConvert(unittest.TestCase):
         self.assertEqual(edge["type"], "donations")
 
 
-def suite():
+def suite() -> unittest.TestSuite:
     """Returns a test suite object."""
     suite_obj = unittest.TestSuite()
     suite_obj.addTest(TestConvert())
