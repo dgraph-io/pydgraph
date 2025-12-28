@@ -21,7 +21,7 @@ pip install pydgraph
 ## Run the Sample Code
 
 ```sh
-python simple.py
+uv run python simple.py
 ```
 
 You can explore the source code in the `simple.py` file. Run `docker compose down` to tear down the
