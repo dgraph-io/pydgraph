@@ -10,25 +10,38 @@ authors = [
 license = { file = "LICENSE" }
 description = "Official Dgraph client implementation for Python"
 readme = "README.md"
-requires-python = ">=3.7"
+requires-python = ">=3.9"
 classifiers = [
   'Intended Audience :: Developers',
   'License :: OSI Approved :: Apache Software License',
   'Operating System :: OS Independent',
   'Topic :: Database',
   'Topic :: Software Development',
-  'Programming Language :: Python :: 3.7',
-  'Programming Language :: Python :: 3.8',
   'Programming Language :: Python :: 3.9',
   'Programming Language :: Python :: 3.10',
   'Programming Language :: Python :: 3.11',
   'Programming Language :: Python :: 3.12',
+  'Programming Language :: Python :: 3.13',
+  'Programming Language :: Python :: 3.14',
 ]
-dependencies = ["grpcio>=1.65.0,<2.0.0", "protobuf>=4.23.0,<7.0.0"]
+dependencies = ["grpcio>=1.65.1,<2.0.0", "protobuf>=4.23.0,<7.0.0"]
 dynamic = ["version"]
 
 [tool.setuptools.dynamic]
 version = { attr = "pydgraph.meta.VERSION" }
+
+[dependency-groups]
+dev = [
+    "grpc-stubs>=1.53.0.6",
+    "mypy>=1.14.1",
+    "mypy-protobuf>=4.0.0",
+    "pre-commit>=3.5.0",
+    "pydantic-settings>=2.8.1",
+    "shellcheck-py>=0.10.0.1",
+    "types-grpcio>=1.0.0.20251009",
+    "types-protobuf>=6.32.1.20251210",
+    "types-requests>=2.32.0.20241016",
+]
 
 [project.optional-dependencies]
 dev = [
@@ -42,3 +55,13 @@ dev = [
 
 [project.urls]
 "Homepage" = "https://github.com/dgraph-io/pydgraph"
+
+[tool.mypy]
+python_version = "3.9"
+warn_unused_configs = true
+disallow_untyped_defs = true
+plugins = ["mypy_protobuf.main"]
+
+[[tool.mypy.overrides]]
+module = "examples.embeddings.computeEmbeddings"
+ignore_missing_imports = true
