@@ -13,7 +13,6 @@ import unittest
 
 import pydgraph
 from pydgraph import open
-
 from tests import helper
 
 

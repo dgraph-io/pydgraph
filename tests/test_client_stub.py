@@ -84,7 +84,7 @@ class TestDgraphClientStubContextManager(helper.ClientIntegrationTestCase):
         """Test that exceptions within context manager are properly handled."""
         with self.assertRaises(AttributeError):
             with pydgraph.DgraphClientStub(addr=self.TEST_SERVER_ADDR) as client_stub:
-                self.check_version(client_stub) # AttributeError: no such method
+                self.check_version(client_stub)  # AttributeError: no such method
 
     def test_context_manager_function_wrapper(self):
         """Test the client_stub() function wrapper for context manager."""
@@ -175,18 +175,20 @@ class TestDgraphClientStubContextManager(helper.ClientIntegrationTestCase):
                 uid = list(response.uids.values())[0]
 
             # Verify data was committed
-            query = '''{{
+            query = """{{
                 me(func: uid("{uid}")) {{
                     test_name
                 }}
-            }}'''.format(uid=uid)
+            }}""".format(
+                uid=uid
+            )
 
             with client.txn(read_only=True) as txn:
                 resp = txn.query(query)
                 import json
+
                 results = json.loads(resp.json).get("me")
                 self.assertEqual([{"test_name": "ContextManagerTest"}], results)
-
 
 
 def suite():

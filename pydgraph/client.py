@@ -160,7 +160,6 @@ class DgraphClient(object):
         except Exception as error:
             DgraphClient._common_except_alter(error)
 
-<<<<<<< HEAD
     def drop_all(self, timeout=None, metadata=None, credentials=None):
         """Drops all data and schema from the Dgraph instance.
 
@@ -271,7 +270,9 @@ class DgraphClient(object):
 
     def txn(self, read_only=False, best_effort=False, **commit_kwargs):
         """Creates a transaction."""
-        return txn.Txn(self, read_only=read_only, best_effort=best_effort, **commit_kwargs)
+        return txn.Txn(
+            self, read_only=read_only, best_effort=best_effort, **commit_kwargs
+        )
 
     def run_dql(
         self,
@@ -648,19 +649,24 @@ class DgraphClient(object):
             client.close()
 
     @contextlib.contextmanager
-    def begin(self,
-              read_only:bool=False, best_effort:bool=False,
-              timeout = None, metadata = None, credentials = None):
-        '''Start a managed transaction.
+    def begin(
+        self,
+        read_only: bool = False,
+        best_effort: bool = False,
+        timeout=None,
+        metadata=None,
+        credentials=None,
+    ):
+        """Start a managed transaction.
 
         Note
         ----
         Only use this function in ``with-as`` blocks.
-        '''
+        """
         tx = self.txn(read_only=read_only, best_effort=best_effort)
         try:
             yield tx
-            if read_only == False and tx._finished == False:
+            if not read_only and not tx._finished:
                 tx.commit(timeout=timeout, metadata=metadata, credentials=credentials)
         except Exception as e:
             raise e

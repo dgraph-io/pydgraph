@@ -14,7 +14,6 @@ import time
 import unittest
 
 import pydgraph
-
 from tests import helper
 
 CONCURRENCY = 5

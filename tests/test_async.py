@@ -9,7 +9,6 @@ __maintainer__ = "Istari Digital, Inc. <dgraph-admin@istaridigital.com>"
 import json
 
 import pydgraph
-
 from tests import helper
 
 

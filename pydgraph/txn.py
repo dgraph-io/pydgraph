@@ -30,8 +30,15 @@ class Txn(object):
     after calling commit.
     """
 
-    def __init__(self, client, read_only=False, best_effort=False,
-                 timeout=None, metadata=None, credentials=None):
+    def __init__(
+        self,
+        client,
+        read_only=False,
+        best_effort=False,
+        timeout=None,
+        metadata=None,
+        credentials=None,
+    ):
         if not read_only and best_effort:
             raise Exception(
                 "Best effort transactions are only compatible with "
@@ -49,9 +56,9 @@ class Txn(object):
         self._commit_kwargs = {
             "timeout": timeout,
             "metadata": metadata,
-            "credentials": credentials
+            "credentials": credentials,
         }
-    
+
     def __enter__(self):
         return self
 
@@ -59,7 +66,7 @@ class Txn(object):
         if exc_type is not None:
             self.discard(**self._commit_kwargs)
             raise exc_val
-        if self._read_only == False and self._finished == False:
+        if not self._read_only and not self._finished:
             self.commit(**self._commit_kwargs)
         else:
             self.discard(**self._commit_kwargs)
@@ -186,7 +193,7 @@ class Txn(object):
                 self.discard(
                     timeout=timeout, metadata=metadata, credentials=credentials
                 )
-            except:
+            except Exception:
                 # Ignore error - user should see the original error.
                 pass
 
@@ -231,7 +238,7 @@ class Txn(object):
         except Exception as error:
             try:
                 txn.discard(**txn._commit_kwargs)
-            except:
+            except Exception:
                 # Ignore error - user should see the original error.
                 pass
             Txn._common_except_mutate(error)

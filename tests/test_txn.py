@@ -10,7 +10,6 @@ import time
 import unittest
 
 import pydgraph
-
 from tests import helper
 
 
@@ -618,31 +617,31 @@ class TestContextManager(helper.ClientIntegrationTestCase):
 
     def test_context_manager_by_contextlib(self):
         """Test context manager via client.begin() for read-only transactions."""
-        q = '''
+        q = """
         {
             company(func: type(x.Company), first: 10){
                     expand(_all_)
             }
         }
-        '''
+        """
         with self.client.begin(read_only=True, best_effort=True) as tx:
             response = tx.query(q)
         self.assertIsNotNone(response)
-        data = json.loads(response.json)
+        _data = json.loads(response.json)
 
     def test_context_manager_by_class(self):
         """Test context manager using Txn class directly for read-only transactions."""
-        q = '''
+        q = """
         {
             company(func: type(x.Company), first: 10){
                     expand(_all_)
             }
         }
-        '''
+        """
         with pydgraph.Txn(self.client, read_only=True, best_effort=True) as tx:
             response = tx.query(q)
         self.assertIsNotNone(response)
-        data = json.loads(response.json)
+        _data = json.loads(response.json)
 
     def test_context_manager_auto_commit(self):
         """Test that write transactions automatically commit on successful completion."""
@@ -652,11 +651,13 @@ class TestContextManager(helper.ClientIntegrationTestCase):
             uid = list(response.uids.values())[0]
 
         # Verify the data was committed by querying in a new transaction
-        query = '''{{
+        query = """{{
             me(func: uid("{uid}")) {{
                 name
             }}
-        }}'''.format(uid=uid)
+        }}""".format(
+            uid=uid
+        )
 
         resp = self.client.txn(read_only=True).query(query)
         self.assertEqual([{"name": "Alice"}], json.loads(resp.json).get("me"))
@@ -670,11 +671,13 @@ class TestContextManager(helper.ClientIntegrationTestCase):
         txn.commit()
 
         # Read-only transaction should auto-discard (not commit)
-        query = '''{{
+        query = """{{
             me(func: uid("{uid}")) {{
                 name
             }}
-        }}'''.format(uid=uid)
+        }}""".format(
+            uid=uid
+        )
 
         with self.client.txn(read_only=True) as txn:
             resp = txn.query(query)
@@ -688,15 +691,15 @@ class TestContextManager(helper.ClientIntegrationTestCase):
         with self.assertRaises(ValueError):
             with self.client.txn() as txn:
                 response = txn.mutate(set_obj={"name": "Charlie"})
-                uid = list(response.uids.values())[0]
+                _uid = list(response.uids.values())[0]
                 raise ValueError("Test exception")
 
         # Verify transaction was discarded - data should not exist
-        query = '''{{
-            me(func: has(name)) {{
+        query = """{
+            me(func: has(name)) {
                 name
-            }}
-        }}'''
+            }
+        }"""
 
         resp = self.client.txn(read_only=True).query(query)
         results = json.loads(resp.json).get("me")
@@ -722,17 +725,17 @@ class TestContextManager(helper.ClientIntegrationTestCase):
         """Test multiple mutations within a single context manager."""
         with self.client.txn() as txn:
             response1 = txn.mutate(set_obj={"name": "Eve"})
-            uid1 = list(response1.uids.values())[0]
+            _uid1 = list(response1.uids.values())[0]
 
             response2 = txn.mutate(set_obj={"name": "Frank"})
-            uid2 = list(response2.uids.values())[0]
+            _uid2 = list(response2.uids.values())[0]
 
         # Verify both mutations were committed
-        query = '''{{
-            me(func: has(name), orderasc: name) {{
+        query = """{
+            me(func: has(name), orderasc: name) {
                 name
-            }}
-        }}'''
+            }
+        }"""
 
         resp = self.client.txn(read_only=True).query(query)
         results = json.loads(resp.json).get("me")
@@ -750,11 +753,13 @@ class TestContextManager(helper.ClientIntegrationTestCase):
 
         # Query and update in context manager
         with self.client.txn() as txn:
-            query = '''{{
+            query = """{{
                 me(func: uid("{uid}")) {{
                     name
                 }}
-            }}'''.format(uid=uid)
+            }}""".format(
+                uid=uid
+            )
 
             resp = txn.query(query)
             self.assertEqual([{"name": "Grace"}], json.loads(resp.json).get("me"))
@@ -786,7 +791,7 @@ class TestContextManager(helper.ClientIntegrationTestCase):
         """Test that transactions with no mutations don't error on auto-commit."""
         with self.client.txn() as txn:
             query = "{ me(func: has(name)) { name } }"
-            resp = txn.query(query)
+            _resp = txn.query(query)
 
         # Should complete without errors even though no mutations were made
         self.assertTrue(txn._finished)

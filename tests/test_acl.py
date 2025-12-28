@@ -15,7 +15,6 @@ import unittest
 import grpc
 
 from . import helper
-import pydgraph
 
 
 class ACLTestBase(helper.ClientIntegrationTestCase):
