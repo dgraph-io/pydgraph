@@ -82,3 +82,16 @@ protoc.main(
         os.path.join(protopath, "api.proto"),
     )
 )
+
+# Fix import in generated stub file
+# mypy-protobuf generates `import api_pb2` but mypy needs a relative import
+# to properly resolve the module when checking the package
+api_pb2_grpc_pyi = os.path.join(protopath, "api_pb2_grpc.pyi")
+with open(api_pb2_grpc_pyi, "r") as f:
+    content = f.read()
+
+# Replace absolute import with relative import
+content = content.replace("import api_pb2\n", "from . import api_pb2\n")
+
+with open(api_pb2_grpc_pyi, "w") as f:
+    f.write(content)

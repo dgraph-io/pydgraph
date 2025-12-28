@@ -4,14 +4,10 @@
 """Stub for RPC request."""
 
 import grpc
+from urllib.parse import urlparse
 
 from pydgraph.meta import VERSION
 from pydgraph.proto import api_pb2_grpc as api_grpc
-
-try:
-    from urllib.parse import urlparse
-except ImportError:
-    from urlparse import urlparse
 
 __author__ = "Garvit Pahal"
 __maintainer__ = "Istari Digital, Inc. <dgraph-admin@istaridigital.com>"
@@ -104,7 +100,7 @@ class DgraphClientStub(object):
         """Deletes channel and stub."""
         try:
             self.channel.close()
-        except:
+        except Exception:
             pass
         del self.channel
         del self.stub

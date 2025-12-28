@@ -75,6 +75,9 @@ no_site_packages = true
 exclude = [
     ".venv",
     "build",
+    "scripts",
+    "pydgraph/proto/api_pb2\\.py$",
+    "pydgraph/proto/api_pb2_grpc\\.py$",
 ]
 
 [[tool.mypy.overrides]]

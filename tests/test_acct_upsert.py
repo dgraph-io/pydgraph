@@ -30,9 +30,9 @@ class TestAccountUpsert(helper.ClientIntegrationTestCase):
         super(TestAccountUpsert, self).setUp()
 
         self.accounts = [
-            {"first": f, "last": l, "age": a}
+            {"first": f, "last": last, "age": a}
             for f in FIRSTS
-            for l in LASTS
+            for last in LASTS
             for a in AGES
         ]
         logging.info(len(self.accounts))

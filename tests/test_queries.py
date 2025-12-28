@@ -268,7 +268,7 @@ class TestQueries(helper.ClientIntegrationTestCase):
 
 
 def is_number(number):
-    """Returns true if object is a number"""
+    """Returns true if object is a number."""
     return isinstance(number, int)
 
 

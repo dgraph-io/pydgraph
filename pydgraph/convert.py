@@ -3,10 +3,16 @@
 
 """Functions to transform data."""
 
+from __future__ import annotations
+
 
 def extract_dict(
-    nodes: dict, edges: list, data: dict, parent: dict = None, name: str = None
-):
+    nodes: dict,
+    edges: list,
+    data: dict,
+    parent: dict | None = None,
+    name: str | None = None,
+) -> None:
     """Recursively extract nodes and edges from a dict created from the result of a Dgraph query.
 
     Nodes (vertices) from the query must have an ``id`` field in order to be recognized

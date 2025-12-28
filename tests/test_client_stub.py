@@ -6,7 +6,6 @@
 __author__ = "Garvit Pahal"
 __maintainer__ = "Istari Digital, Inc. <dgraph-admin@istaridigital.com>"
 
-import sys
 import unittest
 
 import pydgraph
@@ -19,10 +18,6 @@ class TestDgraphClientStub(helper.ClientIntegrationTestCase):
 
     def validate_version_object(self, version):
         tag = version.tag
-        if sys.version_info[0] < 3:
-            self.assertIsInstance(tag, basestring)
-            return
-
         self.assertIsInstance(tag, str)
 
     def check_version(self, stub):

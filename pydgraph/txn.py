@@ -168,7 +168,7 @@ class Txn(object):
                 self.discard(
                     timeout=timeout, metadata=metadata, credentials=credentials
                 )
-            except:
+            except Exception:
                 # Ignore error - user should see the original error.
                 pass
 
@@ -201,7 +201,7 @@ class Txn(object):
         try:
             response = future.result()
         except Exception as error:
-            txn._common_except_mutate(error)
+            Txn._common_except_mutate(error)
 
         return response
 
@@ -212,8 +212,8 @@ class Txn(object):
             response = future.result()
         except Exception as error:
             try:
-                txn.discard(timeout=timeout, metadata=metadata, credentials=credentials)
-            except:
+                txn.discard()
+            except Exception:
                 # Ignore error - user should see the original error.
                 pass
             txn._common_except_mutate(error)
@@ -267,7 +267,7 @@ class Txn(object):
         """Creates a request object"""
         request = api.Request(
             start_ts=self._ctx.start_ts,
-            commit_now=commit_now,
+            commit_now=commit_now if commit_now is not None else False,
             read_only=self._read_only,
             best_effort=self._best_effort,
             resp_format=resp_format,

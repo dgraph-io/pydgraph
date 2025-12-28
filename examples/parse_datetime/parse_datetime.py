@@ -8,7 +8,7 @@ import pydgraph
 def parse_datetime(s):
     try:
         return datetime.datetime.strptime(s, "%Y-%m-%dT%H:%M:%SZ")
-    except:
+    except Exception:
         return s
 
 
