@@ -48,10 +48,14 @@ repos:
     hooks:
       - id: ty
         name: ty check
-        entry: uvx ty check . --ignore unresolved-import --ignore unknown-argument --ignore too-many-positional-arguments
+        entry: uvx ty check pydgraph tests
         language: python
         types: [python]
         pass_filenames: false
+        additional_dependencies:
+          - pytest>=8.3.3
+          - grpcio>=1.65.1
+          - protobuf>=4.23.0
   - repo: https://github.com/pre-commit/mirrors-mypy
     rev: v1.18.2
     hooks:
@@ -65,3 +69,4 @@ repos:
           - "grpc-stubs>=1.53.0"
           - "types-grpcio>=1.0.0"
           - "types-protobuf>=6.32.0"
+          - "pytest>=8.3.3"

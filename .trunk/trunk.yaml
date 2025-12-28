@@ -21,7 +21,7 @@ lint:
     - linters: [ALL]
       paths:
         - pydgraph/proto/api_pb*.py
-
+        - examples/notebook/**/*.ipynb
   enabled:
     - trivy@0.68.2
     - trivy@0.58.2
