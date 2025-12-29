@@ -35,9 +35,7 @@ class TestTxn(helper.ClientIntegrationTestCase):
             me(func: uid("{uid:s}")) {{
                 name
             }}
-        }}""".format(
-            uid=uid
-        )
+        }}""".format(uid=uid)
 
         with self.assertRaises(Exception):
             txn.query(query)
@@ -65,9 +63,7 @@ class TestTxn(helper.ClientIntegrationTestCase):
             me(func: uid("{uid:s}")) {{
                 name
             }}
-        }}""".format(
-            uid=uid
-        )
+        }}""".format(uid=uid)
         resp = self.client.txn(read_only=True).query(query)
         self.assertEqual([{"name": "Manish"}], json.loads(resp.json).get("me"))
 
@@ -90,9 +86,7 @@ class TestTxn(helper.ClientIntegrationTestCase):
             me(func: uid("{uid:s}")) {{
                 name
             }}
-        }}""".format(
-            uid=uid
-        )
+        }}""".format(uid=uid)
         resp = self.client.txn(read_only=True).query(query)
         self.assertEqual([{"name": "Manish"}], json.loads(resp.json).get("me"))
 
@@ -118,9 +112,7 @@ class TestTxn(helper.ClientIntegrationTestCase):
             me(func: uid("{uid:s}")) {{
                 name
             }}
-        }}""".format(
-            uid=uid
-        )
+        }}""".format(uid=uid)
         resp = txn.query(query)
         self.assertEqual([{"name": "Manish"}], json.loads(resp.json).get("me"))
 
@@ -138,9 +130,7 @@ class TestTxn(helper.ClientIntegrationTestCase):
             me(func: uid("{uid:s}")) {{
                 name
             }}
-        }}""".format(
-            uid=uid
-        )
+        }}""".format(uid=uid)
 
         resp = self.client.txn(read_only=True).query(query)
         self.assertEqual([], json.loads(resp.json).get("me"))
@@ -160,9 +150,7 @@ class TestTxn(helper.ClientIntegrationTestCase):
             me(func: uid("{uid:s}")) {{
                 name
             }}
-        }}""".format(
-            uid=uid
-        )
+        }}""".format(uid=uid)
 
         resp = self.client.txn(read_only=True).query(query)
         self.assertEqual([{"name": "Manish"}], json.loads(resp.json).get("me"))
@@ -189,9 +177,7 @@ class TestTxn(helper.ClientIntegrationTestCase):
             me(func: uid("{uid:s}")) {{
                 name
             }}
-        }}""".format(
-            uid=uid
-        )
+        }}""".format(uid=uid)
 
         # object is unchanged since txn3 is uncommitted
         resp2 = txn2.query(query)
@@ -220,9 +206,7 @@ class TestTxn(helper.ClientIntegrationTestCase):
             me(func: uid("{uid:s}")) {{
                 name
             }}
-        }}""".format(
-            uid=uid
-        )
+        }}""".format(uid=uid)
 
         resp2 = client2.txn(read_only=True).query(query)
         self.assertEqual([{"name": "Manish"}], json.loads(resp2.json).get("me"))
@@ -260,8 +244,11 @@ class TestTxn(helper.ClientIntegrationTestCase):
         # Allow small timestamp differences due to v23+ rollup behavior
         # In most cases timestamps should be equal, but rollups may cause
         # small increments in CI environments
-        self.assertLessEqual(abs(start_ts1 - start_ts2), 5,
-                            "Timestamps should be equal or differ by at most 5 due to rollups")
+        self.assertLessEqual(
+            abs(start_ts1 - start_ts2),
+            5,
+            "Timestamps should be equal or differ by at most 5 due to rollups",
+        )
 
         txn = self.client.txn(read_only=True)
         resp1 = txn.query(query)
@@ -330,9 +317,7 @@ class TestTxn(helper.ClientIntegrationTestCase):
             me(func: uid("{uid:s}")) {{
                 name
             }}
-        }}""".format(
-            uid=uid
-        )
+        }}""".format(uid=uid)
 
         resp3 = txn3.query(query)
         self.assertEqual([{"name": "Manish"}], json.loads(resp3.json).get("me"))
@@ -353,9 +338,7 @@ class TestTxn(helper.ClientIntegrationTestCase):
             me(func: uid("{uid:s}")) {{
                 name
             }}
-        }}""".format(
-            uid=uid
-        )
+        }}""".format(uid=uid)
 
         resp = txn2.query(query)
         self.assertEqual([], json.loads(resp.json).get("me"))
@@ -391,9 +374,7 @@ class TestTxn(helper.ClientIntegrationTestCase):
             me(func: uid("{uid:s}")) {{
                 name
             }}
-        }}""".format(
-            uid=uid
-        )
+        }}""".format(uid=uid)
 
         resp4 = self.client.txn(read_only=True).query(query)
         self.assertEqual([{"name": "Jan the man"}], json.loads(resp4.json).get("me"))
@@ -552,9 +533,7 @@ class TestSPStar(helper.ClientIntegrationTestCase):
                     name
                 }}
             }}
-        }}""".format(
-            uid=uid1
-        )
+        }}""".format(uid=uid1)
 
         resp = txn2.query(query)
         self.assertEqual(
@@ -584,9 +563,7 @@ class TestSPStar(helper.ClientIntegrationTestCase):
                     name
                 }}
             }}
-        }}""".format(
-            uid=uid1
-        )
+        }}""".format(uid=uid1)
 
         resp = txn.query(query)
         self.assertEqual(

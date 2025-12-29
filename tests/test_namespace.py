@@ -20,10 +20,7 @@ class TestNamespaces(helper.ClientIntegrationTestCase):
         helper.drop_all(self.client)
 
     def _wait_for_namespace_deletion(
-        self,
-        namespace_id: int,
-        max_retries: int = 5,
-        initial_delay: float = 0.1
+        self, namespace_id: int, max_retries: int = 5, initial_delay: float = 0.1
     ) -> None:
         """Wait for namespace deletion to propagate.
 
@@ -54,7 +51,7 @@ class TestNamespaces(helper.ClientIntegrationTestCase):
         self.assertNotIn(
             namespace_id,
             namespaces,
-            f"Namespace {namespace_id} still exists after {max_retries} retries"
+            f"Namespace {namespace_id} still exists after {max_retries} retries",
         )
 
     def test_create_namespace(self):
