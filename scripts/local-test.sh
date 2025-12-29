@@ -46,10 +46,10 @@ export TEST_SERVER_ADDR="localhost:${alphaGrpcPort}"
 echo "Using TEST_SERVER_ADDR=${TEST_SERVER_ADDR}"
 if [[ $# -eq 0 ]]; then
 	# No arguments provided, run all tests
-	pytest
+	uv run pytest
 else
 	# Run specific tests passed as arguments
-	pytest "$@"
+	uv run pytest "$@"
 fi
 tests_failed="$?"
 stopCluster
