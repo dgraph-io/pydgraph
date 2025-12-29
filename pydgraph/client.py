@@ -3,14 +3,21 @@
 
 """Dgraph python client."""
 
+from __future__ import annotations
+
 import random
 import urllib.parse
+from typing import TYPE_CHECKING, Any
 
 import grpc
 
 from pydgraph import errors, txn, util
 from pydgraph.meta import VERSION
 from pydgraph.proto import api_pb2 as api
+
+if TYPE_CHECKING:
+    from pydgraph.client_stub import DgraphClientStub
+    from pydgraph.txn import Txn
 
 __author__ = "Mohit Ranka <mohitranka@gmail.com>"
 __maintainer__ = "Istari Digital, Inc. <dgraph-admin@istaridigital.com>"
@@ -25,15 +32,20 @@ class DgraphClient(object):
     multiple servers in a cluster).
     """
 
-    def __init__(self, *clients):
+    def __init__(self, *clients: DgraphClientStub) -> None:
         if not clients:
             raise ValueError("No clients provided in DgraphClient constructor")
 
         self._clients = clients[:]
         self._jwt = api.Jwt()
-        self._login_metadata = []
+        self._login_metadata: list[tuple[str, str]] = []
 
-    def check_version(self, timeout=None, metadata=None, credentials=None):
+    def check_version(
+        self,
+        timeout: float | None = None,
+        metadata: list[tuple[str, str]] | None = None,
+        credentials: grpc.CallCredentials | None = None,
+    ) -> str:
         """Returns the version of Dgraph if the server is ready to accept requests."""
 
         new_metadata = self.add_login_metadata(metadata)
@@ -61,7 +73,14 @@ class DgraphClient(object):
             else:
                 raise error
 
-    def login(self, userid, password, timeout=None, metadata=None, credentials=None):
+    def login(
+        self,
+        userid: str,
+        password: str,
+        timeout: float | None = None,
+        metadata: list[tuple[str, str]] | None = None,
+        credentials: grpc.CallCredentials | None = None,
+    ) -> None:
         """Attempts a login via this client."""
 
         return self.login_into_namespace(
@@ -74,8 +93,14 @@ class DgraphClient(object):
         )
 
     def login_into_namespace(
-        self, userid, password, namespace, timeout=None, metadata=None, credentials=None
-    ):
+        self,
+        userid: str,
+        password: str,
+        namespace: int,
+        timeout: float | None = None,
+        metadata: list[tuple[str, str]] | None = None,
+        credentials: grpc.CallCredentials | None = None,
+    ) -> None:
         """Attempts a login into a namespace via this client."""
 
         login_req = api.LoginRequest()
@@ -90,7 +115,12 @@ class DgraphClient(object):
         self._jwt.ParseFromString(response.json)
         self._login_metadata = [("accessjwt", self._jwt.access_jwt)]
 
-    def retry_login(self, timeout=None, metadata=None, credentials=None):
+    def retry_login(
+        self,
+        timeout: float | None = None,
+        metadata: list[tuple[str, str]] | None = None,
+        credentials: grpc.CallCredentials | None = None,
+    ) -> None:
         """Attempts a retry login via this client."""
 
         if len(self._jwt.refresh_jwt) == 0:
@@ -106,7 +136,13 @@ class DgraphClient(object):
         self._jwt.ParseFromString(response.json)
         self._login_metadata = [("accessjwt", self._jwt.access_jwt)]
 
-    def alter(self, operation, timeout=None, metadata=None, credentials=None):
+    def alter(
+        self,
+        operation: api.Operation,
+        timeout: float | None = None,
+        metadata: list[tuple[str, str]] | None = None,
+        credentials: grpc.CallCredentials | None = None,
+    ) -> api.Payload:
         """Runs a modification via this client."""
 
         new_metadata = self.add_login_metadata(metadata)
@@ -129,13 +165,15 @@ class DgraphClient(object):
                         metadata=new_metadata,
                         credentials=credentials,
                     )
-                except Exception as error:
-                    self._common_except_alter(error)
+                except Exception as retry_error:
+                    self._common_except_alter(retry_error)
+                    raise  # This should never be reached due to _common_except_alter raising
             else:
                 self._common_except_alter(error)
+                raise  # This should never be reached due to _common_except_alter raising
 
     @staticmethod
-    def _common_except_alter(error):
+    def _common_except_alter(error: Exception) -> None:
         if util.is_retriable_error(error):
             raise errors.RetriableError(error)
 
@@ -144,7 +182,13 @@ class DgraphClient(object):
 
         raise error
 
-    def async_alter(self, operation, timeout=None, metadata=None, credentials=None):
+    def async_alter(
+        self,
+        operation: api.Operation,
+        timeout: float | None = None,
+        metadata: list[tuple[str, str]] | None = None,
+        credentials: grpc.CallCredentials | None = None,
+    ) -> grpc.Future:
         """The async version of alter."""
 
         new_metadata = self.add_login_metadata(metadata)
@@ -153,13 +197,19 @@ class DgraphClient(object):
         )
 
     @staticmethod
-    def handle_alter_future(future):
+    def handle_alter_future(future: grpc.Future) -> api.Payload:
         try:
             return future.result()
         except Exception as error:
             DgraphClient._common_except_alter(error)
+            raise  # This should never be reached due to _common_except_alter raising
 
-    def drop_all(self, timeout=None, metadata=None, credentials=None):
+    def drop_all(
+        self,
+        timeout: float | None = None,
+        metadata: list[tuple[str, str]] | None = None,
+        credentials: grpc.CallCredentials | None = None,
+    ) -> api.Payload:
         """Drops all data and schema from the Dgraph instance.
 
         Args:
@@ -178,7 +228,12 @@ class DgraphClient(object):
             operation, timeout=timeout, metadata=metadata, credentials=credentials
         )
 
-    def drop_data(self, timeout=None, metadata=None, credentials=None):
+    def drop_data(
+        self,
+        timeout: float | None = None,
+        metadata: list[tuple[str, str]] | None = None,
+        credentials: grpc.CallCredentials | None = None,
+    ) -> api.Payload:
         """Drops all data from the Dgraph instance while preserving the schema.
 
         Args:
@@ -192,12 +247,18 @@ class DgraphClient(object):
         Raises:
             Exception: If the request fails.
         """
-        operation = api.Operation(drop_op="DATA")
+        operation = api.Operation(drop_op=api.Operation.DropOp.DATA)
         return self.alter(
             operation, timeout=timeout, metadata=metadata, credentials=credentials
         )
 
-    def drop_predicate(self, predicate, timeout=None, metadata=None, credentials=None):
+    def drop_predicate(
+        self,
+        predicate: str,
+        timeout: float | None = None,
+        metadata: list[tuple[str, str]] | None = None,
+        credentials: grpc.CallCredentials | None = None,
+    ) -> api.Payload:
         """Drops a predicate and its associated data from the Dgraph instance.
 
         Args:
@@ -214,12 +275,20 @@ class DgraphClient(object):
         """
         if not predicate:
             raise ValueError("predicate cannot be empty")
-        operation = api.Operation(drop_op="ATTR", drop_value=predicate)
+        operation = api.Operation(
+            drop_op=api.Operation.DropOp.ATTR, drop_value=predicate
+        )
         return self.alter(
             operation, timeout=timeout, metadata=metadata, credentials=credentials
         )
 
-    def drop_type(self, type_name, timeout=None, metadata=None, credentials=None):
+    def drop_type(
+        self,
+        type_name: str,
+        timeout: float | None = None,
+        metadata: list[tuple[str, str]] | None = None,
+        credentials: grpc.CallCredentials | None = None,
+    ) -> api.Payload:
         """Drops a type definition from the DQL schema.
 
         Note: This only removes the type definition from the schema. No data is
@@ -240,12 +309,20 @@ class DgraphClient(object):
         """
         if not type_name:
             raise ValueError("type_name cannot be empty")
-        operation = api.Operation(drop_op="TYPE", drop_value=type_name)
+        operation = api.Operation(
+            drop_op=api.Operation.DropOp.TYPE, drop_value=type_name
+        )
         return self.alter(
             operation, timeout=timeout, metadata=metadata, credentials=credentials
         )
 
-    def set_schema(self, schema, timeout=None, metadata=None, credentials=None):
+    def set_schema(
+        self,
+        schema: str,
+        timeout: float | None = None,
+        metadata: list[tuple[str, str]] | None = None,
+        credentials: grpc.CallCredentials | None = None,
+    ) -> api.Payload:
         """Sets the DQL schema for the Dgraph instance.
 
         Args:
@@ -267,22 +344,22 @@ class DgraphClient(object):
             operation, timeout=timeout, metadata=metadata, credentials=credentials
         )
 
-    def txn(self, read_only=False, best_effort=False):
+    def txn(self, read_only: bool = False, best_effort: bool = False) -> Txn:
         """Creates a transaction."""
 
         return txn.Txn(self, read_only=read_only, best_effort=best_effort)
 
     def run_dql(
         self,
-        dql_query,
-        vars=None,
-        read_only=False,
-        best_effort=False,
-        resp_format="JSON",
-        timeout=None,
-        metadata=None,
-        credentials=None,
-    ):
+        dql_query: str,
+        vars: dict[str, str] | None = None,
+        read_only: bool = False,
+        best_effort: bool = False,
+        resp_format: str = "JSON",
+        timeout: float | None = None,
+        metadata: list[tuple[str, str]] | None = None,
+        credentials: grpc.CallCredentials | None = None,
+    ) -> api.Response:
         """
         Runs a DQL query or mutation via this client.
 
@@ -324,21 +401,24 @@ class DgraphClient(object):
                 new_metadata.append(("namespace", "0"))
 
         # Convert string format to enum if needed
+        format_value: int
         if isinstance(resp_format, str):
             if resp_format.upper() == "JSON":
-                resp_format = api.Request.RespFormat.JSON
+                format_value = api.Request.RespFormat.JSON
             elif resp_format.upper() == "RDF":
-                resp_format = api.Request.RespFormat.RDF
+                format_value = api.Request.RespFormat.RDF
             else:
                 raise ValueError(
                     f"Invalid resp_format: {resp_format}. Must be 'JSON' or 'RDF'"
                 )
+        else:
+            format_value = resp_format
         req = api.RunDQLRequest(
             dql_query=dql_query,
             vars=vars,
             read_only=read_only,
             best_effort=best_effort,
-            resp_format=resp_format,
+            resp_format=format_value,
         )
         try:
             return self.any_client().run_dql(
@@ -362,15 +442,15 @@ class DgraphClient(object):
 
     def run_dql_with_vars(
         self,
-        dql_query,
-        vars,
-        read_only=False,
-        best_effort=False,
-        resp_format="JSON",
-        timeout=None,
-        metadata=None,
-        credentials=None,
-    ):
+        dql_query: str,
+        vars: dict[str, str],
+        read_only: bool = False,
+        best_effort: bool = False,
+        resp_format: str = "JSON",
+        timeout: float | None = None,
+        metadata: list[tuple[str, str]] | None = None,
+        credentials: grpc.CallCredentials | None = None,
+    ) -> api.Response:
         """
         Runs a DQL query or mutation with variables via this client.
 
@@ -405,7 +485,13 @@ class DgraphClient(object):
             credentials=credentials,
         )
 
-    def allocate_uids(self, how_many, timeout=None, metadata=None, credentials=None):
+    def allocate_uids(
+        self,
+        how_many: int,
+        timeout: float | None = None,
+        metadata: list[tuple[str, str]] | None = None,
+        credentials: grpc.CallCredentials | None = None,
+    ) -> tuple[int, int]:
         """
         AllocateUIDs allocates a given number of Node UIDs in the Graph and returns a start and end UIDs,
         end excluded. The UIDs in the range [start, end) can then be used by the client in the mutations
@@ -427,8 +513,12 @@ class DgraphClient(object):
         return self._allocate_ids(how_many, api.UID, timeout, metadata, credentials)
 
     def allocate_timestamps(
-        self, how_many, timeout=None, metadata=None, credentials=None
-    ):
+        self,
+        how_many: int,
+        timeout: float | None = None,
+        metadata: list[tuple[str, str]] | None = None,
+        credentials: grpc.CallCredentials | None = None,
+    ) -> tuple[int, int]:
         """
         AllocateTimestamps gets a sequence of timestamps allocated from Dgraph. These timestamps can be
         used in bulk loader and similar applications.
@@ -447,8 +537,12 @@ class DgraphClient(object):
         return self._allocate_ids(how_many, api.TS, timeout, metadata, credentials)
 
     def allocate_namespaces(
-        self, how_many, timeout=None, metadata=None, credentials=None
-    ):
+        self,
+        how_many: int,
+        timeout: float | None = None,
+        metadata: list[tuple[str, str]] | None = None,
+        credentials: grpc.CallCredentials | None = None,
+    ) -> tuple[int, int]:
         """
         AllocateNamespaces allocates a given number of namespaces in the Graph and returns a start and end
         namespaces, end excluded. The namespaces in the range [start, end) can then be used by the client.
@@ -469,8 +563,13 @@ class DgraphClient(object):
         return self._allocate_ids(how_many, api.NS, timeout, metadata, credentials)
 
     def _allocate_ids(
-        self, how_many, lease_type, timeout=None, metadata=None, credentials=None
-    ):
+        self,
+        how_many: int,
+        lease_type: int,
+        timeout: float | None = None,
+        metadata: list[tuple[str, str]] | None = None,
+        credentials: grpc.CallCredentials | None = None,
+    ) -> tuple[int, int]:
         """
         Helper method to allocate IDs of different types (UIDs, timestamps, namespaces).
 
@@ -487,7 +586,7 @@ class DgraphClient(object):
         if how_many <= 0:
             raise ValueError("how_many must be greater than 0")
         new_metadata = self.add_login_metadata(metadata)
-        req = api.AllocateIDsRequest(how_many=how_many, lease_type=lease_type)
+        req = api.AllocateIDsRequest(how_many=how_many, lease_type=lease_type)  # type: ignore[arg-type]
         try:
             response = self.any_client().allocate_ids(
                 req,
@@ -510,7 +609,12 @@ class DgraphClient(object):
             else:
                 raise error
 
-    def create_namespace(self, timeout=None, metadata=None, credentials=None):
+    def create_namespace(
+        self,
+        timeout: float | None = None,
+        metadata: list[tuple[str, str]] | None = None,
+        credentials: grpc.CallCredentials | None = None,
+    ) -> int:
         """Creates a new namespace and returns its ID.
 
         Args:
@@ -550,7 +654,13 @@ class DgraphClient(object):
             else:
                 raise error
 
-    def drop_namespace(self, namespace, timeout=None, metadata=None, credentials=None):
+    def drop_namespace(
+        self,
+        namespace: int,
+        timeout: float | None = None,
+        metadata: list[tuple[str, str]] | None = None,
+        credentials: grpc.CallCredentials | None = None,
+    ) -> Any:
         """Drops the specified namespace. If the namespace does not exist, the request will still
         succeed.
 
@@ -590,7 +700,12 @@ class DgraphClient(object):
             else:
                 raise error
 
-    def list_namespaces(self, timeout=None, metadata=None, credentials=None):
+    def list_namespaces(
+        self,
+        timeout: float | None = None,
+        metadata: list[tuple[str, str]] | None = None,
+        credentials: grpc.CallCredentials | None = None,
+    ) -> dict[int, Any]:
         """Lists all namespaces.
 
         Args:
@@ -630,19 +745,21 @@ class DgraphClient(object):
             else:
                 raise error
 
-    def any_client(self):
+    def any_client(self) -> DgraphClientStub:
         """Returns a random gRPC client so that requests are distributed evenly among them."""
 
         return random.choice(self._clients)  # nosec # pylint: disable=insecure-random
 
-    def add_login_metadata(self, metadata):
+    def add_login_metadata(
+        self, metadata: list[tuple[str, str]] | None
+    ) -> list[tuple[str, str]]:
         new_metadata = list(self._login_metadata)
         if not metadata:
             return new_metadata
         new_metadata.extend(metadata)
         return new_metadata
 
-    def close(self):
+    def close(self) -> None:
         for client in self._clients:
             client.close()
 
@@ -737,6 +854,8 @@ def open(connection_string: str) -> DgraphClient:
 
     if username:
         thirty_seconds = 30
+        if password is None:
+            raise ValueError("password is required when username is provided")
         client.login_into_namespace(
             username, password, namespace, timeout=thirty_seconds
         )

@@ -10,10 +10,7 @@ services:
         source: ./acl-secret
         target: /secret/hmac
         read_only: true
-    command:
-      dgraph alpha --my=alpha1:7080 --zero=zero1:5080 --logtostderr -v=2 --raft "idx=1; group=1"
-      --security "whitelist=0.0.0.0/0;" --acl "secret-file=/secret/hmac;"
-
+    command: dgraph alpha --my=alpha1:7080 --zero=zero1:5080 --logtostderr -v=2 --raft "idx=1; group=1" --security "whitelist=0.0.0.0/0;" --acl "secret-file=/secret/hmac;"
   alpha2:
     image: dgraph/dgraph:${DGRAPH_IMAGE_TAG:-latest}
     working_dir: /data/alpha2
@@ -25,10 +22,7 @@ services:
         source: ./acl-secret
         target: /secret/hmac
         read_only: true
-    command:
-      dgraph alpha --my=alpha2:7080 --zero=zero1:5080 --logtostderr -v=2 --raft "idx=2; group=1"
-      --security "whitelist=0.0.0.0/0;" --acl "secret-file=/secret/hmac;"
-
+    command: dgraph alpha --my=alpha2:7080 --zero=zero1:5080 --logtostderr -v=2 --raft "idx=2; group=1" --security "whitelist=0.0.0.0/0;" --acl "secret-file=/secret/hmac;"
   alpha3:
     image: dgraph/dgraph:${DGRAPH_IMAGE_TAG:-latest}
     working_dir: /data/alpha3
@@ -40,10 +34,7 @@ services:
         source: ./acl-secret
         target: /secret/hmac
         read_only: true
-    command:
-      dgraph alpha --my=alpha3:7080 --zero=zero1:5080 --logtostderr -v=2 --raft "idx=3; group=1"
-      --security "whitelist=0.0.0.0/0;" --acl "secret-file=/secret/hmac;"
-
+    command: dgraph alpha --my=alpha3:7080 --zero=zero1:5080 --logtostderr -v=2 --raft "idx=3; group=1" --security "whitelist=0.0.0.0/0;" --acl "secret-file=/secret/hmac;"
   zero1:
     image: dgraph/dgraph:${DGRAPH_IMAGE_TAG:-latest}
     working_dir: /data/zero1
@@ -51,7 +42,6 @@ services:
       - "5080"
       - "6080"
     command: dgraph zero --raft='idx=1' --my=zero1:5080 --replicas=3 --logtostderr -v=2 --bindall
-
   zero2:
     image: dgraph/dgraph:${DGRAPH_IMAGE_TAG:-latest}
     working_dir: /data/zero2
@@ -60,9 +50,7 @@ services:
     ports:
       - "5080"
       - "6080"
-    command:
-      dgraph zero --raft='idx=2' --my=zero2:5080 --replicas=3 --logtostderr -v=2 --peer=zero1:5080
-
+    command: dgraph zero --raft='idx=2' --my=zero2:5080 --replicas=3 --logtostderr -v=2 --peer=zero1:5080
   zero3:
     image: dgraph/dgraph:${DGRAPH_IMAGE_TAG:-latest}
     working_dir: /data/zero3
@@ -71,5 +59,4 @@ services:
     ports:
       - "5080"
       - "6080"
-    command:
-      dgraph zero --raft='idx=3' --my=zero3:5080 --replicas=3 --logtostderr -v=2 --peer=zero1:5080
+    command: dgraph zero --raft='idx=3' --my=zero3:5080 --replicas=3 --logtostderr -v=2 --peer=zero1:5080

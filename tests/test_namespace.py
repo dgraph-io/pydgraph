@@ -1,6 +1,8 @@
 # SPDX-FileCopyrightText: © 2017-2025 Istari Digital, Inc.
 # SPDX-License-Identifier: Apache-2.0
 
+from __future__ import annotations
+
 __author__ = "Istari Digital, Inc. <dgraph-admin@istaridigital.com>"
 __maintainer__ = "Istari Digital, Inc. <dgraph-admin@istaridigital.com>"
 
@@ -13,12 +15,12 @@ from . import helper
 class TestNamespaces(helper.ClientIntegrationTestCase):
     """Tests for the namespace management methods."""
 
-    def setUp(self):
+    def setUp(self) -> None:
         super(TestNamespaces, self).setUp()
         helper.skip_if_dgraph_version_below(self.client, "25.0.0", self)
         helper.drop_all(self.client)
 
-    def test_create_namespace(self):
+    def test_create_namespace(self) -> None:
         """Test creating a new namespace returns valid namespace ID."""
         namespace_id = self.client.create_namespace()
 
@@ -32,7 +34,7 @@ class TestNamespaces(helper.ClientIntegrationTestCase):
         self.assertGreater(namespace_id2, 0)
         self.assertNotEqual(namespace_id, namespace_id2)
 
-    def test_list_namespaces(self):
+    def test_list_namespaces(self) -> None:
         """Test listing namespaces returns a dictionary."""
         # Create a namespace first
         namespace_id = self.client.create_namespace()
@@ -51,7 +53,7 @@ class TestNamespaces(helper.ClientIntegrationTestCase):
         self.assertTrue(hasattr(namespace_obj, "id"))
         self.assertEqual(namespace_obj.id, namespace_id)
 
-    def test_drop_namespace(self):
+    def test_drop_namespace(self) -> None:
         """Test dropping a namespace removes it from the list."""
         # Create a namespace
         namespace_id = self.client.create_namespace()
@@ -74,7 +76,7 @@ class TestNamespaces(helper.ClientIntegrationTestCase):
                 self.client.drop_namespace(namespace_id)
             self.assertIn("cannot be deleted", str(cm.exception))
 
-    def test_create_and_drop_multiple_namespaces(self):
+    def test_create_and_drop_multiple_namespaces(self) -> None:
         """Test creating and dropping multiple namespaces."""
         # Create multiple namespaces
         namespace_ids = []
@@ -101,7 +103,7 @@ class TestNamespaces(helper.ClientIntegrationTestCase):
         if 0 in namespace_ids:
             self.assertIn(0, namespaces_after)
 
-    def test_cannot_drop_namespace_zero(self):
+    def test_cannot_drop_namespace_zero(self) -> None:
         """Test that namespace 0 cannot be dropped."""
         # Namespace 0 is the system namespace and cannot be deleted
         import grpc
@@ -111,7 +113,7 @@ class TestNamespaces(helper.ClientIntegrationTestCase):
         self.assertIn("cannot be deleted", str(cm.exception))
 
 
-def suite():
+def suite() -> unittest.TestSuite:
     suite_obj = unittest.TestSuite()
     suite_obj.addTest(TestNamespaces())
     return suite_obj

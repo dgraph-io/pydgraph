@@ -1,5 +1,4 @@
 name: cd-pydgraph
-
 on:
   workflow_dispatch:
     inputs:
@@ -7,10 +6,8 @@ on:
         description: releasetag
         required: true
         type: string
-
 permissions:
   contents: read
-
 jobs:
   pydgraph-build:
     runs-on: ubuntu-latest
@@ -38,6 +35,4 @@ jobs:
           # build binary wheel and a source tarball
           python -m build
       - name: Upload to PyPi
-        run:
-          twine upload --username ${{ secrets.DGRAPH_PYPI_USERNAME }} --password ${{
-          secrets.DGRAPH_PYPI_PASSWORD }} dist/*
+        run: twine upload --username ${{ secrets.DGRAPH_PYPI_USERNAME }} --password ${{ secrets.DGRAPH_PYPI_PASSWORD }} dist/*

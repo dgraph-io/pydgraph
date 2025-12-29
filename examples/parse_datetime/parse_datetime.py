@@ -1,11 +1,14 @@
+from __future__ import annotations
+
 import datetime
 import json
+from typing import Any
 
 import pydgraph
 
 
 # Helper function for parsing dgraph's iso strings
-def parse_datetime(s):
+def parse_datetime(s: str) -> datetime.datetime | str:
     try:
         return datetime.datetime.strptime(s, "%Y-%m-%dT%H:%M:%SZ")
     except Exception:
@@ -13,7 +16,7 @@ def parse_datetime(s):
 
 
 # json decoder object_hook function
-def datetime_hook(obj):
+def datetime_hook(obj: dict[str, Any]) -> dict[str, Any]:
     for k, v in obj.items():
         if isinstance(v, list):
             for i in v:
@@ -24,22 +27,22 @@ def datetime_hook(obj):
 
 
 # Create a client stub.
-def create_client_stub():
+def create_client_stub() -> pydgraph.DgraphClientStub:
     return pydgraph.DgraphClientStub("localhost:9080")
 
 
 # Create a client.
-def create_client(client_stub):
+def create_client(client_stub: pydgraph.DgraphClientStub) -> pydgraph.DgraphClient:
     return pydgraph.DgraphClient(client_stub)
 
 
 # Drop All - discard all data and start from a clean slate.
-def drop_all(client):
+def drop_all(client: pydgraph.DgraphClient) -> pydgraph.proto.api_pb2.Payload:
     return client.alter(pydgraph.Operation(drop_all=True))
 
 
 # Set schema.
-def set_schema(client):
+def set_schema(client: pydgraph.DgraphClient) -> pydgraph.proto.api_pb2.Payload:
     schema = """
     name: string @index(exact) .
     friend: [uid] @reverse .
@@ -60,7 +63,7 @@ def set_schema(client):
 
 
 # Create data using JSON.
-def create_data(client):
+def create_data(client: pydgraph.DgraphClient) -> None:
     # Create a new transaction.
     txn = client.txn()
     try:
@@ -109,7 +112,7 @@ def create_data(client):
 
 
 # Query for data.
-def query_alice(client):
+def query_alice(client: pydgraph.DgraphClient) -> None:
     # Run query.
     query = """query all($a: string) {
         all(func: eq(name, $a)) {
@@ -140,13 +143,13 @@ def query_alice(client):
 
     # Print results.
     print(
-        f'{ppl["all"][0]["name"]} is {datetime.date.today().year - alice_dob.year} years old.'
+        f"{ppl['all'][0]['name']} is {datetime.date.today().year - alice_dob.year} years old."
     )
-    print(f'She married on {alice_marriedsince.strftime("%B, %d %Y")}.')
-    print(f'Bob was born on a {bob_dob.strftime("%A")}.')
+    print(f"She married on {alice_marriedsince.strftime('%B, %d %Y')}.")
+    print(f"Bob was born on a {bob_dob.strftime('%A')}.")
 
 
-def main():
+def main() -> None:
     client_stub = create_client_stub()
     client = create_client(client_stub)
     drop_all(client)

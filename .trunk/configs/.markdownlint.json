@@ -1,8 +1,11 @@
 {
-  "line-length": { "line_length": 150, "tables": false },
-  "no-inline-html": false,
+  "first-line-heading": false,
+  "line-length": {
+    "line_length": 150,
+    "tables": false
+  },
   "no-bare-urls": false,
-  "no-space-in-emphasis": false,
   "no-emphasis-as-heading": false,
-  "first-line-heading": false
+  "no-inline-html": false,
+  "no-space-in-emphasis": false
 }

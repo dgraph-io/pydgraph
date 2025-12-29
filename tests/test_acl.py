@@ -2,30 +2,33 @@
 # SPDX-License-Identifier: Apache-2.0
 
 """Tests to verify ACL."""
-import subprocess  # nosec B404
-import time
 
-__author__ = "Animesh Pathak <animesh@dgrpah.io>"
-__maintainer__ = "Istari Digital <contact@istaridigital.com>"
+from __future__ import annotations
 
 import logging
 import shutil
+import subprocess  # nosec B404
+import time
 import unittest
+from typing import Any
 
 import grpc
 
 from . import helper
 
+__author__ = "Animesh Pathak <animesh@dgrpah.io>"
+__maintainer__ = "Istari Digital <contact@istaridigital.com>"
+
 
 class ACLTestBase(helper.ClientIntegrationTestCase):
     """Base class with shared ACL helper methods."""
 
-    user_id = None
-    group_id = None
-    user_password = None
+    user_id: str | None = None
+    group_id: str | None = None
+    user_password: str | None = None
 
     @staticmethod
-    def run_acl_command(bash_command):
+    def run_acl_command(bash_command: str) -> None:
         """Run dgraph ACL commands in Docker container."""
         docker_command = [
             "docker",
@@ -38,9 +41,7 @@ class ACLTestBase(helper.ClientIntegrationTestCase):
         ] + bash_command.split()
 
         try:
-            subprocess.check_output(
-                docker_command, stderr=subprocess.STDOUT
-            )  # nosec B603
+            subprocess.check_output(docker_command, stderr=subprocess.STDOUT)  # nosec B603
         except subprocess.CalledProcessError as e:
             output_msg = ""
             if e.output:
@@ -54,7 +55,7 @@ class ACLTestBase(helper.ClientIntegrationTestCase):
             ) from e
 
     @staticmethod
-    def acl_add_user(namespace, user_id, password):
+    def acl_add_user(namespace: int, user_id: str, password: str) -> None:
         """Add a user via dgraph acl command."""
         bash_command = (
             "dgraph acl -a alpha1:9080"
@@ -67,7 +68,7 @@ class ACLTestBase(helper.ClientIntegrationTestCase):
         ACLTestBase.run_acl_command(bash_command)
 
     @staticmethod
-    def acl_add_group(namespace, group_id):
+    def acl_add_group(namespace: int, group_id: str) -> None:
         """Add a group via dgraph acl command."""
         bash_command = (
             "dgraph acl -a alpha1:9080"
@@ -78,7 +79,7 @@ class ACLTestBase(helper.ClientIntegrationTestCase):
         ACLTestBase.run_acl_command(bash_command)
 
     @staticmethod
-    def acl_add_user_to_group(namespace, user_id, group_id):
+    def acl_add_user_to_group(namespace: int, user_id: str, group_id: str) -> None:
         """Add a user to a group via dgraph acl command."""
         bash_command = (
             "dgraph acl -a alpha1:9080"
@@ -91,7 +92,7 @@ class ACLTestBase(helper.ClientIntegrationTestCase):
         ACLTestBase.run_acl_command(bash_command)
 
     @staticmethod
-    def acl_change_permission(namespace, group_id, permission):
+    def acl_change_permission(namespace: int, group_id: str, permission: int) -> None:
         """Change permission for a group on the 'name' predicate."""
         bash_command = (
             "dgraph acl -a alpha1:9080"
@@ -106,29 +107,41 @@ class ACLTestBase(helper.ClientIntegrationTestCase):
         time.sleep(2)
 
     # Instance method wrappers for convenience (use class defaults)
-    def add_user(self, namespace=0, user_id=None, password=None):
+    def add_user(
+        self,
+        namespace: int = 0,
+        user_id: str | None = None,
+        password: str | None = None,
+    ) -> None:
         if user_id is None:
             user_id = self.user_id
         if password is None:
             password = self.user_password
-        self.acl_add_user(namespace, user_id, password)
+        self.acl_add_user(namespace, user_id, password)  # type: ignore[arg-type]
 
-    def add_group(self, namespace=0, group_id=None):
+    def add_group(self, namespace: int = 0, group_id: str | None = None) -> None:
         if group_id is None:
             group_id = self.group_id
-        self.acl_add_group(namespace, group_id)
+        self.acl_add_group(namespace, group_id)  # type: ignore[arg-type]
 
-    def add_user_to_group(self, namespace=0, user_id=None, group_id=None):
+    def add_user_to_group(
+        self,
+        namespace: int = 0,
+        user_id: str | None = None,
+        group_id: str | None = None,
+    ) -> None:
         if user_id is None:
             user_id = self.user_id
         if group_id is None:
             group_id = self.group_id
-        self.acl_add_user_to_group(namespace, user_id, group_id)
+        self.acl_add_user_to_group(namespace, user_id, group_id)  # type: ignore[arg-type]
 
-    def change_permission(self, permission, namespace=0, group_id=None):
+    def change_permission(
+        self, permission: int, namespace: int = 0, group_id: str | None = None
+    ) -> None:
         if group_id is None:
             group_id = self.group_id
-        self.acl_change_permission(namespace, group_id, permission)
+        self.acl_change_permission(namespace, group_id, permission)  # type: ignore[arg-type]
 
 
 @unittest.skipIf(shutil.which("docker") is None, "Docker not found.")
@@ -137,7 +150,7 @@ class TestACL(ACLTestBase):
     group_id = "dev"
     user_password = "simplepassword"  # nosec B105
 
-    def setUp(self):
+    def setUp(self) -> None:
         super(TestACL, self).setUp()
         helper.drop_all(self.client)
         helper.set_schema(self.client, "name: string .")
@@ -149,32 +162,32 @@ class TestACL(ACLTestBase):
         time.sleep(2)
         self.alice_client.login(self.user_id, self.user_password)
 
-    def test_read(self):
+    def test_read(self) -> None:
         self.change_permission(4)
         self.try_reading(True)
         self.try_writing(False)
         self.try_altering(False)
         self.change_permission(0)
 
-    def test_write(self):
+    def test_write(self) -> None:
         self.change_permission(2)
         self.try_reading(False)
         self.try_writing(True)
         self.try_altering(False)
         self.change_permission(0)
 
-    def test_alter(self):
+    def test_alter(self) -> None:
         self.change_permission(1)
         self.try_reading(False)
         self.try_writing(False)
         self.try_altering(True)
         self.change_permission(0)
 
-    def insert_sample_data(self):
+    def insert_sample_data(self) -> None:
         txn = self.client.txn()
         txn.mutate(set_nquads='_:animesh <name> "Animesh" .', commit_now=True)
 
-    def try_reading(self, expected):
+    def try_reading(self, expected: bool) -> None:
         txn = self.alice_client.txn()
         query = """
                 {
@@ -195,7 +208,7 @@ class TestACL(ACLTestBase):
                     "Acl test failed: Read failed for readable predicate.\n" + str(e)
                 )
 
-    def try_writing(self, expected):
+    def try_writing(self, expected: bool) -> None:
         txn = self.alice_client.txn()
 
         try:
@@ -208,7 +221,7 @@ class TestACL(ACLTestBase):
                     "Acl test failed: Write failed for writable predicate.\n" + str(e)
                 )
 
-    def try_altering(self, expected):
+    def try_altering(self, expected: bool) -> None:
         try:
             helper.set_schema(self.alice_client, "name: string @index(exact, term) .")
             if not expected:
@@ -224,19 +237,20 @@ class TestACL(ACLTestBase):
 class TestNamespaceACL(ACLTestBase):
     """Tests ACL functionality across multiple namespaces with different users."""
 
-    bob_id = "bob"
-    bob_password = "bobpassword"  # nosec B105
-    bob_group = "bobgroup"
+    bob_id: str = "bob"
+    bob_password: str = "bobpassword"  # nosec B105
+    bob_group: str = "bobgroup"
 
-    alice_id = "alice"
-    alice_password = "alicepassword"  # nosec B105
-    alice_group = "alicegroup"
+    alice_id: str = "alice"
+    alice_password: str = "alicepassword"  # nosec B105
+    alice_group: str = "alicegroup"
 
-    bob_namespace = None
-    alice_namespace = None
+    bob_namespace: int | None = None
+    alice_namespace: int | None = None
+    root_client: Any
 
     @classmethod
-    def setUpClass(cls):
+    def setUpClass(cls) -> None:
         """Set up namespaces and users once for all tests in this class."""
         super(TestNamespaceACL, cls).setUpClass()
 
@@ -247,7 +261,9 @@ class TestNamespaceACL(ACLTestBase):
 
         # Create root client as groot
         cls.root_client = helper.create_client(
-            cls.TEST_SERVER_ADDR, username="groot", password="password"  # nosec B106
+            cls.TEST_SERVER_ADDR,
+            username="groot",
+            password="password",  # nosec B106
         )
         helper.drop_all(cls.root_client)
 
@@ -300,13 +316,13 @@ class TestNamespaceACL(ACLTestBase):
         time.sleep(2)
 
     @classmethod
-    def tearDownClass(cls):
+    def tearDownClass(cls) -> None:
         """Clean up after all tests."""
         if hasattr(cls, "root_client"):
             cls.root_client.close()
         super(TestNamespaceACL, cls).tearDownClass()
 
-    def test_bob_in_own_namespace(self):
+    def test_bob_in_own_namespace(self) -> None:
         """Test bob can connect to his own namespace."""
         bob_client = helper.create_client(
             self.TEST_SERVER_ADDR,
@@ -316,6 +332,7 @@ class TestNamespaceACL(ACLTestBase):
         )
 
         # Give bob read permission in his namespace
+        assert self.bob_namespace is not None
         self.change_permission(4, namespace=self.bob_namespace, group_id=self.bob_group)
 
         # Bob should be able to read in his namespace
@@ -333,7 +350,7 @@ class TestNamespaceACL(ACLTestBase):
 
         bob_client.close()
 
-    def test_bob_cannot_access_root_namespace(self):
+    def test_bob_cannot_access_root_namespace(self) -> None:
         """Test bob cannot connect to root namespace with his credentials."""
 
         # Bob's credentials should not work in namespace 0
@@ -345,7 +362,7 @@ class TestNamespaceACL(ACLTestBase):
                 namespace=0,
             )
 
-    def test_alice_in_own_namespace(self):
+    def test_alice_in_own_namespace(self) -> None:
         """Test alice can connect to her own namespace."""
         alice_client = helper.create_client(
             self.TEST_SERVER_ADDR,
@@ -355,8 +372,11 @@ class TestNamespaceACL(ACLTestBase):
         )
 
         # Give alice read permission in her namespace
+        assert self.alice_namespace is not None
         self.change_permission(
-            4, namespace=self.alice_namespace, group_id=self.alice_group
+            4,
+            namespace=self.alice_namespace,
+            group_id=self.alice_group,
         )
 
         # Alice should be able to read in her namespace
@@ -374,7 +394,7 @@ class TestNamespaceACL(ACLTestBase):
 
         alice_client.close()
 
-    def test_bob_cannot_access_alice_namespace(self):
+    def test_bob_cannot_access_alice_namespace(self) -> None:
         """Test bob cannot connect to alice's namespace."""
 
         with self.assertRaises(grpc.RpcError):
@@ -385,7 +405,7 @@ class TestNamespaceACL(ACLTestBase):
                 namespace=self.alice_namespace,
             )
 
-    def test_alice_cannot_access_bob_namespace(self):
+    def test_alice_cannot_access_bob_namespace(self) -> None:
         """Test alice cannot connect to bob's namespace."""
 
         with self.assertRaises(grpc.RpcError):
@@ -396,12 +416,16 @@ class TestNamespaceACL(ACLTestBase):
                 namespace=self.bob_namespace,
             )
 
-    def test_namespace_data_isolation(self):
+    def test_namespace_data_isolation(self) -> None:
         """Test that bob only sees his data and alice only sees her data."""
         # Give both users read permission
+        assert self.bob_namespace is not None
+        assert self.alice_namespace is not None
         self.change_permission(4, namespace=self.bob_namespace, group_id=self.bob_group)
         self.change_permission(
-            4, namespace=self.alice_namespace, group_id=self.alice_group
+            4,
+            namespace=self.alice_namespace,
+            group_id=self.alice_group,
         )
 
         # Bob queries his namespace
@@ -438,7 +462,7 @@ class TestNamespaceACL(ACLTestBase):
         alice_client.close()
 
 
-def suite():
+def suite() -> unittest.TestSuite:
     suite_obj = unittest.TestSuite()
     suite_obj.addTest(TestACL())
     suite_obj.addTest(TestNamespaceACL())

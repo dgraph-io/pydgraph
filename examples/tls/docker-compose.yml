@@ -9,10 +9,7 @@ services:
     labels:
       cluster: test
       service: zero
-    command:
-      dgraph zero --port_offset 0 --my=zero1:5080 --replicas 3 --raft idx=1 --logtostderr -v=2
-      --bindall --expose_trace --profile_mode block --block_rate 10
-
+    command: dgraph zero --port_offset 0 --my=zero1:5080 --replicas 3 --raft idx=1 --logtostderr -v=2 --bindall --expose_trace --profile_mode block --block_rate 10
   zero2:
     image: dgraph/dgraph:latest
     container_name: zero2
@@ -25,10 +22,7 @@ services:
     labels:
       cluster: test
       service: zero
-    command:
-      dgraph zero --port_offset 2 --my=zero2:5082 --replicas 3 --raft idx=2 --logtostderr -v=2
-      --peer=zero1:5080
-
+    command: dgraph zero --port_offset 2 --my=zero2:5082 --replicas 3 --raft idx=2 --logtostderr -v=2 --peer=zero1:5080
   zero3:
     image: dgraph/dgraph:latest
     container_name: zero3
@@ -41,10 +35,7 @@ services:
     labels:
       cluster: test
       service: zero
-    command:
-      dgraph zero --port_offset 3 --my=zero3:5083 --replicas 3 --raft idx=3 --logtostderr -v=2
-      --peer=zero1:5080
-
+    command: dgraph zero --port_offset 3 --my=zero3:5083 --replicas 3 --raft idx=3 --logtostderr -v=2 --peer=zero1:5080
   alpha1:
     image: dgraph/dgraph:latest
     container_name: alpha1
@@ -64,13 +55,7 @@ services:
     labels:
       cluster: test
       service: alpha
-    command:
-      dgraph alpha --port_offset 0 --my=alpha1:7080  --zero=zero1:5080 --expose_trace --trace
-      ratio=1.0 --profile_mode block --block_rate 10 --logtostderr -v=2 --security
-      whitelist=0.0.0.0/0  --acl "secret-file=/dgraph-acl/hmac-secret;access-ttl=3s;refresh-ttl=5s"
-      --tls
-      "client-auth-type=REQUIREANDVERIFY;ca-cert=/dgraph-tls/ca.crt;server-cert=/dgraph-tls/node.crt;server-key=/dgraph-tls/node.key"
-
+    command: dgraph alpha --port_offset 0 --my=alpha1:7080  --zero=zero1:5080 --expose_trace --trace ratio=1.0 --profile_mode block --block_rate 10 --logtostderr -v=2 --security whitelist=0.0.0.0/0  --acl "secret-file=/dgraph-acl/hmac-secret;access-ttl=3s;refresh-ttl=5s" --tls "client-auth-type=REQUIREANDVERIFY;ca-cert=/dgraph-tls/ca.crt;server-cert=/dgraph-tls/node.crt;server-key=/dgraph-tls/node.key"
   alpha2:
     image: dgraph/dgraph:latest
     container_name: alpha2
@@ -92,13 +77,7 @@ services:
     labels:
       cluster: test
       service: alpha
-    command:
-      dgraph alpha --port_offset 2 --my=alpha2:7082  --zero=zero1:5080 --expose_trace --trace
-      ratio=1.0 --profile_mode block --block_rate 10 --logtostderr -v=2 --security
-      whitelist=0.0.0.0/0 --acl "secret-file=/dgraph-acl/hmac-secret;access-ttl=3s;refresh-ttl=5s"
-      --tls
-      "client-auth-type=REQUIREANDVERIFY;ca-cert=/dgraph-tls/ca.crt;server-cert=/dgraph-tls/node.crt;server-key=/dgraph-tls/node.key"
-
+    command: dgraph alpha --port_offset 2 --my=alpha2:7082  --zero=zero1:5080 --expose_trace --trace ratio=1.0 --profile_mode block --block_rate 10 --logtostderr -v=2 --security whitelist=0.0.0.0/0 --acl "secret-file=/dgraph-acl/hmac-secret;access-ttl=3s;refresh-ttl=5s" --tls "client-auth-type=REQUIREANDVERIFY;ca-cert=/dgraph-tls/ca.crt;server-cert=/dgraph-tls/node.crt;server-key=/dgraph-tls/node.key"
   alpha3:
     image: dgraph/dgraph:latest
     container_name: alpha3
@@ -120,9 +99,4 @@ services:
     labels:
       cluster: test
       service: alpha
-    command:
-      dgraph alpha --port_offset 3 --my=alpha3:7083  --zero=zero1:5080 --expose_trace --trace
-      ratio=1.0 --profile_mode block --block_rate 10 --logtostderr -v=2 --security
-      whitelist=0.0.0.0/0 --acl "secret-file=/dgraph-acl/hmac-secret;access-ttl=3s;refresh-ttl=5s"
-      --tls
-      "client-auth-type=REQUIREANDVERIFY;ca-cert=/dgraph-tls/ca.crt;server-cert=/dgraph-tls/node.crt;server-key=/dgraph-tls/node.key"
+    command: dgraph alpha --port_offset 3 --my=alpha3:7083  --zero=zero1:5080 --expose_trace --trace ratio=1.0 --profile_mode block --block_rate 10 --logtostderr -v=2 --security whitelist=0.0.0.0/0 --acl "secret-file=/dgraph-acl/hmac-secret;access-ttl=3s;refresh-ttl=5s" --tls "client-auth-type=REQUIREANDVERIFY;ca-cert=/dgraph-tls/ca.crt;server-cert=/dgraph-tls/node.crt;server-key=/dgraph-tls/node.key"
