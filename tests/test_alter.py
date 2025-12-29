@@ -1,19 +1,21 @@
 # SPDX-FileCopyrightText: © 2017-2025 Istari Digital, Inc.
 # SPDX-License-Identifier: Apache-2.0
 
-__author__ = "Istari Digital, Inc."
-__maintainer__ = "Istari Digital, Inc. <dgraph-admin@istaridigital.com>"
+from __future__ import annotations
 
 import json
 import unittest
 
 from . import helper
 
+__author__ = "Istari Digital, Inc."
+__maintainer__ = "Istari Digital, Inc. <dgraph-admin@istaridigital.com>"
+
 
 class TestAlter(helper.ClientIntegrationTestCase):
     """Tests convenience methods for altering the database."""
 
-    def test_drop_all(self):
+    def test_drop_all(self) -> None:
         """Tests drop_all() method."""
         helper.drop_all(self.client)
 
@@ -56,7 +58,7 @@ class TestAlter(helper.ClientIntegrationTestCase):
         result = json.loads(resp.json)
         self.assertEqual(len(result.get("schema", [])), 0)
 
-    def test_drop_data(self):
+    def test_drop_data(self) -> None:
         """Tests drop_data() method preserves schema but removes data."""
         helper.drop_all(self.client)
 
@@ -116,7 +118,7 @@ class TestAlter(helper.ClientIntegrationTestCase):
         self.assertEqual(len(result.get("bob", [])), 1)
         self.assertEqual(result["bob"][0]["name"], "Bob")
 
-    def test_drop_predicate(self):
+    def test_drop_predicate(self) -> None:
         """Tests drop_predicate() method."""
         helper.drop_all(self.client)
 
@@ -168,13 +170,13 @@ class TestAlter(helper.ClientIntegrationTestCase):
         self.assertIn("email", schema_preds)
         self.assertNotIn("age", schema_preds)
 
-    def test_drop_predicate_empty_string(self):
+    def test_drop_predicate_empty_string(self) -> None:
         """Tests that drop_predicate() raises error for empty predicate."""
         with self.assertRaises(ValueError) as context:
             self.client.drop_predicate("")
         self.assertIn("predicate cannot be empty", str(context.exception))
 
-    def test_drop_type(self):
+    def test_drop_type(self) -> None:
         """Tests drop_type() method."""
         helper.drop_all(self.client)
 
@@ -212,13 +214,13 @@ class TestAlter(helper.ClientIntegrationTestCase):
         result = json.loads(resp.json)
         self.assertGreater(len(result.get("schema", [])), 0)
 
-    def test_drop_type_empty_string(self):
+    def test_drop_type_empty_string(self) -> None:
         """Tests that drop_type() raises error for empty type_name."""
         with self.assertRaises(ValueError) as context:
             self.client.drop_type("")
         self.assertIn("type_name cannot be empty", str(context.exception))
 
-    def test_set_schema(self):
+    def test_set_schema(self) -> None:
         """Tests set_schema() method."""
         helper.drop_all(self.client)
 
@@ -249,14 +251,14 @@ class TestAlter(helper.ClientIntegrationTestCase):
         result = json.loads(resp.json)
         self.assertEqual(len(result.get("schema", [])), 3)
 
-    def test_set_schema_empty_string(self):
+    def test_set_schema_empty_string(self) -> None:
         """Tests that set_schema() raises error for empty schema."""
         with self.assertRaises(ValueError) as context:
             self.client.set_schema("")
         self.assertIn("schema cannot be empty", str(context.exception))
 
 
-def suite():
+def suite() -> unittest.TestSuite:
     """Returns a test suite object."""
     suite_obj = unittest.TestSuite()
     suite_obj.addTest(unittest.makeSuite(TestAlter))

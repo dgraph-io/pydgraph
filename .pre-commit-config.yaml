@@ -60,7 +60,7 @@ repos:
     rev: v1.18.2
     hooks:
       - id: mypy
-        exclude: ^pydgraph/proto/
+        exclude: ^(pydgraph/proto/|examples/embeddings/)
         args:
           - "--config-file=pyproject.toml"
         additional_dependencies:

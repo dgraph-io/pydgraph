@@ -1,6 +1,9 @@
+from __future__ import annotations
+
 import json
 import os
 import unittest
+from typing import Any
 from unittest.mock import patch
 
 import pytest
@@ -9,7 +12,13 @@ from pydgraph import open
 
 
 class TestOpen(unittest.TestCase):
-    def _setup_jwt_mock(self, mock_stub_class):
+    dgraph_host: str = ""
+    dgraph_port: str = ""
+    username: str = ""
+    password: str = ""
+    base_url: str = ""
+
+    def _setup_jwt_mock(self, mock_stub_class: Any) -> Any:
         """Helper method to set up JWT mock for open() tests."""
 
         from pydgraph.proto import api_pb2 as api
@@ -25,7 +34,7 @@ class TestOpen(unittest.TestCase):
         return mock_stub
 
     @classmethod
-    def setUpClass(cls):
+    def setUpClass(cls) -> None:
         # Get connection details from environment or use defaults
         server_addr = os.environ.get("TEST_SERVER_ADDR", "localhost:9080")
         if ":" in server_addr:
@@ -41,7 +50,7 @@ class TestOpen(unittest.TestCase):
         # Base URL for tests
         cls.base_url = f"dgraph://{cls.dgraph_host}:{cls.dgraph_port}"
 
-    def test_connection_with_auth(self):
+    def test_connection_with_auth(self) -> None:
         """Test connection with username and password."""
 
         if not self.username or not self.password:
@@ -65,26 +74,26 @@ class TestOpen(unittest.TestCase):
 
         client.close()
 
-    def test_invalid_scheme(self):
+    def test_invalid_scheme(self) -> None:
         """Test that invalid scheme raises ValueError."""
 
         invalid_url = f"http://{self.dgraph_host}:{self.dgraph_port}"
         with pytest.raises(ValueError, match="scheme must be 'dgraph'"):
             open(invalid_url)
 
-    def test_missing_hostname(self):
+    def test_missing_hostname(self) -> None:
         """Test that missing hostname raises ValueError."""
 
         with pytest.raises(ValueError, match="hostname required"):
             open(f"dgraph://:{self.dgraph_port}")
 
-    def test_missing_port(self):
+    def test_missing_port(self) -> None:
         """Test that missing port raises ValueError."""
 
         with pytest.raises(ValueError, match="port required"):
             open(f"dgraph://{self.dgraph_host}")
 
-    def test_username_without_password(self):
+    def test_username_without_password(self) -> None:
         """Test that username without password raises ValueError."""
 
         with pytest.raises(
@@ -92,20 +101,20 @@ class TestOpen(unittest.TestCase):
         ):
             open(f"dgraph://{self.username}@{self.dgraph_host}:{self.dgraph_port}")
 
-    def test_invalid_sslmode(self):
+    def test_invalid_sslmode(self) -> None:
         """Test that invalid sslmode raises ValueError."""
 
         with pytest.raises(ValueError, match="Invalid sslmode"):
             open(f"dgraph://{self.dgraph_host}:{self.dgraph_port}?sslmode=invalid")
 
-    def test_unsupported_require_sslmode(self):
+    def test_unsupported_require_sslmode(self) -> None:
         """Test that sslmode=require raises appropriate error."""
 
         with pytest.raises(ValueError, match="sslmode=require is not supported"):
             open(f"dgraph://{self.dgraph_host}:{self.dgraph_port}?sslmode=require")
 
     @patch("pydgraph.client_stub.DgraphClientStub")
-    def test_open_with_valid_integer_namespace(self, mock_stub_class):
+    def test_open_with_valid_integer_namespace(self, mock_stub_class: Any) -> None:
         """Test that open() accepts valid integer namespace with credentials."""
 
         self._setup_jwt_mock(mock_stub_class)
@@ -116,20 +125,20 @@ class TestOpen(unittest.TestCase):
         except (TypeError, ValueError):
             self.fail("open() raised exception with valid integer namespace")
 
-    def test_open_with_string_namespace_raises_error(self):
+    def test_open_with_string_namespace_raises_error(self) -> None:
         """Test that open() raises TypeError with non-numeric namespace."""
 
         with pytest.raises(TypeError, match="namespace must be an integer"):
             open("dgraph://localhost:9080?namespace=abc")
 
-    def test_open_with_float_namespace_raises_error(self):
+    def test_open_with_float_namespace_raises_error(self) -> None:
         """Test that open() raises TypeError with float namespace."""
 
         with pytest.raises(TypeError, match="namespace must be an integer"):
             open("dgraph://localhost:9080?namespace=123.5")
 
     @patch("pydgraph.client_stub.DgraphClientStub")
-    def test_open_with_zero_namespace(self, mock_stub_class):
+    def test_open_with_zero_namespace(self, mock_stub_class: Any) -> None:
         """Test that open() accepts zero as valid namespace with credentials."""
 
         self._setup_jwt_mock(mock_stub_class)
@@ -142,13 +151,13 @@ class TestOpen(unittest.TestCase):
                 f"open() raised exception with zero namespace: {type(e).__name__}: {e}"
             )
 
-    def test_open_with_negative_namespace_raises_error(self):
+    def test_open_with_negative_namespace_raises_error(self) -> None:
         """Test that open() raises ValueError with negative namespace."""
 
         with pytest.raises(ValueError, match="namespace must be >= 0"):
             open("dgraph://localhost:9080?namespace=-1")
 
-    def test_namespace_without_username_raises_error(self):
+    def test_namespace_without_username_raises_error(self) -> None:
         """Test that namespace without username/password raises ValueError."""
 
         with pytest.raises(
@@ -157,7 +166,9 @@ class TestOpen(unittest.TestCase):
             open("dgraph://localhost:9080?namespace=123")
 
     @patch("pydgraph.client_stub.DgraphClientStub")
-    def test_namespace_with_username_password_succeeds(self, mock_stub_class):
+    def test_namespace_with_username_password_succeeds(
+        self, mock_stub_class: Any
+    ) -> None:
         """Test that namespace with username/password is accepted."""
 
         self._setup_jwt_mock(mock_stub_class)

@@ -104,9 +104,7 @@ class TestAccountUpsert(helper.ClientIntegrationTestCase):
                 last
                 age
             }}
-        }}""".format(
-            " ".join(firsts)
-        )
+        }}""".format(" ".join(firsts))
         logging.debug(query)
         result = json.loads(self.client.txn(read_only=True).query(query).json)
 
@@ -132,9 +130,7 @@ def upsert_account(
         acct(func:eq(first, "{first}")) @filter(eq(last, "{last}") AND eq(age, {age})) {{
             uid
         }}
-    }}""".format(
-        **account
-    )
+    }}""".format(**account)
 
     last_update_time = time.time() - 10000
     while True:
@@ -146,7 +142,7 @@ def upsert_account(
         try:
             result = json.loads(txn.query(query).json)
             assert len(result["acct"]) <= 1, (
-                "Lookup of account %s found " "multiple accounts" % account
+                "Lookup of account %s found multiple accounts" % account
             )
 
             if not result["acct"]:
@@ -155,9 +151,7 @@ def upsert_account(
                     _:acct <first> "{first}" .
                     _:acct <last> "{last}" .
                     _:acct <age>  "{age}"^^<xs:int> .
-                """.format(
-                    **account
-                )
+                """.format(**account)
                 created = txn.mutate(set_nquads=nquads)
                 uid = created.uids.get("acct")
                 assert uid is not None and uid != "", "Account with uid None"
@@ -196,9 +190,7 @@ def upsert_account_upsert_block(
         acct(func:eq(first, "{first}")) @filter(eq(last, "{last}") AND eq(age, {age})) {{
             u as uid
         }}
-    }}""".format(
-        **account
-    )
+    }}""".format(**account)
 
     last_update_time = time.time() - 10000
     while True:
@@ -212,9 +204,7 @@ def upsert_account_upsert_block(
                 uid(u) <first> "{first}" .
                 uid(u) <last> "{last}" .
                 uid(u) <age>  "{age}"^^<xs:int> .
-            """.format(
-                **account
-            )
+            """.format(**account)
             mutation = txn.create_mutation(set_nquads=nquads)
             request = txn.create_request(
                 query=query, mutations=[mutation], commit_now=True

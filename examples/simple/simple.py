@@ -1,4 +1,6 @@
 #!/usr/bin/env python3
+from __future__ import annotations
+
 import datetime
 import json
 
@@ -6,12 +8,12 @@ import pydgraph
 
 
 # Drop All - discard all data and start from a clean slate.
-def drop_all(client):
+def drop_all(client: pydgraph.DgraphClient) -> pydgraph.proto.api_pb2.Payload:
     return client.alter(pydgraph.Operation(drop_all=True))
 
 
 # Set schema.
-def set_schema(client):
+def set_schema(client: pydgraph.DgraphClient) -> pydgraph.proto.api_pb2.Payload:
     schema = """
     name: string @index(exact) .
     friend: [uid] @reverse .
@@ -33,7 +35,7 @@ def set_schema(client):
 
 
 # Create data using JSON.
-def create_data(client):
+def create_data(client: pydgraph.DgraphClient) -> None:
     # Create a new transaction.
     txn = client.txn()
     try:
@@ -83,7 +85,7 @@ def create_data(client):
 
 
 # Deleting a data
-def delete_data(client):
+def delete_data(client: pydgraph.DgraphClient) -> None:
     # Create a new transaction.
     txn = client.txn()
     try:
@@ -107,7 +109,7 @@ def delete_data(client):
 
 
 # Query for data.
-def query_alice(client):
+def query_alice(client: pydgraph.DgraphClient) -> None:
     # Run query.
     query = """query all($a: string) {
         all(func: eq(name, $a)) {
@@ -136,7 +138,7 @@ def query_alice(client):
 
 
 # Query to check for deleted node
-def query_bob(client):
+def query_bob(client: pydgraph.DgraphClient) -> None:
     query = """query all($b: string) {
             all(func: eq(name, $b)) {
                 uid
@@ -163,7 +165,7 @@ def query_bob(client):
     print('Number of people named "Bob": {}'.format(len(ppl["all"])))
 
 
-def main():
+def main() -> None:
     client = pydgraph.open("dgraph://localhost:9080")
     drop_all(client)
     set_schema(client)

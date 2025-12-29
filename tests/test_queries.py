@@ -3,8 +3,7 @@
 
 """Tests behavior of queries after mutation in the same transaction."""
 
-__author__ = "Mohit Ranka <mohitranka@gmail.com>"
-__maintainer__ = "Istari Digital, Inc. <dgraph-admin@istaridigital.com>"
+from __future__ import annotations
 
 import json
 import logging
@@ -16,11 +15,14 @@ from pydgraph import open
 
 from . import helper
 
+__author__ = "Mohit Ranka <mohitranka@gmail.com>"
+__maintainer__ = "Istari Digital, Inc. <dgraph-admin@istaridigital.com>"
+
 
 class TestQueries(helper.ClientIntegrationTestCase):
     """Tests behavior of queries after mutation in the same transaction."""
 
-    def setUp(self):
+    def setUp(self) -> None:
         super(TestQueries, self).setUp()
         host = os.environ.get("TEST_SERVER_ADDR", "localhost")
         host, port = host.split(":")
@@ -39,7 +41,7 @@ class TestQueries(helper.ClientIntegrationTestCase):
             }
         }"""
 
-    def test_check_version(self):
+    def test_check_version(self) -> None:
         """Verifies the check_version method correctly returns the cluster version"""
         success = 0
         for _i in range(3):
@@ -51,7 +53,7 @@ class TestQueries(helper.ClientIntegrationTestCase):
                 continue
         self.assertGreater(success, 0)
 
-    def test_mutation_and_query(self):
+    def test_mutation_and_query(self) -> None:
         """Runs mutation and verifies queries see the results."""
         txn = self.client.txn()
         _ = txn.mutate(
@@ -96,7 +98,7 @@ class TestQueries(helper.ClientIntegrationTestCase):
         )
         self.assertEqual(expected_rdf, response.rdf.decode("utf-8"))
 
-    def test_run_dql(self):
+    def test_run_dql(self) -> None:
         """Call run_dql (a version 25+ feature) and verify the result"""
         helper.skip_if_dgraph_version_below(self.client, "25.0.0", self)
         _ = self.client.run_dql(
@@ -121,7 +123,7 @@ class TestQueries(helper.ClientIntegrationTestCase):
             json.loads(response.json).get("me"),
         )
 
-    def test_run_dql_with_vars(self):
+    def test_run_dql_with_vars(self) -> None:
         """Call run_dql_with_vars (a version 25+ feature) and verify the result"""
         helper.skip_if_dgraph_version_below(self.client, "25.0.0", self)
         helper.drop_all(self.client)
@@ -165,11 +167,10 @@ class TestQueries(helper.ClientIntegrationTestCase):
 
         # Test that vars=None raises ValueError
         with self.assertRaises(ValueError) as context:
-            self.client.run_dql_with_vars(query_dql_with_var, None, read_only=True)
+            self.client.run_dql_with_vars(query_dql_with_var, None, read_only=True)  # type: ignore[arg-type]
         self.assertIn("vars parameter is required", str(context.exception))
 
-    def test_run_dql_in_namespace(self):
-
+    def test_run_dql_in_namespace(self) -> None:
         namespace_client = None
         original_client = self.client
 
@@ -267,12 +268,12 @@ class TestQueries(helper.ClientIntegrationTestCase):
                 self.client = original_client
 
 
-def is_number(number):
+def is_number(number: object) -> bool:
     """Returns true if object is a number."""
     return isinstance(number, int)
 
 
-def suite():
+def suite() -> unittest.TestSuite:
     suite_obj = unittest.TestSuite()
     suite_obj.addTest(TestQueries())
     return suite_obj
