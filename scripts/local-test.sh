@@ -44,12 +44,20 @@ alphaGrpcPort=$(DockerCompose port alpha1 9080 | awk -F: '{print $2}')
 popd || exit
 export TEST_SERVER_ADDR="localhost:${alphaGrpcPort}"
 echo "Using TEST_SERVER_ADDR=${TEST_SERVER_ADDR}"
+
+# Use uv if available, otherwise run pytest directly
+if command -v uv >/dev/null 2>&1; then
+	PYTEST_CMD="uv run pytest"
+else
+	PYTEST_CMD="pytest"
+fi
+
 if [[ $# -eq 0 ]]; then
 	# No arguments provided, run all tests
-	uv run pytest
+	$PYTEST_CMD
 else
 	# Run specific tests passed as arguments
-	uv run pytest "$@"
+	$PYTEST_CMD "$@"
 fi
 tests_failed="$?"
 stopCluster
