@@ -5,6 +5,7 @@ __author__ = "Istari Digital, Inc. <dgraph-admin@istaridigital.com>"
 __maintainer__ = "Istari Digital, Inc. <dgraph-admin@istaridigital.com>"
 
 import logging
+import time
 import unittest
 
 from . import helper
@@ -17,6 +18,44 @@ class TestNamespaces(helper.ClientIntegrationTestCase):
         super(TestNamespaces, self).setUp()
         helper.skip_if_dgraph_version_below(self.client, "25.0.0", self)
         helper.drop_all(self.client)
+
+    def _wait_for_namespace_deletion(
+        self,
+        namespace_id: int,
+        max_retries: int = 5,
+        initial_delay: float = 0.1
+    ) -> None:
+        """Wait for namespace deletion to propagate.
+
+        Namespace deletion is eventually consistent in Dgraph. This helper
+        implements exponential backoff to wait for the deletion to propagate
+        across the cluster before verifying the namespace is gone.
+
+        Args:
+            namespace_id: The namespace ID to check for deletion
+            max_retries: Maximum number of retry attempts
+            initial_delay: Initial delay in seconds (doubles each retry)
+
+        Raises:
+            AssertionError: If namespace still exists after all retries
+        """
+        delay = initial_delay
+        for attempt in range(max_retries):
+            namespaces = self.client.list_namespaces()
+            if namespace_id not in namespaces:
+                return  # Deletion propagated successfully
+
+            if attempt < max_retries - 1:
+                time.sleep(delay)
+                delay *= 2  # Exponential backoff
+
+        # Final check after all retries
+        namespaces = self.client.list_namespaces()
+        self.assertNotIn(
+            namespace_id,
+            namespaces,
+            f"Namespace {namespace_id} still exists after {max_retries} retries"
+        )
 
     def test_create_namespace(self):
         """Test creating a new namespace returns valid namespace ID."""
@@ -65,9 +104,10 @@ class TestNamespaces(helper.ClientIntegrationTestCase):
             # Drop the namespace
             self.client.drop_namespace(namespace_id)
 
-            # Verify it's no longer in the list
-            namespaces_after = self.client.list_namespaces()
-            self.assertNotIn(namespace_id, namespaces_after)
+            # Wait for deletion to propagate (eventual consistency)
+            # Namespace operations are eventually consistent across the cluster,
+            # so we use retry logic with exponential backoff
+            self._wait_for_namespace_deletion(namespace_id)
         else:
             # If we got namespace 0, verify we can't drop it
             with self.assertRaises(Exception) as cm:
@@ -92,7 +132,16 @@ class TestNamespaces(helper.ClientIntegrationTestCase):
         for namespace_id in droppable_ids:
             self.client.drop_namespace(namespace_id)
 
-        # Verify droppable namespaces are no longer in the list
+        # Wait for all deletions to propagate (eventual consistency)
+        # Namespace deletion operations are eventually consistent across the
+        # Dgraph cluster. We verify each deletion separately with retry logic
+        # to accommodate the propagation delay in CI environments.
+        for namespace_id in droppable_ids:
+            self._wait_for_namespace_deletion(namespace_id)
+
+        # Verify all droppable namespaces are no longer in the list
+        # (this check should pass immediately after _wait_for_namespace_deletion,
+        # but we keep it for explicitness)
         namespaces_after = self.client.list_namespaces()
         for namespace_id in droppable_ids:
             self.assertNotIn(namespace_id, namespaces_after)
