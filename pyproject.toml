@@ -24,7 +24,7 @@ classifiers = [
   'Programming Language :: Python :: 3.13',
   'Programming Language :: Python :: 3.14',
 ]
-dependencies = ["grpcio>=1.65.1,<2.0.0", "protobuf>=6.0.0,<7.0.0"]
+dependencies = ["grpcio>=1.65.0,<2.0.0", "protobuf>=4.23.0,<7.0.0"]
 dynamic = ["version"]
 
 [tool.setuptools.dynamic]
@@ -32,23 +32,19 @@ version = { attr = "pydgraph.meta.VERSION" }
 
 [dependency-groups]
 dev = [
-    "grpc-stubs>=1.53.0.6",
-    "mypy>=1.14.1",
-    "mypy-protobuf>=4.0.0",
-    "pre-commit>=3.5.0",
-    "pydantic-settings>=2.8.1",
-    "shellcheck-py>=0.10.0.1",
-    "types-grpcio>=1.0.0.20251009",
-    "types-protobuf>=6.32.1.20251210",
-    "types-requests>=2.32.0.20241016",
+  "grpc-stubs>=1.53.0.6",
+  "mypy>=1.14.1",
+  "mypy-protobuf>=4.0.0",
+  "pre-commit>=3.5.0",
+  "pydantic-settings>=2.8.1",
+  "shellcheck-py>=0.10.0.1",
+  "types-grpcio>=1.0.0.20251009",
+  "types-protobuf>=6.32.1.20251210",
+  "types-requests>=2.32.0.20241016",
 ]
 
 [project.optional-dependencies]
-dev = [
-  "build>=1.2.2.post1",
-  "grpcio-tools>=1.66.2",
-  "pytest>=8.3.3",
-]
+dev = ["build>=1.2.2.post1", "grpcio-tools>=1.66.2", "pytest>=8.3.3"]
 
 
 [project.urls]
@@ -57,11 +53,11 @@ dev = [
 [tool.ruff]
 target-version = "py39"
 exclude = [
-    ".venv",
-    "build",
-    "pydgraph/proto/",
-    "examples/embeddings/",
-    "examples/notebook/",
+  ".venv",
+  "build",
+  "pydgraph/proto/",
+  "examples/embeddings/",
+  "examples/notebook/",
 ]
 
 [tool.ruff.lint]
@@ -77,12 +73,7 @@ disallow_untyped_defs = true
 disallow_incomplete_defs = true
 check_untyped_defs = true
 no_site_packages = true
-exclude = [
-    ".venv",
-    "build",
-    "pydgraph/proto/",
-    "examples/embeddings/",
-]
+exclude = [".venv", "build", "pydgraph/proto/", "examples/embeddings/"]
 
 [[tool.mypy.overrides]]
 module = "pydgraph.proto.api_pb2"
