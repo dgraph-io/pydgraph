@@ -39,6 +39,7 @@ dev = [
   "pydantic-settings>=2.8.1",
   "ruff>=0.8.4",
   "shellcheck-py>=0.10.0.1",
+  "ty>=0.0.8",
   "types-grpcio>=1.0.0.20251009",
   "types-protobuf>=6.32.1.20251210",
   "types-requests>=2.32.0.20241016",
@@ -50,6 +51,7 @@ dev = [
   "grpcio-tools>=1.66.2",
   "pytest>=8.3.3",
   "ruff>=0.8.4",
+  "ty>=0.0.8",
 ]
 
 
