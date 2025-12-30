@@ -41,7 +41,7 @@ class TestTxn(helper.ClientIntegrationTestCase):
             }}
         }}"""
 
-        with pytest.raises(Exception, match="Readonly transaction cannot run mutations"):
+        with pytest.raises(Exception, match="Transaction has already been committed or discarded"):
             txn.query(query)
 
     def test_mutate_after_commit(self) -> None:
@@ -261,7 +261,7 @@ class TestTxn(helper.ClientIntegrationTestCase):
 
         with pytest.raises(Exception, match="Readonly transaction cannot run mutations"):
             txn.mutate(set_obj={"name": "Manish"})
-        with pytest.raises(Exception, match="Transaction has already been committed or discarded"):
+        with pytest.raises(Exception, match="Readonly transaction cannot run mutations"):
             txn.commit()
 
     def test_best_effort_txn(self) -> None:

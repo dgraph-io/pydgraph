@@ -363,13 +363,13 @@ class Txn:
             raise  # This should never be reached due to _common_except_commit raising
 
     def _common_commit(self) -> bool:
-        if self._read_only:
-            raise errors.TransactionError(
-                "Readonly transaction cannot run mutations or be committed"
-            )
         if self._finished:
             raise errors.TransactionError(
                 "Transaction has already been committed or discarded"
+            )
+        if self._read_only:
+            raise errors.TransactionError(
+                "Readonly transaction cannot run mutations"
             )
 
         self._finished = True
