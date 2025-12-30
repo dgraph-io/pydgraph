@@ -68,9 +68,9 @@ class TestOpen(unittest.TestCase):
         }
         """
         response = client.txn(read_only=True).query(query)
-        self.assertIsNotNone(response)
+        assert response is not None
         parsed_json = json.loads(response.json)
-        self.assertEqual(parsed_json["me"][0]["uid"], "0x1")
+        assert parsed_json["me"][0]["uid"] == "0x1"
 
         client.close()
 

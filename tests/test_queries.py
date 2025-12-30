@@ -10,6 +10,8 @@ import logging
 import os
 import unittest
 
+import pytest
+
 import pydgraph
 from pydgraph import open
 
@@ -23,7 +25,7 @@ class TestQueries(helper.ClientIntegrationTestCase):
     """Tests behavior of queries after mutation in the same transaction."""
 
     def setUp(self) -> None:
-        super(TestQueries, self).setUp()
+        super().setUp()
         host = os.environ.get("TEST_SERVER_ADDR", "localhost")
         host, port = host.split(":")
         self.dgraph_host = host
@@ -47,11 +49,11 @@ class TestQueries(helper.ClientIntegrationTestCase):
         for _i in range(3):
             try:
                 tag = self.client.check_version()
-                self.assertGreater(len(tag), 0)
+                assert len(tag) > 0
                 success += 1
             except Exception:  # nosec B112
                 continue
-        self.assertGreater(success, 0)
+        assert success > 0
 
     def test_mutation_and_query(self) -> None:
         """Runs mutation and verifies queries see the results."""
@@ -74,29 +76,19 @@ class TestQueries(helper.ClientIntegrationTestCase):
         }"""
 
         response = self.client.txn().query(self.query, variables={"$a": "Alice"})
-        self.assertEqual(
-            [{"name": "Alice", "follows": [{"name": "Greg"}]}],
-            json.loads(response.json).get("me"),
-        )
-        self.assertTrue(
-            is_number(response.latency.parsing_ns), "Parsing latency is not available"
-        )
-        self.assertTrue(
-            is_number(response.latency.processing_ns),
-            "Processing latency is not available",
-        )
-        self.assertTrue(
-            is_number(response.latency.encoding_ns), "Encoding latency is not available"
-        )
+        assert json.loads(response.json).get("me") == [{"name": "Alice", "follows": [{"name": "Greg"}]}]
+        assert is_number(response.latency.parsing_ns), "Parsing latency is not available"
+        assert is_number(response.latency.processing_ns), "Processing latency is not available"
+        assert is_number(response.latency.encoding_ns), "Encoding latency is not available"
 
         """ Run query with JSON and RDF resp_format and verify the result """
         response = self.client.txn().query(queryRDF, variables={"$a": "Alice"})
         uid = json.loads(response.json).get("q")[0]["uid"]
-        expected_rdf = '<{}> <name> "Alice" .\n'.format(uid)
+        expected_rdf = f'<{uid}> <name> "Alice" .\n'
         response = self.client.txn().query(
             queryRDF, variables={"$a": "Alice"}, resp_format="RDF"
         )
-        self.assertEqual(expected_rdf, response.rdf.decode("utf-8"))
+        assert expected_rdf == response.rdf.decode("utf-8")
 
     def test_run_dql(self) -> None:
         """Call run_dql (a version 25+ feature) and verify the result"""
@@ -118,10 +110,7 @@ class TestQueries(helper.ClientIntegrationTestCase):
             resp_format="JSON",
             read_only=True,
         )
-        self.assertEqual(
-            [{"name": "Alice", "follows": [{"name": "Greg"}]}],
-            json.loads(response.json).get("me"),
-        )
+        assert json.loads(response.json).get("me") == [{"name": "Alice", "follows": [{"name": "Greg"}]}]
 
     def test_run_dql_with_vars(self) -> None:
         """Call run_dql_with_vars (a version 25+ feature) and verify the result"""
@@ -160,17 +149,16 @@ class TestQueries(helper.ClientIntegrationTestCase):
         resp = self.client.run_dql_with_vars(query_dql_with_var, vars, read_only=True)
 
         m = json.loads(resp.json)
-        self.assertEqual(len(m.get("alice", [])), 1)
-        self.assertEqual(m["alice"][0]["name"], "Alice")
-        self.assertEqual(m["alice"][0]["email"], "alice@example.com")
-        self.assertEqual(m["alice"][0]["age"], 29)
+        assert len(m.get("alice", [])) == 1
+        assert m["alice"][0]["name"] == "Alice"
+        assert m["alice"][0]["email"] == "alice@example.com"
+        assert m["alice"][0]["age"] == 29
 
         # Test that vars=None raises ValueError
-        with self.assertRaises(ValueError) as context:
+        with pytest.raises(ValueError, match="vars parameter is required"):
             self.client.run_dql_with_vars(query_dql_with_var, None, read_only=True)  # type: ignore[arg-type]
-        self.assertIn("vars parameter is required", str(context.exception))
 
-    def test_run_dql_in_namespace(self) -> None:
+    def test_run_dql_in_namespace(self) -> None:  # noqa: C901 - integration test with proper error handling
         namespace_client = None
         original_client = self.client
 
@@ -236,8 +224,8 @@ class TestQueries(helper.ClientIntegrationTestCase):
             except (json.JSONDecodeError, AttributeError) as e:
                 self.fail(f"Failed to parse JSON response: {type(e).__name__}: {e}")
 
-            self.assertEqual(len(m.get("alice", [])), 1)
-            self.assertEqual(m["alice"][0]["name"], "Alice")
+            assert len(m.get("alice", [])) == 1
+            assert m["alice"][0]["name"] == "Alice"
 
             try:
                 resp = self.client.run_dql(
@@ -257,8 +245,8 @@ class TestQueries(helper.ClientIntegrationTestCase):
                     f"Failed to parse JSON response from second query: {type(e).__name__}: {e}"
                 )
 
-            self.assertEqual(len(m.get("alice", [])), 1)
-            self.assertEqual(m["alice"][0]["name"], "Alice")
+            assert len(m.get("alice", [])) == 1
+            assert m["alice"][0]["name"] == "Alice"
         finally:
             if namespace_client is not None:
                 try:

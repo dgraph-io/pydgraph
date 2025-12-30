@@ -10,6 +10,8 @@ __maintainer__ = "Istari Digital, Inc. "
 
 import unittest
 
+import pytest
+
 import pydgraph
 
 
@@ -17,7 +19,7 @@ class TestDgraphClient(unittest.TestCase):
     """Tests construction of Dgraph client."""
 
     def test_constructor(self) -> None:
-        with self.assertRaises(ValueError):
+        with pytest.raises(ValueError, match="No clients provided"):
             pydgraph.DgraphClient()
 
 

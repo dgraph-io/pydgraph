@@ -17,7 +17,7 @@ __maintainer__ = "Istari Digital <contact@istaridigital.com>"
 
 class TestTypeSystem(helper.ClientIntegrationTestCase):
     def setUp(self) -> None:
-        super(TestTypeSystem, self).setUp()
+        super().setUp()
         helper.drop_all(self.client)
 
         schema = """

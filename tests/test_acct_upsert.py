@@ -32,7 +32,7 @@ class TestAccountUpsert(helper.ClientIntegrationTestCase):
     """Tests to verify upsert directive."""
 
     def setUp(self) -> None:
-        super(TestAccountUpsert, self).setUp()
+        super().setUp()
 
         self.accounts = [
             {"first": f, "last": last, "age": a}
@@ -104,20 +104,22 @@ class TestAccountUpsert(helper.ClientIntegrationTestCase):
                 last
                 age
             }}
-        }}""".format(" ".join(firsts))
+        }}""".format(
+            " ".join(firsts)
+        )
         logging.debug(query)
         result = json.loads(self.client.txn(read_only=True).query(query).json)
 
         account_set = set()
         for acct in result["all"]:
-            self.assertTrue(acct["first"] is not None)
-            self.assertTrue(acct["last"] is not None)
-            self.assertTrue(acct["age"] is not None)
+            assert acct["first"] is not None
+            assert acct["last"] is not None
+            assert acct["age"] is not None
             account_set.add("{first}_{last}_{age}".format(**acct))
 
-        self.assertEqual(len(account_set), len(accounts))
+        assert len(account_set) == len(accounts)
         for acct in accounts:
-            self.assertTrue("{first}_{last}_{age}".format(**acct) in account_set)
+            assert "{first}_{last}_{age}".format(**acct) in account_set
 
 
 def upsert_account(
@@ -130,7 +132,9 @@ def upsert_account(
         acct(func:eq(first, "{first}")) @filter(eq(last, "{last}") AND eq(age, {age})) {{
             uid
         }}
-    }}""".format(**account)
+    }}""".format(
+        **account
+    )
 
     last_update_time = time.time() - 10000
     while True:
@@ -142,7 +146,7 @@ def upsert_account(
         try:
             result = json.loads(txn.query(query).json)
             assert len(result["acct"]) <= 1, (
-                "Lookup of account %s found multiple accounts" % account
+                f"Lookup of account {account} found multiple accounts"
             )
 
             if not result["acct"]:
@@ -151,7 +155,9 @@ def upsert_account(
                     _:acct <first> "{first}" .
                     _:acct <last> "{last}" .
                     _:acct <age>  "{age}"^^<xs:int> .
-                """.format(**account)
+                """.format(
+                    **account
+                )
                 created = txn.mutate(set_nquads=nquads)
                 uid = created.uids.get("acct")
                 assert uid is not None and uid != "", "Account with uid None"
@@ -161,9 +167,7 @@ def upsert_account(
                 uid = acct["uid"]
                 assert uid is not None, "Account with uid None"
 
-            updatequads = '<{0}> <when> "{1:d}"^^<xs:int> .'.format(
-                uid, int(time.time())
-            )
+            updatequads = f'<{uid}> <when> "{int(time.time()):d}"^^<xs:int> .'
             txn.mutate(set_nquads=updatequads)
             txn.commit()
 
@@ -190,7 +194,9 @@ def upsert_account_upsert_block(
         acct(func:eq(first, "{first}")) @filter(eq(last, "{last}") AND eq(age, {age})) {{
             u as uid
         }}
-    }}""".format(**account)
+    }}""".format(
+        **account
+    )
 
     last_update_time = time.time() - 10000
     while True:
@@ -204,14 +210,16 @@ def upsert_account_upsert_block(
                 uid(u) <first> "{first}" .
                 uid(u) <last> "{last}" .
                 uid(u) <age>  "{age}"^^<xs:int> .
-            """.format(**account)
+            """.format(
+                **account
+            )
             mutation = txn.create_mutation(set_nquads=nquads)
             request = txn.create_request(
                 query=query, mutations=[mutation], commit_now=True
             )
             txn.do_request(request)
 
-            updatequads = 'uid(u) <when> "{0:d}"^^<xs:int> .'.format(int(time.time()))
+            updatequads = f'uid(u) <when> "{int(time.time()):d}"^^<xs:int> .'
             txn = client.txn()
             mutation = txn.create_mutation(set_nquads=updatequads)
             request = txn.create_request(

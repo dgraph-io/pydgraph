@@ -19,7 +19,7 @@ class TestAsync(helper.ClientIntegrationTestCase):
     server_addr = "localhost:9180"
 
     def setUp(self) -> None:
-        super(TestAsync, self).setUp()
+        super().setUp()
         helper.drop_all(self.client)
 
     def test_mutation_and_query(self) -> None:
@@ -54,7 +54,4 @@ class TestAsync(helper.ClientIntegrationTestCase):
         txn = self.client.txn()
         query_future = txn.async_query(query, variables={"$a": "Alice"})
         response = pydgraph.Txn.handle_query_future(query_future)
-        self.assertEqual(
-            [{"name": "Alice", "follows": [{"name": "Greg"}]}],
-            json.loads(response.json).get("me"),
-        )
+        assert json.loads(response.json).get("me") == [{"name": "Alice", "follows": [{"name": "Greg"}]}]

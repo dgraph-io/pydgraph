@@ -13,6 +13,7 @@ import unittest
 from typing import Any
 
 import grpc
+import pytest
 
 from . import helper
 
@@ -30,18 +31,12 @@ class ACLTestBase(helper.ClientIntegrationTestCase):
     @staticmethod
     def run_acl_command(bash_command: str) -> None:
         """Run dgraph ACL commands in Docker container."""
-        docker_command = [
-            "docker",
-            "compose",
-            "-p",
-            "pydgraph",
-            "exec",
-            "-T",
-            "alpha1",
-        ] + bash_command.split()
+        docker_command = ["docker", "compose", "-p", "pydgraph", "exec", "-T", "alpha1", *bash_command.split()]
 
         try:
-            subprocess.check_output(docker_command, stderr=subprocess.STDOUT)  # nosec B603
+            subprocess.check_output(
+                docker_command, stderr=subprocess.STDOUT
+            )  # nosec B603
         except subprocess.CalledProcessError as e:
             output_msg = ""
             if e.output:
@@ -151,7 +146,7 @@ class TestACL(ACLTestBase):
     user_password = "simplepassword"  # nosec B105
 
     def setUp(self) -> None:
-        super(TestACL, self).setUp()
+        super().setUp()
         helper.drop_all(self.client)
         helper.set_schema(self.client, "name: string .")
         self.insert_sample_data()
@@ -252,7 +247,7 @@ class TestNamespaceACL(ACLTestBase):
     @classmethod
     def setUpClass(cls) -> None:
         """Set up namespaces and users once for all tests in this class."""
-        super(TestNamespaceACL, cls).setUpClass()
+        super().setUpClass()
 
         # Get server address from environment
         import os
@@ -320,7 +315,7 @@ class TestNamespaceACL(ACLTestBase):
         """Clean up after all tests."""
         if hasattr(cls, "root_client"):
             cls.root_client.close()
-        super(TestNamespaceACL, cls).tearDownClass()
+        super().tearDownClass()
 
     def test_bob_in_own_namespace(self) -> None:
         """Test bob can connect to his own namespace."""
@@ -346,7 +341,7 @@ class TestNamespaceACL(ACLTestBase):
             }
         """
         result = txn.query(query)
-        self.assertIn("BobData", result.json.decode())
+        assert "BobData" in result.json.decode()
 
         bob_client.close()
 
@@ -354,7 +349,7 @@ class TestNamespaceACL(ACLTestBase):
         """Test bob cannot connect to root namespace with his credentials."""
 
         # Bob's credentials should not work in namespace 0
-        with self.assertRaises(grpc.RpcError):
+        with pytest.raises(grpc.RpcError):
             helper.create_client(
                 self.TEST_SERVER_ADDR,
                 username=self.bob_id,
@@ -390,14 +385,14 @@ class TestNamespaceACL(ACLTestBase):
             }
         """
         result = txn.query(query)
-        self.assertIn("AliceData", result.json.decode())
+        assert "AliceData" in result.json.decode()
 
         alice_client.close()
 
     def test_bob_cannot_access_alice_namespace(self) -> None:
         """Test bob cannot connect to alice's namespace."""
 
-        with self.assertRaises(grpc.RpcError):
+        with pytest.raises(grpc.RpcError):
             helper.create_client(
                 self.TEST_SERVER_ADDR,
                 username=self.bob_id,
@@ -408,7 +403,7 @@ class TestNamespaceACL(ACLTestBase):
     def test_alice_cannot_access_bob_namespace(self) -> None:
         """Test alice cannot connect to bob's namespace."""
 
-        with self.assertRaises(grpc.RpcError):
+        with pytest.raises(grpc.RpcError):
             helper.create_client(
                 self.TEST_SERVER_ADDR,
                 username=self.alice_id,
@@ -441,8 +436,8 @@ class TestNamespaceACL(ACLTestBase):
         bob_result = result.json.decode()
 
         # Bob should see BobData but not AliceData
-        self.assertIn("BobData", bob_result)
-        self.assertNotIn("AliceData", bob_result)
+        assert "BobData" in bob_result
+        assert "AliceData" not in bob_result
         bob_client.close()
 
         # Alice queries her namespace
@@ -457,8 +452,8 @@ class TestNamespaceACL(ACLTestBase):
         alice_result = result.json.decode()
 
         # Alice should see AliceData but not BobData
-        self.assertIn("AliceData", alice_result)
-        self.assertNotIn("BobData", alice_result)
+        assert "AliceData" in alice_result
+        assert "BobData" not in alice_result
         alice_client.close()
 
 
