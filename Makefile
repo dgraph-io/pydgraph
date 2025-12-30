@@ -21,7 +21,7 @@ endif
 help: ## Show this help message
 	@echo ""
 	@echo "Environment Variables:"
-	@echo "  INSTALL_MISSING_TOOLS=true    Enable automatic installation of missing tools (default: disabled)"
+	@echo "  INSTALL_MISSING=true    Enable automatic installation of missing tools (default: disabled)"
 	@echo ""
 	@echo "Available targets:"
 	@grep -E '^[a-zA-Z_-]+:.*?## .*$$' $(MAKEFILE_LIST) | awk 'BEGIN {FS = ":.*?## "}; {printf "\033[36m%-15s\033[0m %s\n", $$1, $$2}'
@@ -46,11 +46,11 @@ protogen: ## Regenerate protobuf files (requires Python 3.13+)
 test: deps-docker ## Run tests
 	bash scripts/local-test.sh
 
-deps: deps-uv deps-ruff deps-ty deps-trunk deps-docker ## Check/install tool dependencies (set INSTALL_MISSING_TOOLS=true to auto-install)
+deps: deps-uv deps-ruff deps-ty deps-trunk deps-docker ## Check/install tool dependencies (set INSTALL_MISSING=true to auto-install)
 
 deps-uv:
 	@(command -v uv >/dev/null 2>&1 && command -v uvx >/dev/null 2>&1) || { \
-		if [ "$(INSTALL_MISSING_TOOLS)" = "true" ]; then \
+		if [ "$(INSTALL_MISSING)" = "true" ]; then \
 			echo "uv/uvx not found, installing..."; \
 			curl -LsSf https://astral.sh/uv/install.sh | sh; \
 		else \
@@ -75,14 +75,14 @@ deps-uv:
 				echo "    pip install uv"; \
 			fi; \
 			echo ""; \
-			echo "Or run: INSTALL_MISSING_TOOLS=true make setup"; \
+			echo "Or run: INSTALL_MISSING=true make setup"; \
 			exit 1; \
 		fi; \
 	}
 
 deps-ruff:
 	@command -v ruff >/dev/null 2>&1 || { \
-		if [ "$(INSTALL_MISSING_TOOLS)" = "true" ]; then \
+		if [ "$(INSTALL_MISSING)" = "true" ]; then \
 			echo "ruff not found, installing..."; \
 			curl -LsSf https://astral.sh/ruff/install.sh | sh; \
 		else \
@@ -107,14 +107,14 @@ deps-ruff:
 				echo "    pip install ruff"; \
 			fi; \
 			echo ""; \
-			echo "Or run: INSTALL_MISSING_TOOLS=true make setup"; \
+			echo "Or run: INSTALL_MISSING=true make setup"; \
 			exit 1; \
 		fi; \
 	}
 
 deps-ty:
 	@command -v ty >/dev/null 2>&1 || { \
-		if [ "$(INSTALL_MISSING_TOOLS)" = "true" ]; then \
+		if [ "$(INSTALL_MISSING)" = "true" ]; then \
 			echo "ty not found, installing..."; \
 			curl -LsSf https://astral.sh/ty/install.sh | sh; \
 		else \
@@ -133,14 +133,14 @@ deps-ty:
 				echo "    powershell -ExecutionPolicy ByPass -c \"irm https://astral.sh/ty/install.ps1 | iex\""; \
 			fi; \
 			echo ""; \
-			echo "Or run: INSTALL_MISSING_TOOLS=true make setup"; \
+			echo "Or run: INSTALL_MISSING=true make setup"; \
 			exit 1; \
 		fi; \
 	}
 
 deps-trunk:
 	@command -v trunk >/dev/null 2>&1 || { \
-		if [ "$(INSTALL_MISSING_TOOLS)" = "true" ]; then \
+		if [ "$(INSTALL_MISSING)" = "true" ]; then \
 			echo "trunk not found, installing..."; \
 			TMPFILE=$$(mktemp); \
 			curl -fsSL https://get.trunk.io -o "$$TMPFILE"; \
@@ -161,14 +161,14 @@ deps-trunk:
 				echo "    Visit: https://docs.trunk.io/check/usage#windows"; \
 			fi; \
 			echo ""; \
-			echo "Or run: INSTALL_MISSING_TOOLS=true make setup"; \
+			echo "Or run: INSTALL_MISSING=true make setup"; \
 			exit 1; \
 		fi; \
 	}
 
 deps-docker: ## Check and install Docker if needed (requires Docker 20.10.0+)
 	@if ! command -v docker >/dev/null 2>&1; then \
-		if [ "$(INSTALL_MISSING_TOOLS)" = "true" ]; then \
+		if [ "$(INSTALL_MISSING)" = "true" ]; then \
 			echo "Docker not found, installing..."; \
 			if [ "$$(uname)" = "Darwin" ]; then \
 				if ! command -v brew >/dev/null 2>&1; then \
@@ -214,7 +214,7 @@ deps-docker: ## Check and install Docker if needed (requires Docker 20.10.0+)
 				echo "    Download from: https://docs.docker.com/desktop/install/windows-install/"; \
 			fi; \
 			echo ""; \
-			echo "Or run: INSTALL_MISSING_TOOLS=true make setup"; \
+			echo "Or run: INSTALL_MISSING=true make setup"; \
 			exit 1; \
 		fi; \
 	fi
