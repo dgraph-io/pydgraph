@@ -5,7 +5,7 @@
 
 from __future__ import annotations
 
-import random
+import secrets
 import urllib.parse
 from typing import TYPE_CHECKING, Any
 
@@ -25,7 +25,7 @@ __version__ = VERSION
 __status__ = "development"
 
 
-class DgraphClient(object):
+class DgraphClient:
     """Creates a new Client for interacting with Dgraph.
 
     The client can be backed by multiple connections (to the same server, or
@@ -58,7 +58,6 @@ class DgraphClient(object):
                 metadata=new_metadata,
                 credentials=credentials,
             )
-            return response.tag
         except Exception as error:
             if util.is_jwt_expired(error):
                 self.retry_login()
@@ -69,9 +68,10 @@ class DgraphClient(object):
                     metadata=new_metadata,
                     credentials=credentials,
                 )
-                return response.tag
             else:
-                raise error
+                raise
+
+        return response.tag
 
     def login(
         self,
@@ -352,7 +352,7 @@ class DgraphClient(object):
     def run_dql(
         self,
         dql_query: str,
-        vars: dict[str, str] | None = None,
+        vars: dict[str, str] | None = None,  # noqa: A002
         read_only: bool = False,
         best_effort: bool = False,
         resp_format: str = "JSON",
@@ -437,13 +437,12 @@ class DgraphClient(object):
                     metadata=new_metadata,
                     credentials=credentials,
                 )
-            else:
-                raise error
+            raise
 
     def run_dql_with_vars(
         self,
         dql_query: str,
-        vars: dict[str, str],
+        vars: dict[str, str],  # noqa: A002
         read_only: bool = False,
         best_effort: bool = False,
         resp_format: str = "JSON",
@@ -606,8 +605,7 @@ class DgraphClient(object):
                     credentials=credentials,
                 )
                 return response.start, response.end + 1
-            else:
-                raise error
+            raise
 
     def create_namespace(
         self,
@@ -639,7 +637,6 @@ class DgraphClient(object):
                 metadata=new_metadata,
                 credentials=credentials,
             )
-            return response.namespace
         except Exception as error:
             if util.is_jwt_expired(error):
                 self.retry_login()
@@ -650,9 +647,10 @@ class DgraphClient(object):
                     metadata=new_metadata,
                     credentials=credentials,
                 )
-                return response.namespace
             else:
-                raise error
+                raise
+
+        return response.namespace
 
     def drop_namespace(
         self,
@@ -685,7 +683,6 @@ class DgraphClient(object):
                 metadata=new_metadata,
                 credentials=credentials,
             )
-            return response
         except Exception as error:
             if util.is_jwt_expired(error):
                 self.retry_login()
@@ -696,9 +693,10 @@ class DgraphClient(object):
                     metadata=new_metadata,
                     credentials=credentials,
                 )
-                return response
             else:
-                raise error
+                raise
+
+        return response
 
     def list_namespaces(
         self,
@@ -742,13 +740,12 @@ class DgraphClient(object):
                     credentials=credentials,
                 )
                 return dict(response.namespaces)
-            else:
-                raise error
+            raise
 
     def any_client(self) -> DgraphClientStub:
         """Returns a random gRPC client so that requests are distributed evenly among them."""
 
-        return random.choice(self._clients)  # nosec # pylint: disable=insecure-random
+        return secrets.choice(self._clients)
 
     def add_login_metadata(
         self, metadata: list[tuple[str, str]] | None
@@ -764,7 +761,7 @@ class DgraphClient(object):
             client.close()
 
 
-def open(connection_string: str) -> DgraphClient:
+def open(connection_string: str) -> DgraphClient:  # noqa: A001, C901
     """Open a new Dgraph client. Use client.close() to close the client.
 
     Args:
@@ -779,14 +776,15 @@ def open(connection_string: str) -> DgraphClient:
 
     try:
         parsed_url = urllib.parse.urlparse(connection_string)
-        if not parsed_url.scheme == "dgraph":
-            raise ValueError("Invalid connection string: scheme must be 'dgraph'")
-        if not parsed_url.hostname:
-            raise ValueError("Invalid connection string: hostname required")
-        if not parsed_url.port:
-            raise ValueError("Invalid connection string: port required")
     except Exception as e:
         raise ValueError(f"Failed to parse connection string: {e}") from e
+
+    if not parsed_url.scheme == "dgraph":
+        raise ValueError("Invalid connection string: scheme must be 'dgraph'")
+    if not parsed_url.hostname:
+        raise ValueError("Invalid connection string: hostname required")
+    if not parsed_url.port:
+        raise ValueError("Invalid connection string: port required")
 
     host = parsed_url.hostname
     port = parsed_url.port
@@ -827,21 +825,20 @@ def open(connection_string: str) -> DgraphClient:
     if "namespace" in params:
         try:
             namespace = int(params["namespace"])
-            if namespace < 0:
-                raise ValueError(f"namespace must be >= 0, got {namespace}")
         except ValueError as e:
-            if "namespace must be >= 0" in str(e):
-                raise e
             raise TypeError(
                 f"namespace must be an integer, got '{params['namespace']}'"
             ) from e
+
+        if namespace < 0:
+            raise ValueError(f"namespace must be >= 0, got {namespace}")
         if not username:
             raise ValueError("username/password required when namespace is provided")
 
     if auth_header:
         options = [("grpc.enable_http_proxy", 0)]
         call_credentials = grpc.metadata_call_credentials(
-            lambda context, callback: callback((("authorization", auth_header),), None)
+            lambda _context, callback: callback((("authorization", auth_header),), None)
         )
         credentials = grpc.composite_channel_credentials(
             grpc.ssl_channel_credentials(), call_credentials
