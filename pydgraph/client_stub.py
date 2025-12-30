@@ -5,6 +5,7 @@
 
 from __future__ import annotations
 
+import contextlib
 from typing import Any
 from urllib.parse import urlparse
 
@@ -20,7 +21,7 @@ __version__ = VERSION
 __status__ = "development"
 
 
-class DgraphClientStub(object):
+class DgraphClientStub:
     """Stub for the Dgraph grpc client."""
 
     def __init__(
@@ -180,10 +181,8 @@ class DgraphClientStub(object):
 
     def close(self) -> None:
         """Deletes channel and stub."""
-        try:
+        with contextlib.suppress(Exception):
             self.channel.close()
-        except Exception:
-            pass
         del self.channel
         del self.stub
 
@@ -201,9 +200,6 @@ class DgraphClientStub(object):
 
     # accepts grpc endpoint as copied in cloud console as well as graphql endpoint
     # Usage:
-    # import pydgraph
-    # client_stub = pydgraph.DgraphClientStub.from_cloud("cloud_endpoint", "api-key")
-    # client = pydgraph.DgraphClient(client_stub)
     @staticmethod
     def from_cloud(
         cloud_endpoint: str,
@@ -214,7 +210,7 @@ class DgraphClientStub(object):
         host = DgraphClientStub.parse_host(cloud_endpoint)
         creds = grpc.ssl_channel_credentials()
         call_credentials = grpc.metadata_call_credentials(
-            lambda context, callback: callback((("authorization", api_key),), None)
+            lambda _context, callback: callback((("authorization", api_key),), None)
         )
         composite_credentials = grpc.composite_channel_credentials(
             creds, call_credentials
