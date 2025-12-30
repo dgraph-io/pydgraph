@@ -5,6 +5,7 @@
 
 from __future__ import annotations
 
+import contextlib
 import json
 from typing import TYPE_CHECKING, Any
 
@@ -24,7 +25,7 @@ __version__ = VERSION
 __status__ = "development"
 
 
-class Txn(object):
+class Txn:
     """Txn is a single atomic transaction.
 
     A transaction lifecycle is as follows:
@@ -43,7 +44,9 @@ class Txn(object):
         self, client: DgraphClient, read_only: bool = False, best_effort: bool = False
     ) -> None:
         if not read_only and best_effort:
-            raise Exception(
+            # FIXME: Should use errors.TransactionError for better exception handling
+            # but changing exception type could break existing code that catches Exception
+            raise Exception(  # noqa: TRY002
                 "Best effort transactions are only compatible with "
                 "read-only transactions"
             )
@@ -181,13 +184,11 @@ class Txn(object):
                 query_error = error
 
         if query_error is not None:
-            try:
+            # Ignore error during discard - user should see the original error
+            with contextlib.suppress(Exception):
                 self.discard(
                     timeout=timeout, metadata=metadata, credentials=credentials
                 )
-            except Exception:
-                # Ignore error - user should see the original error.
-                pass
 
             self._common_except_mutate(query_error)
 
@@ -206,11 +207,13 @@ class Txn(object):
     ) -> grpc.Future:
         """Async version of do_request."""
         if self._finished:
-            raise Exception("Transaction has already been committed or discarded")
+            # FIXME: Should use errors.TransactionError for better exception handling
+            raise Exception("Transaction has already been committed or discarded")  # noqa: TRY002
 
         if len(request.mutations) > 0:
             if self._read_only:
-                raise Exception("Readonly transaction cannot run mutations")
+                # FIXME: Should use errors.TransactionError for better exception handling
+                raise Exception("Readonly transaction cannot run mutations")  # noqa: TRY002
             self._mutated = True
 
         new_metadata = self._dg.add_login_metadata(metadata)
@@ -236,11 +239,9 @@ class Txn(object):
         try:
             response = future.result()
         except Exception as error:
-            try:
+            # Ignore error during discard - user should see the original error
+            with contextlib.suppress(Exception):
                 txn.discard()
-            except Exception:
-                # Ignore error - user should see the original error.
-                pass
             txn._common_except_mutate(error)
 
         if commit_now:
@@ -315,7 +316,7 @@ class Txn(object):
     @staticmethod
     def _common_except_mutate(error: Exception) -> None:
         if util.is_aborted_error(error):
-            raise errors.AbortedError()
+            raise errors.AbortedError
 
         if util.is_retriable_error(error):
             raise errors.RetriableError(error)
@@ -377,7 +378,7 @@ class Txn(object):
     @staticmethod
     def _common_except_commit(error: Exception) -> None:
         if util.is_aborted_error(error):
-            raise errors.AbortedError()
+            raise errors.AbortedError
 
         raise error
 
@@ -410,7 +411,7 @@ class Txn(object):
                     credentials=credentials,
                 )
             else:
-                raise error
+                raise
 
     def _common_discard(self) -> bool:
         if self._finished:
