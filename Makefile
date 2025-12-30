@@ -14,12 +14,18 @@ else
   RUN :=
 endif
 
-.PHONY: help setup sync deps deps-uv deps-ruff deps-ty deps-docker test check protogen
+.PHONY: help setup sync deps deps-uv deps-ruff deps-ty deps-trunk deps-docker test check protogen
 
 .DEFAULT_GOAL := help
 
 help: ## Show this help message
+	@echo ""
+	@echo "Environment Variables:"
+	@echo "  INSTALL_MISSING_TOOLS=true    Enable automatic installation of missing tools (default: disabled)"
+	@echo ""
+	@echo "Available targets:"
 	@grep -E '^[a-zA-Z_-]+:.*?## .*$$' $(MAKEFILE_LIST) | awk 'BEGIN {FS = ":.*?## "}; {printf "\033[36m%-15s\033[0m %s\n", $$1, $$2}'
+	@echo ""
 
 setup: deps ## Setup project (install tools and sync dependencies)
 	$(RUN) uv sync --group dev --extra dev
@@ -40,46 +46,175 @@ protogen: ## Regenerate protobuf files (requires Python 3.13+)
 test: deps-docker ## Run tests
 	bash scripts/local-test.sh
 
-deps: deps-uv deps-ruff deps-ty deps-docker ## Install tool dependencies (uv, ruff, ty, docker)
+deps: deps-uv deps-ruff deps-ty deps-trunk deps-docker ## Check/install tool dependencies (set INSTALL_MISSING_TOOLS=true to auto-install)
 
 deps-uv:
 	@(command -v uv >/dev/null 2>&1 && command -v uvx >/dev/null 2>&1) || { \
-		echo "uv/uvx not found, installing..."; \
-		curl -LsSf https://astral.sh/uv/install.sh | sh; \
+		if [ "$(INSTALL_MISSING_TOOLS)" = "true" ]; then \
+			echo "uv/uvx not found, installing..."; \
+			curl -LsSf https://astral.sh/uv/install.sh | sh; \
+		else \
+			echo "Error: uv is not installed."; \
+			echo ""; \
+			echo "To install uv:"; \
+			echo ""; \
+			if [ "$$(uname)" = "Darwin" ]; then \
+				echo "  macOS:"; \
+				echo "    brew install uv"; \
+				echo "    # or"; \
+				echo "    curl -LsSf https://astral.sh/uv/install.sh | sh"; \
+			elif [ "$$(uname)" = "Linux" ]; then \
+				echo "  Linux:"; \
+				echo "    curl -LsSf https://astral.sh/uv/install.sh | sh"; \
+				echo "    # or via pip"; \
+				echo "    pip install uv"; \
+			else \
+				echo "  Windows:"; \
+				echo "    powershell -ExecutionPolicy ByPass -c \"irm https://astral.sh/uv/install.ps1 | iex\""; \
+				echo "    # or via pip"; \
+				echo "    pip install uv"; \
+			fi; \
+			echo ""; \
+			echo "Or run: INSTALL_MISSING_TOOLS=true make setup"; \
+			exit 1; \
+		fi; \
 	}
 
 deps-ruff:
 	@command -v ruff >/dev/null 2>&1 || { \
-		echo "ruff not found, installing..."; \
-		curl -LsSf https://astral.sh/ruff/install.sh | sh; \
+		if [ "$(INSTALL_MISSING_TOOLS)" = "true" ]; then \
+			echo "ruff not found, installing..."; \
+			curl -LsSf https://astral.sh/ruff/install.sh | sh; \
+		else \
+			echo "Error: ruff is not installed."; \
+			echo ""; \
+			echo "To install ruff:"; \
+			echo ""; \
+			if [ "$$(uname)" = "Darwin" ]; then \
+				echo "  macOS:"; \
+				echo "    brew install ruff"; \
+				echo "    # or"; \
+				echo "    curl -LsSf https://astral.sh/ruff/install.sh | sh"; \
+			elif [ "$$(uname)" = "Linux" ]; then \
+				echo "  Linux:"; \
+				echo "    curl -LsSf https://astral.sh/ruff/install.sh | sh"; \
+				echo "    # or via pip"; \
+				echo "    pip install ruff"; \
+			else \
+				echo "  Windows:"; \
+				echo "    powershell -ExecutionPolicy ByPass -c \"irm https://astral.sh/ruff/install.ps1 | iex\""; \
+				echo "    # or via pip"; \
+				echo "    pip install ruff"; \
+			fi; \
+			echo ""; \
+			echo "Or run: INSTALL_MISSING_TOOLS=true make setup"; \
+			exit 1; \
+		fi; \
 	}
 
 deps-ty:
 	@command -v ty >/dev/null 2>&1 || { \
-		echo "ty not found, installing..."; \
-		curl -LsSf https://astral.sh/ty/install.sh | sh; \
+		if [ "$(INSTALL_MISSING_TOOLS)" = "true" ]; then \
+			echo "ty not found, installing..."; \
+			curl -LsSf https://astral.sh/ty/install.sh | sh; \
+		else \
+			echo "Error: ty is not installed."; \
+			echo ""; \
+			echo "To install ty:"; \
+			echo ""; \
+			if [ "$$(uname)" = "Darwin" ]; then \
+				echo "  macOS:"; \
+				echo "    curl -LsSf https://astral.sh/ty/install.sh | sh"; \
+			elif [ "$$(uname)" = "Linux" ]; then \
+				echo "  Linux:"; \
+				echo "    curl -LsSf https://astral.sh/ty/install.sh | sh"; \
+			else \
+				echo "  Windows:"; \
+				echo "    powershell -ExecutionPolicy ByPass -c \"irm https://astral.sh/ty/install.ps1 | iex\""; \
+			fi; \
+			echo ""; \
+			echo "Or run: INSTALL_MISSING_TOOLS=true make setup"; \
+			exit 1; \
+		fi; \
+	}
+
+deps-trunk:
+	@command -v trunk >/dev/null 2>&1 || { \
+		if [ "$(INSTALL_MISSING_TOOLS)" = "true" ]; then \
+			echo "trunk not found, installing..."; \
+			TMPFILE=$$(mktemp); \
+			curl -fsSL https://get.trunk.io -o "$$TMPFILE"; \
+			bash "$$TMPFILE" -y; \
+			rm "$$TMPFILE"; \
+		else \
+			echo "Error: trunk is not installed."; \
+			echo ""; \
+			echo "To install trunk:"; \
+			echo ""; \
+			if [ "$$(uname)" = "Darwin" ] || [ "$$(uname)" = "Linux" ]; then \
+				echo "  macOS/Linux:"; \
+				echo "    curl -fsSL https://get.trunk.io | bash"; \
+				echo "    # or via npm"; \
+				echo "    npm install -g @trunk/launcher"; \
+			else \
+				echo "  Windows:"; \
+				echo "    Visit: https://docs.trunk.io/check/usage#windows"; \
+			fi; \
+			echo ""; \
+			echo "Or run: INSTALL_MISSING_TOOLS=true make setup"; \
+			exit 1; \
+		fi; \
 	}
 
 deps-docker: ## Check and install Docker if needed (requires Docker 20.10.0+)
 	@if ! command -v docker >/dev/null 2>&1; then \
-		echo "Docker not found, installing..."; \
-		if [ "$$(uname)" = "Darwin" ]; then \
-			if ! command -v brew >/dev/null 2>&1; then \
-				echo "Homebrew not found. Please install Homebrew first: https://brew.sh"; \
+		if [ "$(INSTALL_MISSING_TOOLS)" = "true" ]; then \
+			echo "Docker not found, installing..."; \
+			if [ "$$(uname)" = "Darwin" ]; then \
+				if ! command -v brew >/dev/null 2>&1; then \
+					echo "Homebrew not found. Please install Homebrew first: https://brew.sh"; \
+					exit 1; \
+				fi; \
+				brew install --cask docker; \
+				echo "Docker installed. Please start Docker Desktop and run 'make deps-docker' again."; \
+				exit 1; \
+			elif [ "$$(uname)" = "Linux" ]; then \
+				sudo apt-get update; \
+				sudo apt-get install -y docker.io docker-compose-plugin; \
+				sudo systemctl start docker; \
+				sudo systemctl enable docker; \
+				sudo usermod -aG docker $$USER; \
+				echo "Docker installed. Please log out and back in for group changes to take effect."; \
+			else \
+				echo "Unsupported OS. Please install Docker manually."; \
 				exit 1; \
 			fi; \
-			brew install --cask docker; \
-			echo "Docker installed. Please start Docker Desktop and run 'make deps-docker' again."; \
-			exit 1; \
-		elif [ "$$(uname)" = "Linux" ]; then \
-			sudo apt-get update; \
-			sudo apt-get install -y docker.io docker-compose-plugin; \
-			sudo systemctl start docker; \
-			sudo systemctl enable docker; \
-			sudo usermod -aG docker $$USER; \
-			echo "Docker installed. Please log out and back in for group changes to take effect."; \
 		else \
-			echo "Unsupported OS. Please install Docker manually."; \
+			echo "Error: Docker is not installed."; \
+			echo ""; \
+			echo "To install Docker:"; \
+			echo ""; \
+			if [ "$$(uname)" = "Darwin" ]; then \
+				echo "  macOS:"; \
+				echo "    brew install --cask docker"; \
+				echo "    # or download from"; \
+				echo "    # https://docs.docker.com/desktop/install/mac-install/"; \
+			elif [ "$$(uname)" = "Linux" ]; then \
+				echo "  Linux (Debian/Ubuntu):"; \
+				echo "    sudo apt-get update"; \
+				echo "    sudo apt-get install -y docker.io docker-compose-plugin"; \
+				echo "    sudo systemctl start docker"; \
+				echo "    sudo systemctl enable docker"; \
+				echo "    sudo usermod -aG docker \$$USER"; \
+				echo ""; \
+				echo "  Linux (Other):"; \
+				echo "    https://docs.docker.com/engine/install/"; \
+			else \
+				echo "  Windows:"; \
+				echo "    Download from: https://docs.docker.com/desktop/install/windows-install/"; \
+			fi; \
+			echo ""; \
+			echo "Or run: INSTALL_MISSING_TOOLS=true make setup"; \
 			exit 1; \
 		fi; \
 	fi
