@@ -17,24 +17,14 @@ jobs:
     name: Check Code Quality
     runs-on: ubuntu-latest
     steps:
-      - name: Checkout code
-        uses: actions/checkout@v5
-      - name: Set up Python
-        uses: actions/setup-python@v6
+      - name: Setup Python environment
+        uses: ./.github/actions/setup-python-env
         with:
-          python-version: '3.13'
-      - name: Install uv
-        uses: astral-sh/setup-uv@v5
-        with:
-          enable-cache: true
-      - name: Install ruff
-        run: curl -LsSf https://astral.sh/ruff/install.sh | sh
-      - name: Install ty
-        run: curl -LsSf https://astral.sh/ty/install.sh | sh
-      - name: Add tools to PATH
-        run: echo "$HOME/.local/bin:$HOME/.cargo/bin" >> $GITHUB_PATH
-      - name: Install dependencies
-        run: uv sync --group dev --extra dev
+          python-version: "3.13"
+      - name: Setup project and install tools
+        run: INSTALL_MISSING_TOOLS=true make setup
+        env:
+          PATH: ${{ env.PATH }}:$HOME/.local/bin:$HOME/.cargo/bin
       - name: Run code quality checks
         run: make check
   run-tests:
@@ -42,21 +32,17 @@ jobs:
     runs-on: ubuntu-latest
     strategy:
       matrix:
-        python-version: ['3.9', '3.10', '3.11', '3.12', '3.13', '3.14']
+        python-version: ["3.9", "3.10", "3.11", "3.12", "3.13", "3.14"]
     steps:
-      - name: Checkout code
-        uses: actions/checkout@v5
-      - name: Set up Python ${{ matrix.python-version }}
-        uses: actions/setup-python@v6
+      - name: Setup Python environment
+        uses: ./.github/actions/setup-python-env
         with:
           python-version: ${{ matrix.python-version }}
-      - name: Install uv
-        uses: astral-sh/setup-uv@v5
-        with:
-          enable-cache: true
       - name: Pin Python version for uv
         run: uv python pin ${{ matrix.python-version }}
-      - name: Install dependencies
-        run: uv sync --group dev --extra dev
+      - name: Setup project and install tools
+        run: INSTALL_MISSING_TOOLS=true make setup
+        env:
+          PATH: ${{ env.PATH }}:$HOME/.local/bin:$HOME/.cargo/bin
       - name: Run tests
         run: make test
