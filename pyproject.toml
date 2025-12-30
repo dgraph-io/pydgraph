@@ -37,6 +37,7 @@ dev = [
   "mypy-protobuf>=4.0.0",
   "pre-commit>=3.5.0",
   "pydantic-settings>=2.8.1",
+  "ruff>=0.8.4",
   "shellcheck-py>=0.10.0.1",
   "types-grpcio>=1.0.0.20251009",
   "types-protobuf>=6.32.1.20251210",
@@ -44,7 +45,12 @@ dev = [
 ]
 
 [project.optional-dependencies]
-dev = ["build>=1.2.2.post1", "grpcio-tools>=1.66.2", "pytest>=8.3.3"]
+dev = [
+  "build>=1.2.2.post1",
+  "grpcio-tools>=1.66.2",
+  "pytest>=8.3.3",
+  "ruff>=0.8.4",
+]
 
 
 [project.urls]
@@ -55,16 +61,81 @@ target-version = "py39"
 exclude = [
   ".venv",
   "build",
-  "pydgraph/proto/",
+  "pydgraph/proto/api_pb2.py",
+  "pydgraph/proto/api_pb2.pyi",
+  "pydgraph/proto/api_pb2_grpc.py",
+  "pydgraph/proto/api_pb2_grpc.pyi",
   "examples/embeddings/",
   "examples/notebook/",
 ]
 
 [tool.ruff.lint]
-# Enable: B (bugbear), D3 (pydocstyle docstring conventions), E (pycodestyle errors), F (pyflakes)
-# select = ["B", "D3", "E", "F"]
-# Never enforce E501 (line length violations). This should be handled by formatters.
-# ignore = ["E501"]
+# Maximal best-practices ruleset
+select = [
+  "A",     # flake8-builtins (shadowing builtins)
+  "ARG",   # flake8-unused-arguments
+  "ASYNC", # flake8-async
+  "B",     # flake8-bugbear
+  "C4",    # flake8-comprehensions
+  "C90",   # mccabe complexity
+  "E",     # pycodestyle errors
+  "ERA",   # eradicate (commented-out code)
+  "F",     # pyflakes
+  "FURB",  # refurb (modernize idioms)
+  "G",     # flake8-logging-format
+  "I",     # isort (import sorting)
+  "ICN",   # flake8-import-conventions
+  "N",     # pep8-naming
+  "PERF",  # perflint (performance)
+  "PIE",   # flake8-pie (misc lints)
+  "PT",    # flake8-pytest-style
+  "PTH",   # flake8-use-pathlib
+  "RET",   # flake8-return
+  "RSE",   # flake8-raise
+  "RUF",   # ruff-specific rules
+  "S",     # flake8-bandit (security)
+  "SIM",   # flake8-simplify
+  "TID",   # flake8-tidy-imports
+  "TRY",   # tryceratops (exception handling)
+  "UP",    # pyupgrade
+  "W",     # pycodestyle warnings
+]
+
+ignore = [
+  "E501",   # line-too-long (handled by formatter)
+  "S101",   # assert-used (OK in tests, configured per-file below)
+  "TRY003", # Avoid specifying long messages outside exception class
+  "SIM108", # Use ternary operator (can reduce readability)
+  "RET504", # Unnecessary variable assignment before return
+  "PTH123", # open() should be replaced by Path.open() (too strict)
+  "G004",   # Logging statement uses f-string (acceptable in modern Python)
+]
+
+[tool.ruff.lint.mccabe]
+max-complexity = 10
+
+[tool.ruff.lint.isort]
+known-first-party = ["pydgraph"]
+
+[tool.ruff.lint.per-file-ignores]
+"tests/**" = [
+  "S101",    # assert allowed in tests
+  "ARG001",  # unused function arguments OK in tests (fixtures)
+  "PLR2004", # magic values OK in tests
+]
+"examples/**" = [
+  "S101",   # assert OK in examples
+  "T201",   # print statements OK in examples
+  "ERA001", # commented-out code OK in examples (docs/demos)
+  "N802",   # camelCase function names OK in examples
+  "N803",   # camelCase argument names OK in examples
+  "N806",   # camelCase variable names OK in examples
+  "SIM300", # Yoda conditions OK in examples
+  "ARG001", # unused arguments OK in examples
+  "ARG002", # unused method arguments OK in examples
+  "C901",   # complex functions OK in examples
+  "PIE808", # unnecessary range(0, x) OK in examples
+]
 
 [tool.mypy]
 python_version = "3.9"

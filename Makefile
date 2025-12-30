@@ -14,7 +14,7 @@ else
   RUN :=
 endif
 
-.PHONY: help setup sync deps deps-uv deps-ruff deps-ty deps-trunk deps-docker test check protogen
+.PHONY: help setup sync deps deps-uv deps-ty deps-trunk deps-docker test check protogen
 
 .DEFAULT_GOAL := help
 
@@ -46,7 +46,7 @@ protogen: ## Regenerate protobuf files (requires Python 3.13+)
 test: deps-docker ## Run tests
 	bash scripts/local-test.sh
 
-deps: deps-uv deps-ruff deps-ty deps-trunk deps-docker ## Check/install tool dependencies (set INSTALL_MISSING=true to auto-install)
+deps: deps-uv deps-ty deps-trunk deps-docker ## Check/install tool dependencies (set INSTALL_MISSING=true to auto-install)
 
 deps-uv:
 	@(command -v uv >/dev/null 2>&1 && command -v uvx >/dev/null 2>&1) || { \
@@ -73,38 +73,6 @@ deps-uv:
 				echo "    powershell -ExecutionPolicy ByPass -c \"irm https://astral.sh/uv/install.ps1 | iex\""; \
 				echo "    # or via pip"; \
 				echo "    pip install uv"; \
-			fi; \
-			echo ""; \
-			echo "Or run: INSTALL_MISSING=true make setup"; \
-			exit 1; \
-		fi; \
-	}
-
-deps-ruff:
-	@command -v ruff >/dev/null 2>&1 || { \
-		if [ "$(INSTALL_MISSING)" = "true" ]; then \
-			echo "ruff not found, installing..."; \
-			curl -LsSf https://astral.sh/ruff/install.sh | sh; \
-		else \
-			echo "Error: ruff is not installed."; \
-			echo ""; \
-			echo "To install ruff:"; \
-			echo ""; \
-			if [ "$$(uname)" = "Darwin" ]; then \
-				echo "  macOS:"; \
-				echo "    brew install ruff"; \
-				echo "    # or"; \
-				echo "    curl -LsSf https://astral.sh/ruff/install.sh | sh"; \
-			elif [ "$$(uname)" = "Linux" ]; then \
-				echo "  Linux:"; \
-				echo "    curl -LsSf https://astral.sh/ruff/install.sh | sh"; \
-				echo "    # or via pip"; \
-				echo "    pip install ruff"; \
-			else \
-				echo "  Windows:"; \
-				echo "    powershell -ExecutionPolicy ByPass -c \"irm https://astral.sh/ruff/install.ps1 | iex\""; \
-				echo "    # or via pip"; \
-				echo "    pip install ruff"; \
 			fi; \
 			echo ""; \
 			echo "Or run: INSTALL_MISSING=true make setup"; \
