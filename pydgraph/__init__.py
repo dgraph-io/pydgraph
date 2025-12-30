@@ -1,11 +1,11 @@
 # SPDX-FileCopyrightText: © 2017-2025 Istari Digital, Inc.
 # SPDX-License-Identifier: Apache-2.0
 
-from pydgraph.client import DgraphClient, open
+from pydgraph.client import DgraphClient, open  # noqa: A004
 from pydgraph.client_stub import DgraphClientStub
 from pydgraph.errors import (
     AbortedError,
-    ConnectionError,
+    ConnectionError,  # noqa: A004
     RetriableError,
     TransactionError,
 )
@@ -26,18 +26,15 @@ from pydgraph.proto.api_pb2 import (
 from pydgraph.txn import Txn
 
 __all__ = [
-    # client
-    "DgraphClient",
-    "open",
-    # client_stub
-    "DgraphClientStub",
     # errors
     "AbortedError",
-    "ConnectionError",
-    "RetriableError",
-    "TransactionError",
     # proto.api_pb2
     "Check",
+    "ConnectionError",
+    # client
+    "DgraphClient",
+    # client_stub
+    "DgraphClientStub",
     "Facet",
     "Latency",
     "Mutation",
@@ -46,9 +43,12 @@ __all__ = [
     "Payload",
     "Request",
     "Response",
+    "RetriableError",
+    "TransactionError",
+    # txn
+    "Txn",
     "TxnContext",
     "Value",
     "Version",
-    # txn
-    "Txn",
+    "open",
 ]
