@@ -17,7 +17,7 @@ class AbortedError(Exception):
     """Error thrown by aborted transactions."""
 
     def __init__(self) -> None:
-        super(AbortedError, self).__init__("Transaction has been aborted. Please retry")
+        super().__init__("Transaction has been aborted. Please retry")
 
 
 class RetriableError(Exception):
@@ -30,7 +30,7 @@ class RetriableError(Exception):
         return str(self.exception)
 
 
-class ConnectionError(Exception):
+class ConnectionError(Exception):  # noqa: A001
     """Error thrown when the error return when the client has trouble connecting to Dgraph."""
 
     def __init__(self, exception: Exception) -> None:
@@ -44,4 +44,4 @@ class TransactionError(Exception):
     """Error thrown when the transaction is invalid (e.g trying to mutate in read-only mode)."""
 
     def __init__(self, msg: str) -> None:
-        super(TransactionError, self).__init__(msg)
+        super().__init__(msg)
