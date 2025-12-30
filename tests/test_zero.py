@@ -8,6 +8,8 @@ from __future__ import annotations
 import logging
 import unittest
 
+import pytest
+
 from . import helper
 
 __author__ = "Istari Digital, Inc. <dgraph-admin@istaridigital.com>"
@@ -18,7 +20,7 @@ class TestAllocations(helper.ClientIntegrationTestCase):
     """Tests for the allocation methods."""
 
     def setUp(self) -> None:
-        super(TestAllocations, self).setUp()
+        super().setUp()
         helper.skip_if_dgraph_version_below(self.client, "25.0.0", self)
         helper.drop_all(self.client)
 
@@ -28,16 +30,16 @@ class TestAllocations(helper.ClientIntegrationTestCase):
         start, end = self.client.allocate_uids(how_many)
 
         # Verify we get a valid range
-        self.assertIsInstance(start, int)
-        self.assertIsInstance(end, int)
-        self.assertGreater(start, 0)
-        self.assertGreater(end, start)
-        self.assertEqual(end - start, how_many)
+        assert isinstance(start, int)
+        assert isinstance(end, int)
+        assert start > 0
+        assert end > start
+        assert end - start == how_many
 
         # Test allocating again gives us a different range
-        start2, end2 = self.client.allocate_uids(how_many)
-        self.assertNotEqual(start, start2)
-        self.assertGreaterEqual(start2, end)  # Should be non-overlapping
+        start2, _end2 = self.client.allocate_uids(how_many)
+        assert start != start2
+        assert start2 >= end  # Should be non-overlapping
 
     def test_allocate_timestamps(self) -> None:
         """Test allocating timestamps returns valid range."""
@@ -45,16 +47,16 @@ class TestAllocations(helper.ClientIntegrationTestCase):
         start, end = self.client.allocate_timestamps(how_many)
 
         # Verify we get a valid range
-        self.assertIsInstance(start, int)
-        self.assertIsInstance(end, int)
-        self.assertGreater(start, 0)
-        self.assertGreater(end, start)
-        self.assertEqual(end - start, how_many)
+        assert isinstance(start, int)
+        assert isinstance(end, int)
+        assert start > 0
+        assert end > start
+        assert end - start == how_many
 
         # Test allocating again gives us a different range
-        start2, end2 = self.client.allocate_timestamps(how_many)
-        self.assertNotEqual(start, start2)
-        self.assertGreaterEqual(start2, end)  # Should be non-overlapping
+        start2, _end2 = self.client.allocate_timestamps(how_many)
+        assert start != start2
+        assert start2 >= end  # Should be non-overlapping
 
     def test_allocate_namespaces(self) -> None:
         """Test allocating namespaces returns valid range."""
@@ -62,40 +64,38 @@ class TestAllocations(helper.ClientIntegrationTestCase):
         start, end = self.client.allocate_namespaces(how_many)
 
         # Verify we get a valid range
-        self.assertIsInstance(start, int)
-        self.assertIsInstance(end, int)
-        self.assertGreater(start, 0)
-        self.assertGreater(end, start)
-        self.assertEqual(end - start, how_many)
+        assert isinstance(start, int)
+        assert isinstance(end, int)
+        assert start > 0
+        assert end > start
+        assert end - start == how_many
 
         # Test allocating again gives us a different range
-        start2, end2 = self.client.allocate_namespaces(how_many)
-        self.assertNotEqual(start, start2)
-        self.assertGreaterEqual(start2, end)  # Should be non-overlapping
+        start2, _end2 = self.client.allocate_namespaces(how_many)
+        assert start != start2
+        assert start2 >= end  # Should be non-overlapping
 
     def test_allocate_uids_different_sizes(self) -> None:
         """Test allocating different numbers of UIDs."""
         # Test small allocation
         start1, end1 = self.client.allocate_uids(1)
-        self.assertEqual(end1 - start1, 1)
+        assert end1 - start1 == 1
 
         # Test larger allocation
         start2, end2 = self.client.allocate_uids(1000)
-        self.assertEqual(end2 - start2, 1000)
+        assert end2 - start2 == 1000
 
         # Ensure ranges don't overlap
-        self.assertGreaterEqual(start2, end1)
+        assert start2 >= end1
 
     def test_allocate_zero_items(self) -> None:
         """Test allocating zero items raises ValueError."""
-        with self.assertRaises(ValueError) as cm:
+        with pytest.raises(ValueError, match="how_many must be greater than 0"):
             self.client.allocate_uids(0)
-        self.assertEqual(str(cm.exception), "how_many must be greater than 0")
 
         # Test negative values also raise ValueError
-        with self.assertRaises(ValueError) as cm:
+        with pytest.raises(ValueError, match="how_many must be greater than 0"):
             self.client.allocate_timestamps(-1)
-        self.assertEqual(str(cm.exception), "how_many must be greater than 0")
 
     def test_allocation_methods_are_independent(self) -> None:
         """Test that different allocation types don't interfere with each other."""
@@ -105,26 +105,26 @@ class TestAllocations(helper.ClientIntegrationTestCase):
         ns_start, ns_end = self.client.allocate_namespaces(100)
 
         # All should return valid ranges
-        self.assertEqual(uid_end - uid_start, 100)
-        self.assertEqual(ts_end - ts_start, 100)
-        self.assertEqual(ns_end - ns_start, 100)
+        assert uid_end - uid_start == 100
+        assert ts_end - ts_start == 100
+        assert ns_end - ns_start == 100
 
         # The ranges can be different (they're different types of IDs)
         # We just verify they're all positive and valid
-        self.assertGreater(uid_start, 0)
-        self.assertGreater(ts_start, 0)
-        self.assertGreater(ns_start, 0)
+        assert uid_start > 0
+        assert ts_start > 0
+        assert ns_start > 0
 
     def test_allocate_with_timeout(self) -> None:
         """Test allocation methods work with timeout parameter."""
         start, end = self.client.allocate_uids(10, timeout=30)
-        self.assertEqual(end - start, 10)
+        assert end - start == 10
 
         start, end = self.client.allocate_timestamps(10, timeout=30)
-        self.assertEqual(end - start, 10)
+        assert end - start == 10
 
         start, end = self.client.allocate_namespaces(10, timeout=30)
-        self.assertEqual(end - start, 10)
+        assert end - start == 10
 
 
 def suite() -> unittest.TestSuite:

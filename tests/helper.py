@@ -130,5 +130,5 @@ class ClientIntegrationTestCase(unittest.TestCase):
                 break
             except Exception as e:
                 if "user not found" not in str(e):
-                    raise e
+                    raise
             time.sleep(0.1)

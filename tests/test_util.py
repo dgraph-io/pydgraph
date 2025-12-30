@@ -17,10 +17,10 @@ class TestUtil(unittest.TestCase):
     """Tests util utility functions."""
 
     def test_is_string(self) -> None:
-        self.assertTrue(util.is_string(""))
-        self.assertTrue(util.is_string("a"))
-        self.assertFalse(util.is_string(object()))
-        self.assertFalse(util.is_string({}))
+        assert util.is_string("")
+        assert util.is_string("a")
+        assert not util.is_string(object())
+        assert not util.is_string({})
 
 
 def suite() -> unittest.TestSuite:

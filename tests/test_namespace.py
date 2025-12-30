@@ -10,6 +10,8 @@ import logging
 import time
 import unittest
 
+import pytest
+
 from . import helper
 
 
@@ -17,7 +19,7 @@ class TestNamespaces(helper.ClientIntegrationTestCase):
     """Tests for the namespace management methods."""
 
     def setUp(self) -> None:
-        super(TestNamespaces, self).setUp()
+        super().setUp()
         helper.skip_if_dgraph_version_below(self.client, "25.0.0", self)
         helper.drop_all(self.client)
 
@@ -50,25 +52,21 @@ class TestNamespaces(helper.ClientIntegrationTestCase):
 
         # Final check after all retries
         namespaces = self.client.list_namespaces()
-        self.assertNotIn(
-            namespace_id,
-            namespaces,
-            f"Namespace {namespace_id} still exists after {max_retries} retries",
-        )
+        assert namespace_id not in namespaces, f"Namespace {namespace_id} still exists after {max_retries} retries"
 
     def test_create_namespace(self) -> None:
         """Test creating a new namespace returns valid namespace ID."""
         namespace_id = self.client.create_namespace()
 
         # Verify we get a valid namespace ID
-        self.assertIsInstance(namespace_id, int)
-        self.assertGreater(namespace_id, 0)
+        assert isinstance(namespace_id, int)
+        assert namespace_id > 0
 
         # Test creating another namespace gives us a different ID
         namespace_id2 = self.client.create_namespace()
-        self.assertIsInstance(namespace_id2, int)
-        self.assertGreater(namespace_id2, 0)
-        self.assertNotEqual(namespace_id, namespace_id2)
+        assert isinstance(namespace_id2, int)
+        assert namespace_id2 > 0
+        assert namespace_id != namespace_id2
 
     def test_list_namespaces(self) -> None:
         """Test listing namespaces returns a dictionary."""
@@ -79,15 +77,15 @@ class TestNamespaces(helper.ClientIntegrationTestCase):
         namespaces = self.client.list_namespaces()
 
         # Verify we get a dictionary
-        self.assertIsInstance(namespaces, dict)
+        assert isinstance(namespaces, dict)
 
         # The created namespace should be in the list
-        self.assertIn(namespace_id, namespaces)
+        assert namespace_id in namespaces
 
         # Each namespace should have the expected structure
         namespace_obj = namespaces[namespace_id]
-        self.assertTrue(hasattr(namespace_obj, "id"))
-        self.assertEqual(namespace_obj.id, namespace_id)
+        assert hasattr(namespace_obj, "id")
+        assert namespace_obj.id == namespace_id
 
     def test_drop_namespace(self) -> None:
         """Test dropping a namespace removes it from the list."""
@@ -96,7 +94,7 @@ class TestNamespaces(helper.ClientIntegrationTestCase):
 
         # Verify it exists in the list
         namespaces_before = self.client.list_namespaces()
-        self.assertIn(namespace_id, namespaces_before)
+        assert namespace_id in namespaces_before
 
         # Only drop if it's not namespace 0 (system namespace cannot be deleted)
         if namespace_id != 0:
@@ -109,9 +107,8 @@ class TestNamespaces(helper.ClientIntegrationTestCase):
             self._wait_for_namespace_deletion(namespace_id)
         else:
             # If we got namespace 0, verify we can't drop it
-            with self.assertRaises(Exception) as cm:
+            with pytest.raises(Exception, match="cannot be deleted"):
                 self.client.drop_namespace(namespace_id)
-            self.assertIn("cannot be deleted", str(cm.exception))
 
     def test_create_and_drop_multiple_namespaces(self) -> None:
         """Test creating and dropping multiple namespaces."""
@@ -124,7 +121,7 @@ class TestNamespaces(helper.ClientIntegrationTestCase):
         # Verify all are in the list
         namespaces = self.client.list_namespaces()
         for namespace_id in namespace_ids:
-            self.assertIn(namespace_id, namespaces)
+            assert namespace_id in namespaces
 
         # Drop all namespaces (except namespace 0 which cannot be deleted)
         droppable_ids = [ns_id for ns_id in namespace_ids if ns_id != 0]
@@ -143,20 +140,20 @@ class TestNamespaces(helper.ClientIntegrationTestCase):
         # but we keep it for explicitness)
         namespaces_after = self.client.list_namespaces()
         for namespace_id in droppable_ids:
-            self.assertNotIn(namespace_id, namespaces_after)
+            assert namespace_id not in namespaces_after
 
         # If namespace 0 was created, it should still be in the list
         if 0 in namespace_ids:
-            self.assertIn(0, namespaces_after)
+            assert 0 in namespaces_after
 
     def test_cannot_drop_namespace_zero(self) -> None:
         """Test that namespace 0 cannot be dropped."""
         # Namespace 0 is the system namespace and cannot be deleted
         import grpc
 
-        with self.assertRaises(grpc.RpcError) as cm:
+        with pytest.raises(grpc.RpcError) as cm:
             self.client.drop_namespace(0)
-        self.assertIn("cannot be deleted", str(cm.exception))
+        assert "cannot be deleted" in str(cm.value)
 
 
 def suite() -> unittest.TestSuite:

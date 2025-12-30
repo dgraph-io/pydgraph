@@ -11,6 +11,8 @@ __maintainer__ = "Istari Digital, Inc. <dgraph-admin@istaridigital.com>"
 import unittest
 from typing import Any
 
+import pytest
+
 import pydgraph
 
 from . import helper
@@ -21,7 +23,7 @@ class TestDgraphClientStub(helper.ClientIntegrationTestCase):
 
     def validate_version_object(self, version: Any) -> None:
         tag = version.tag
-        self.assertIsInstance(tag, str)
+        assert isinstance(tag, str)
 
     def check_version(self, stub: Any) -> None:
         self.validate_version_object(stub.check_version(pydgraph.Check()))
@@ -30,7 +32,7 @@ class TestDgraphClientStub(helper.ClientIntegrationTestCase):
         self.check_version(pydgraph.DgraphClientStub(addr=self.TEST_SERVER_ADDR))
 
     def test_timeout(self) -> None:
-        with self.assertRaises(Exception):
+        with pytest.raises(Exception):  # noqa: PT011 - gRPC timeout error
             pydgraph.DgraphClientStub(self.TEST_SERVER_ADDR).check_version(
                 pydgraph.Check(), timeout=-1
             )
@@ -39,7 +41,7 @@ class TestDgraphClientStub(helper.ClientIntegrationTestCase):
         client_stub = pydgraph.DgraphClientStub(addr=self.TEST_SERVER_ADDR)
         self.check_version(client_stub)
         client_stub.close()
-        with self.assertRaises(Exception):
+        with pytest.raises(Exception):  # noqa: PT011 - gRPC channel closed error
             client_stub.check_version(pydgraph.Check())
 
 
@@ -62,10 +64,10 @@ class TestFromCloud(unittest.TestCase):
         for case in testcases:
             try:
                 pydgraph.DgraphClientStub.from_cloud(case["endpoint"], "api-key")  # type: ignore[arg-type]
-            except IndexError as e:
+            except IndexError:
                 if not case.get("error", False):
                     # we didn't expect an error
-                    raise (e)
+                    raise
 
 
 def suite() -> unittest.TestSuite:

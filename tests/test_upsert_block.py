@@ -9,6 +9,8 @@ import json
 import logging
 import unittest
 
+import pytest
+
 from . import helper
 
 __author__ = "Animesh Pathak <animesh@dgrpah.io>"
@@ -19,7 +21,7 @@ class TestUpsertBlock(helper.ClientIntegrationTestCase):
     """Tests for Upsert Block"""
 
     def setUp(self) -> None:
-        super(TestUpsertBlock, self).setUp()
+        super().setUp()
         helper.drop_all(self.client)
         helper.set_schema(self.client, "name: string @index(term) @upsert .")
 
@@ -73,12 +75,9 @@ class TestUpsertBlock(helper.ClientIntegrationTestCase):
     def test_no_query_no_mutation(self) -> None:
         txn = self.client.txn()
         request = txn.create_request()
-        try:
+        with pytest.raises(Exception, match="empty request"):
             txn.do_request(request)
-            self.fail("Upsert block test failed: Empty query succeeded")
-        except Exception as e:
-            txn.discard()
-            self.assertTrue("empty request" in str(e))
+        txn.discard()
 
     def test_conditional_upsert(self) -> None:
         self.insert_sample_data()

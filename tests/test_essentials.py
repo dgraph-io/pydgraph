@@ -27,16 +27,16 @@ class TestEssentials(helper.ClientIntegrationTestCase):
 
         txn = self.client.txn()
         mutation = txn.mutate(set_nquads='_:node <first> "Node name first" .')
-        self.assertTrue(len(mutation.uids) > 0, "Mutation did not create new node")
+        assert len(mutation.uids) > 0, "Mutation did not create new node"
 
         created = mutation.uids.get("node")
-        self.assertIsNotNone(created)
+        assert created is not None
 
         txn.commit()
 
-        query = "{{node(func: uid({uid:s})) {{ uid }} }}".format(uid=created)
+        query = f"{{node(func: uid({created:s})) {{ uid }} }}"
         reread = self.client.txn(read_only=True).query(query)
-        self.assertEqual(created, json.loads(reread.json).get("node")[0]["uid"])
+        assert created == json.loads(reread.json).get("node")[0]["uid"]
 
 
 def suite() -> unittest.TestSuite:
