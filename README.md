@@ -813,7 +813,7 @@ Quick start for contributors:
 # Clone and setup
 git clone https://github.com/dgraph-io/pydgraph.git
 cd pydgraph
-INSTALL_MISSING_DEPS=true make setup
+INSTALL_MISSING_TOOLS=true make setup
 
 # Verify everything works
 make check test
