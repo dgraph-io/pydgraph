@@ -30,7 +30,15 @@ class Txn(object):
     after calling commit.
     """
 
-    def __init__(self, client, read_only=False, best_effort=False):
+    def __init__(
+        self,
+        client,
+        read_only=False,
+        best_effort=False,
+        timeout=None,
+        metadata=None,
+        credentials=None,
+    ):
         if not read_only and best_effort:
             raise Exception(
                 "Best effort transactions are only compatible with "
@@ -45,6 +53,23 @@ class Txn(object):
         self._mutated = False
         self._read_only = read_only
         self._best_effort = best_effort
+        self._commit_kwargs = {
+            "timeout": timeout,
+            "metadata": metadata,
+            "credentials": credentials,
+        }
+
+    def __enter__(self):
+        return self
+
+    def __exit__(self, exc_type, exc_val, exc_tb):
+        if exc_type is not None:
+            self.discard(**self._commit_kwargs)
+            raise exc_val
+        if not self._read_only and not self._finished:
+            self.commit(**self._commit_kwargs)
+        else:
+            self.discard(**self._commit_kwargs)
 
     def query(
         self,
@@ -168,7 +193,7 @@ class Txn(object):
                 self.discard(
                     timeout=timeout, metadata=metadata, credentials=credentials
                 )
-            except:
+            except Exception:
                 # Ignore error - user should see the original error.
                 pass
 
@@ -201,7 +226,7 @@ class Txn(object):
         try:
             response = future.result()
         except Exception as error:
-            txn._common_except_mutate(error)
+            Txn._common_except_mutate(error)
 
         return response
 
@@ -212,11 +237,11 @@ class Txn(object):
             response = future.result()
         except Exception as error:
             try:
-                txn.discard(timeout=timeout, metadata=metadata, credentials=credentials)
-            except:
+                txn.discard(**txn._commit_kwargs)
+            except Exception:
                 # Ignore error - user should see the original error.
                 pass
-            txn._common_except_mutate(error)
+            Txn._common_except_mutate(error)
 
         if commit_now:
             txn._finished = True

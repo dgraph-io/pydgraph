@@ -3,8 +3,6 @@
 
 """Various utility functions."""
 
-import sys
-
 import grpc
 import grpc.aio
 
@@ -17,10 +15,7 @@ __status__ = "development"
 
 
 def is_string(string):
-    """Checks if argument is a string. Compatible with Python 2 and 3."""
-    if sys.version_info[0] < 3:
-        return isinstance(string, basestring)
-
+    """Checks if argument is a string."""
     return isinstance(string, str)
 
 

@@ -14,8 +14,7 @@ import time
 import unittest
 
 import pydgraph
-
-from . import helper
+from tests import helper
 
 CONCURRENCY = 5
 FIRSTS = ["Paul", "Eric", "Jack", "John", "Martin"]
@@ -30,9 +29,9 @@ class TestAccountUpsert(helper.ClientIntegrationTestCase):
         super(TestAccountUpsert, self).setUp()
 
         self.accounts = [
-            {"first": f, "last": l, "age": a}
+            {"first": f, "last": ln, "age": a}
             for f in FIRSTS
-            for l in LASTS
+            for ln in LASTS
             for a in AGES
         ]
         logging.info(len(self.accounts))

@@ -3,6 +3,7 @@
 
 """Dgraph python client."""
 
+import contextlib
 import random
 import urllib.parse
 
@@ -267,10 +268,11 @@ class DgraphClient(object):
             operation, timeout=timeout, metadata=metadata, credentials=credentials
         )
 
-    def txn(self, read_only=False, best_effort=False):
+    def txn(self, read_only=False, best_effort=False, **commit_kwargs):
         """Creates a transaction."""
-
-        return txn.Txn(self, read_only=read_only, best_effort=best_effort)
+        return txn.Txn(
+            self, read_only=read_only, best_effort=best_effort, **commit_kwargs
+        )
 
     def run_dql(
         self,
@@ -645,6 +647,31 @@ class DgraphClient(object):
     def close(self):
         for client in self._clients:
             client.close()
+
+    @contextlib.contextmanager
+    def begin(
+        self,
+        read_only: bool = False,
+        best_effort: bool = False,
+        timeout=None,
+        metadata=None,
+        credentials=None,
+    ):
+        """Start a managed transaction.
+
+        Note
+        ----
+        Only use this function in ``with-as`` blocks.
+        """
+        tx = self.txn(read_only=read_only, best_effort=best_effort)
+        try:
+            yield tx
+            if not read_only and not tx._finished:
+                tx.commit(timeout=timeout, metadata=metadata, credentials=credentials)
+        except Exception as e:
+            raise e
+        finally:
+            tx.discard()
 
 
 def open(connection_string: str) -> DgraphClient:
