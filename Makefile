@@ -15,7 +15,7 @@ else
   RUN :=
 endif
 
-.PHONY: help setup sync deps deps-uv deps-trunk deps-docker test check protogen clean build
+.PHONY: help setup sync deps deps-uv deps-trunk deps-docker test check protogen clean build publish
 
 .DEFAULT_GOAL := help
 
@@ -50,8 +50,11 @@ clean: ## Cleans build artifacts
 build: deps-uv sync protogen ## Builds release package
 	$(RUN) uv build
 
-test: deps sync ## Run tests
+test: deps-uv sync ## Run tests
 	bash scripts/local-test.sh
+
+publish: clean build  ## Publish a new release to PyPi (requires UV_PUBLISH_USERNAME and UV_PUBLISH_PASSWORD to be set)
+	$(RUN) uv publish
 
 deps: deps-uv deps-trunk deps-docker ## Check/install tool dependencies (set INSTALL_MISSING_DEPS=true to auto-install)
 
