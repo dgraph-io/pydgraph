@@ -1,4 +1,4 @@
-name: Code Quality Checks
+name: ci-pydgraph-code-quality
 on:
   push:
     branches:
@@ -15,7 +15,7 @@ permissions:
   contents: read
 jobs:
   check-code-quality:
-    name: Check Code Quality
+    name: Code Quality Checks
     runs-on: ubuntu-latest
     steps:
       - name: Checkout pydgraph
@@ -29,9 +29,9 @@ jobs:
           python-version: "3.13"
       - name: Sync python virtualenv
         run: INSTALL_MISSING=true make setup
+      - name: Run code quality checks
+        run: SKIP=trunk-check,trunk-fmt make check
       - name: Check generated protobufs are current
         run: |
           make protogen
           git diff --exit-code -- .
-      - name: Run code quality checks
-        run: SKIP=trunk-check,trunk-fmt make check
