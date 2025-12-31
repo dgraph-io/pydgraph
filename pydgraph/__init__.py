@@ -8,7 +8,7 @@ from pydgraph.async_txn import AsyncTxn
 
 # Sync client
 from pydgraph.client import DgraphClient, open  # noqa: A004
-from pydgraph.client_stub import DgraphClientStub
+from pydgraph.client_stub import DgraphClientStub, client_stub
 from pydgraph.errors import (
     AbortedError,
     ConnectionError,  # noqa: A004
@@ -55,5 +55,6 @@ __all__ = [
     "Value",
     "Version",
     "async_open",
+    "client_stub",
     "open",
 ]
