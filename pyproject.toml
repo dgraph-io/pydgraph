@@ -7,13 +7,12 @@ name = "pydgraph"
 authors = [
   { name = "Istari Digital, Inc.", email = "dgraph-admin@istaridigital.com" },
 ]
-license = { file = "LICENSE" }
+license = "Apache-2.0"
 description = "Official Dgraph client implementation for Python"
 readme = "README.md"
 requires-python = ">=3.9"
 classifiers = [
   'Intended Audience :: Developers',
-  'License :: OSI Approved :: Apache Software License',
   'Operating System :: OS Independent',
   'Topic :: Database',
   'Topic :: Software Development',
