@@ -1,4 +1,4 @@
-# SPDX-FileCopyrightText: © 2017-2025 Istari Digital, Inc.
+# SPDX-FileCopyrightText: © 2017-2026 Istari Digital, Inc.
 # SPDX-License-Identifier: Apache-2.0
 
 """Tests for the allocation methods (allocate_uids, allocate_timestamps, allocate_namespaces)."""
