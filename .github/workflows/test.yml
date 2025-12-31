@@ -25,8 +25,6 @@ jobs:
           python-version: "3.13"
       - name: Setup project and install tools
         run: INSTALL_MISSING=true make setup
-        env:
-          PATH: ${{ env.PATH }}:$HOME/.local/bin:$HOME/.cargo/bin
       - name: Run code quality checks
         run: make check
   run-tests:
@@ -46,7 +44,5 @@ jobs:
         run: uv python pin ${{ matrix.python-version }}
       - name: Setup project and install tools
         run: INSTALL_MISSING=true make setup
-        env:
-          PATH: ${{ env.PATH }}:$HOME/.local/bin:$HOME/.cargo/bin
       - name: Run tests
         run: make test
