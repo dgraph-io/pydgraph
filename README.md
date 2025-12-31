@@ -810,11 +810,14 @@ We welcome contributions! Please see [CONTRIBUTING.md](CONTRIBUTING.md) for deta
 Quick start for contributors:
 
 ```sh
-# Clone and setup
-git clone https://github.com/dgraph-io/pydgraph.git
+# Fork the repo on GitHub, then clone your fork
+git clone https://github.com/YOUR-USERNAME/pydgraph.git
 cd pydgraph
-INSTALL_MISSING_TOOLS=true make setup
+git remote add upstream https://github.com/dgraph-io/pydgraph.git
 
-# Verify everything works
+# Setup and verify
+make setup
 make check test
 ```
+
+See [CONTRIBUTING.md](CONTRIBUTING.md) for complete setup instructions and contribution guidelines.
