@@ -1,0 +1,37 @@
+name: Code Quality Checks
+on:
+  push:
+    branches:
+      - main
+  pull_request:
+    types:
+      - opened
+      - reopened
+      - synchronize
+      - ready_for_review
+    branches:
+      - main
+permissions:
+  contents: read
+jobs:
+  check-code-quality:
+    name: Check Code Quality
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout pydgraph
+        uses: actions/checkout@v5
+        with:
+          repository: dgraph-io/pydgraph
+          ref: ${{ github.ref }}
+      - name: Setup python runtime and tooling
+        uses: ./.github/actions/setup-python-and-tooling
+        with:
+          python-version: "3.13"
+      - name: Sync python virtualenv
+        run: INSTALL_MISSING=true make setup
+      - name: Check generated protobufs are current
+        run: |
+          make protogen
+          git diff --exit-code -- .
+      - name: Run code quality checks
+        run: SKIP=trunk-check,trunk-fmt make check
