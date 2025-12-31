@@ -1,11 +1,14 @@
-# SPDX-FileCopyrightText: © Hypermode Inc. <hello@hypermode.com>
+# SPDX-FileCopyrightText: © 2017-2025 Istari Digital, Inc.
 # SPDX-License-Identifier: Apache-2.0
 
 """Dgraph async python client."""
 
+from __future__ import annotations
+
 import asyncio
-import random
+import secrets
 import urllib.parse
+from typing import Any, NoReturn
 
 import grpc
 
@@ -14,8 +17,8 @@ from pydgraph.async_txn import AsyncTxn
 from pydgraph.meta import VERSION
 from pydgraph.proto import api_pb2 as api
 
-__author__ = "Hypermode Inc."
-__maintainer__ = "Hypermode Inc. <hello@hypermode.com>"
+__author__ = "Istari Digital, Inc."
+__maintainer__ = "Istari Digital, Inc. <dgraph-admin@istaridigital.com>"
 __version__ = VERSION
 __status__ = "development"
 
@@ -32,7 +35,7 @@ class AsyncDgraphClient:
             pass
     """
 
-    def __init__(self, *clients):
+    def __init__(self, *clients: Any) -> None:
         """Initialize async client.
 
         Args:
@@ -46,10 +49,15 @@ class AsyncDgraphClient:
 
         self._clients = clients[:]
         self._jwt = api.Jwt()
-        self._login_metadata = []
+        self._login_metadata: list[tuple[str, str]] = []
         self._refresh_lock = asyncio.Lock()  # Prevent concurrent JWT refresh
 
-    async def check_version(self, timeout=None, metadata=None, credentials=None):
+    async def check_version(
+        self,
+        timeout: float | None = None,
+        metadata: list[tuple[str, str]] | None = None,
+        credentials: grpc.CallCredentials | None = None,
+    ) -> str:
         """Returns the version of Dgraph if server is ready to accept requests.
 
         Args:
@@ -73,24 +81,28 @@ class AsyncDgraphClient:
                 metadata=new_metadata,
                 credentials=credentials,
             )
-            return response.tag
         except Exception as error:
             # Handle JWT expiration with automatic retry
-            if util.is_jwt_expired(error):
-                await self.retry_login()
-                new_metadata = self.add_login_metadata(metadata)
-                response = await self.any_client().check_version(
-                    check_req,
-                    timeout=timeout,
-                    metadata=new_metadata,
-                    credentials=credentials,
-                )
-                return response.tag
-            raise error
+            if not util.is_jwt_expired(error):
+                raise
+            await self.retry_login()
+            new_metadata = self.add_login_metadata(metadata)
+            response = await self.any_client().check_version(
+                check_req,
+                timeout=timeout,
+                metadata=new_metadata,
+                credentials=credentials,
+            )
+        return response.tag
 
     async def login(
-        self, userid, password, timeout=None, metadata=None, credentials=None
-    ):
+        self,
+        userid: str,
+        password: str,
+        timeout: float | None = None,
+        metadata: list[tuple[str, str]] | None = None,
+        credentials: grpc.CallCredentials | None = None,
+    ) -> None:
         """Login to Dgraph with credentials.
 
         Args:
@@ -116,8 +128,14 @@ class AsyncDgraphClient:
         self._login_metadata = [("accessjwt", self._jwt.access_jwt)]
 
     async def login_into_namespace(
-        self, userid, password, namespace, timeout=None, metadata=None, credentials=None
-    ):
+        self,
+        userid: str,
+        password: str,
+        namespace: int,
+        timeout: float | None = None,
+        metadata: list[tuple[str, str]] | None = None,
+        credentials: grpc.CallCredentials | None = None,
+    ) -> None:
         """Login to specific Dgraph namespace.
 
         Args:
@@ -143,7 +161,12 @@ class AsyncDgraphClient:
         self._jwt.ParseFromString(response.json)
         self._login_metadata = [("accessjwt", self._jwt.access_jwt)]
 
-    async def retry_login(self, timeout=None, metadata=None, credentials=None):
+    async def retry_login(
+        self,
+        timeout: float | None = None,
+        metadata: list[tuple[str, str]] | None = None,
+        credentials: grpc.CallCredentials | None = None,
+    ) -> None:
         """Refresh JWT token using refresh token.
 
         Uses a lock to prevent concurrent refresh attempts (thundering herd).
@@ -183,7 +206,13 @@ class AsyncDgraphClient:
 
             self._login_metadata = [("accessjwt", self._jwt.access_jwt)]
 
-    async def alter(self, operation, timeout=None, metadata=None, credentials=None):
+    async def alter(
+        self,
+        operation: api.Operation,
+        timeout: float | None = None,
+        metadata: list[tuple[str, str]] | None = None,
+        credentials: grpc.CallCredentials | None = None,
+    ) -> api.Payload:
         """Runs a schema modification via this client.
 
         Args:
@@ -211,23 +240,22 @@ class AsyncDgraphClient:
             )
         except Exception as error:
             # Handle JWT expiration with automatic retry
-            if util.is_jwt_expired(error):
-                await self.retry_login()
-                new_metadata = self.add_login_metadata(metadata)
-                try:
-                    return await self.any_client().alter(
-                        operation,
-                        timeout=timeout,
-                        metadata=new_metadata,
-                        credentials=credentials,
-                    )
-                except Exception as error:
-                    self._common_except_alter(error)
-            else:
+            if not util.is_jwt_expired(error):
+                self._common_except_alter(error)
+            await self.retry_login()
+            new_metadata = self.add_login_metadata(metadata)
+            try:
+                return await self.any_client().alter(
+                    operation,
+                    timeout=timeout,
+                    metadata=new_metadata,
+                    credentials=credentials,
+                )
+            except Exception as error:
                 self._common_except_alter(error)
 
     @staticmethod
-    def _common_except_alter(error):
+    def _common_except_alter(error: Exception) -> NoReturn:
         """Maps alter errors to pydgraph exceptions.
 
         Args:
@@ -246,7 +274,7 @@ class AsyncDgraphClient:
 
         raise error
 
-    def txn(self, read_only=False, best_effort=False):
+    def txn(self, read_only: bool = False, best_effort: bool = False) -> AsyncTxn:
         """Creates an async transaction.
 
         Args:
@@ -261,15 +289,17 @@ class AsyncDgraphClient:
         """
         return AsyncTxn(self, read_only=read_only, best_effort=best_effort)
 
-    def any_client(self):
+    def any_client(self) -> Any:
         """Returns a random gRPC client for load balancing.
 
         Returns:
             AsyncDgraphClientStub instance
         """
-        return random.choice(self._clients)  # nosec # pylint: disable=insecure-random
+        return secrets.choice(self._clients)
 
-    def add_login_metadata(self, metadata):
+    def add_login_metadata(
+        self, metadata: list[tuple[str, str]] | None
+    ) -> list[tuple[str, str]]:
         """Adds JWT metadata to request metadata.
 
         Prevents caller from overriding authentication by filtering out
@@ -292,12 +322,12 @@ class AsyncDgraphClient:
 
         return new_metadata
 
-    async def close(self):
+    async def close(self) -> None:
         """Close all client connections."""
         for client in self._clients:
             await client.close()
 
-    async def __aenter__(self):
+    async def __aenter__(self) -> AsyncDgraphClient:
         """Async context manager entry.
 
         Returns:
@@ -305,7 +335,9 @@ class AsyncDgraphClient:
         """
         return self
 
-    async def __aexit__(self, exc_type, exc_val, exc_tb):
+    async def __aexit__(
+        self, exc_type: Any, exc_val: Any, exc_tb: Any
+    ) -> bool:
         """Async context manager exit.
 
         Automatically closes all client connections.
@@ -320,6 +352,44 @@ class AsyncDgraphClient:
         """
         await self.close()
         return False
+
+
+def _validate_parsed_url(parsed_url: urllib.parse.ParseResult) -> None:
+    """Validate a parsed connection string URL.
+
+    Args:
+        parsed_url: Parsed URL result
+
+    Raises:
+        ValueError: If URL is invalid
+    """
+    if not parsed_url.scheme == "dgraph":
+        raise ValueError("Invalid connection string: scheme must be 'dgraph'")
+    if not parsed_url.hostname:
+        raise ValueError("Invalid connection string: hostname required")
+    if not parsed_url.port:
+        raise ValueError("Invalid connection string: port required")
+
+
+def _configure_ssl_credentials(sslmode: str) -> grpc.ChannelCredentials | None:
+    """Configure SSL credentials based on sslmode parameter.
+
+    Args:
+        sslmode: SSL mode ("disable", "verify-ca")
+
+    Returns:
+        Channel credentials or None
+
+    Raises:
+        ValueError: If sslmode is invalid
+    """
+    if sslmode == "disable":
+        return None
+    if sslmode == "require":
+        raise ValueError("sslmode=require is not supported in pydgraph, use verify-ca")
+    if sslmode == "verify-ca":
+        return grpc.ssl_channel_credentials()
+    raise ValueError(f"Invalid sslmode: {sslmode}")
 
 
 async def async_open(connection_string: str) -> AsyncDgraphClient:
@@ -359,12 +429,7 @@ async def async_open(connection_string: str) -> AsyncDgraphClient:
     """
     try:
         parsed_url = urllib.parse.urlparse(connection_string)
-        if not parsed_url.scheme == "dgraph":
-            raise ValueError("Invalid connection string: scheme must be 'dgraph'")
-        if not parsed_url.hostname:
-            raise ValueError("Invalid connection string: hostname required")
-        if not parsed_url.port:
-            raise ValueError("Invalid connection string: port required")
+        _validate_parsed_url(parsed_url)
     except Exception as e:
         raise ValueError(f"Failed to parse connection string: {e}") from e
 
@@ -385,17 +450,7 @@ async def async_open(connection_string: str) -> AsyncDgraphClient:
 
     # Handle SSL mode
     if "sslmode" in params:
-        sslmode = params["sslmode"]
-        if sslmode == "disable":
-            credentials = None
-        elif sslmode == "require":
-            raise ValueError(
-                "sslmode=require is not supported in pydgraph, use verify-ca"
-            )
-        elif sslmode == "verify-ca":
-            credentials = grpc.ssl_channel_credentials()
-        else:
-            raise ValueError(f"Invalid sslmode: {sslmode}")
+        credentials = _configure_ssl_credentials(params["sslmode"])
 
     # Handle authentication headers
     if "apikey" in params and "bearertoken" in params:
@@ -409,7 +464,7 @@ async def async_open(connection_string: str) -> AsyncDgraphClient:
     if auth_header:
         options = [("grpc.enable_http_proxy", 0)]
         call_credentials = grpc.metadata_call_credentials(
-            lambda context, callback: callback((("authorization", auth_header),), None)
+            lambda _context, callback: callback((("authorization", auth_header),), None)
         )
         credentials = grpc.composite_channel_credentials(
             grpc.ssl_channel_credentials(), call_credentials
@@ -422,6 +477,9 @@ async def async_open(connection_string: str) -> AsyncDgraphClient:
 
     # Perform initial login if credentials provided
     if username:
+        if password is None:
+            # Should never happen due to earlier validation, but check for safety
+            raise ValueError("Password cannot be None when username is provided")
         thirty_seconds = 30
         await client.login(username, password, timeout=thirty_seconds)
 

@@ -1,21 +1,23 @@
-# SPDX-FileCopyrightText: © Hypermode Inc. <hello@hypermode.com>
+# SPDX-FileCopyrightText: © 2017-2025 Istari Digital, Inc.
 # SPDX-License-Identifier: Apache-2.0
 
 """Async stub for RPC requests using grpc.aio."""
+
+from __future__ import annotations
+
+import contextlib
+from typing import Any
+from urllib.parse import urlparse
 
 import grpc
 import grpc.aio
 
 from pydgraph.meta import VERSION
+from pydgraph.proto import api_pb2 as api
 from pydgraph.proto import api_pb2_grpc as api_grpc
 
-try:
-    from urllib.parse import urlparse
-except ImportError:
-    from urlparse import urlparse
-
-__author__ = "Hypermode Inc."
-__maintainer__ = "Hypermode Inc. <hello@hypermode.com>"
+__author__ = "Istari Digital, Inc."
+__maintainer__ = "Istari Digital, Inc. <dgraph-admin@istaridigital.com>"
 __version__ = VERSION
 __status__ = "development"
 
@@ -23,7 +25,12 @@ __status__ = "development"
 class AsyncDgraphClientStub:
     """Async stub for the Dgraph grpc client using grpc.aio."""
 
-    def __init__(self, addr="localhost:9080", credentials=None, options=None):
+    def __init__(
+        self,
+        addr: str = "localhost:9080",
+        credentials: grpc.ChannelCredentials | None = None,
+        options: list[tuple[str, Any]] | None = None,
+    ) -> None:
         """Initialize async client stub.
 
         Args:
@@ -38,7 +45,13 @@ class AsyncDgraphClientStub:
 
         self.stub = api_grpc.DgraphStub(self.channel)
 
-    async def login(self, login_req, timeout=None, metadata=None, credentials=None):
+    async def login(
+        self,
+        login_req: api.LoginRequest,
+        timeout: float | None = None,
+        metadata: list[tuple[str, str]] | None = None,
+        credentials: grpc.CallCredentials | None = None,
+    ) -> api.Response:
         """Async login operation.
 
         Args:
@@ -54,7 +67,13 @@ class AsyncDgraphClientStub:
             login_req, timeout=timeout, metadata=metadata, credentials=credentials
         )
 
-    async def alter(self, operation, timeout=None, metadata=None, credentials=None):
+    async def alter(
+        self,
+        operation: api.Operation,
+        timeout: float | None = None,
+        metadata: list[tuple[str, str]] | None = None,
+        credentials: grpc.CallCredentials | None = None,
+    ) -> api.Payload:
         """Async alter operation for schema changes.
 
         Args:
@@ -70,7 +89,13 @@ class AsyncDgraphClientStub:
             operation, timeout=timeout, metadata=metadata, credentials=credentials
         )
 
-    async def query(self, req, timeout=None, metadata=None, credentials=None):
+    async def query(
+        self,
+        req: api.Request,
+        timeout: float | None = None,
+        metadata: list[tuple[str, str]] | None = None,
+        credentials: grpc.CallCredentials | None = None,
+    ) -> api.Response:
         """Async query or mutate operation.
 
         Args:
@@ -86,7 +111,13 @@ class AsyncDgraphClientStub:
             req, timeout=timeout, metadata=metadata, credentials=credentials
         )
 
-    async def commit_or_abort(self, ctx, timeout=None, metadata=None, credentials=None):
+    async def commit_or_abort(
+        self,
+        ctx: api.TxnContext,
+        timeout: float | None = None,
+        metadata: list[tuple[str, str]] | None = None,
+        credentials: grpc.CallCredentials | None = None,
+    ) -> api.TxnContext:
         """Async commit or abort operation.
 
         Args:
@@ -102,7 +133,13 @@ class AsyncDgraphClientStub:
             ctx, timeout=timeout, metadata=metadata, credentials=credentials
         )
 
-    async def check_version(self, check, timeout=None, metadata=None, credentials=None):
+    async def check_version(
+        self,
+        check: api.Check,
+        timeout: float | None = None,
+        metadata: list[tuple[str, str]] | None = None,
+        credentials: grpc.CallCredentials | None = None,
+    ) -> api.Version:
         """Async version check operation.
 
         Args:
@@ -118,15 +155,13 @@ class AsyncDgraphClientStub:
             check, timeout=timeout, metadata=metadata, credentials=credentials
         )
 
-    async def close(self):
+    async def close(self) -> None:
         """Close the async channel gracefully."""
-        try:
+        with contextlib.suppress(Exception):
             await self.channel.close()
-        except Exception:
-            pass  # nosec B110 - Intentionally ignore errors during channel cleanup
 
     @staticmethod
-    def parse_host(cloud_endpoint):
+    def parse_host(cloud_endpoint: str) -> str:
         """Converts any cloud endpoint to grpc endpoint.
 
         Inserts .grpc. subdomain for Dgraph Cloud endpoints when appropriate.
@@ -171,7 +206,11 @@ class AsyncDgraphClientStub:
         return host
 
     @staticmethod
-    def from_cloud(cloud_endpoint, api_key, options=None):
+    def from_cloud(
+        cloud_endpoint: str,
+        api_key: str,
+        options: list[tuple[str, Any]] | None = None,
+    ) -> AsyncDgraphClientStub:
         """Returns async Dgraph Client stub for Dgraph Cloud endpoint.
 
         Usage:
@@ -190,7 +229,7 @@ class AsyncDgraphClientStub:
         host = AsyncDgraphClientStub.parse_host(cloud_endpoint)
         creds = grpc.ssl_channel_credentials()
         call_credentials = grpc.metadata_call_credentials(
-            lambda context, callback: callback((("authorization", api_key),), None)
+            lambda _context, callback: callback((("authorization", api_key),), None)
         )
         composite_credentials = grpc.composite_channel_credentials(
             creds, call_credentials
