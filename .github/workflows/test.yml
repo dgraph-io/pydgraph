@@ -17,6 +17,8 @@ jobs:
     name: Check Code Quality
     runs-on: ubuntu-latest
     steps:
+      - name: Checkout code
+        uses: actions/checkout@v5
       - name: Setup Python environment
         uses: ./.github/actions/setup-python-env
         with:
@@ -34,6 +36,8 @@ jobs:
       matrix:
         python-version: ["3.9", "3.10", "3.11", "3.12", "3.13", "3.14"]
     steps:
+      - name: Checkout code
+        uses: actions/checkout@v5
       - name: Setup Python environment
         uses: ./.github/actions/setup-python-env
         with:
