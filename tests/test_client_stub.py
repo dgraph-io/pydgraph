@@ -103,6 +103,7 @@ class TestDgraphClientStubContextManager(helper.ClientIntegrationTestCase):
         """Test using DgraphClientStub context manager with DgraphClient."""
         with pydgraph.DgraphClientStub(addr=self.TEST_SERVER_ADDR) as client_stub:
             client = pydgraph.DgraphClient(client_stub)
+            client.login("groot", "password")
 
             # Perform a simple operation
             txn = client.txn(read_only=True)
@@ -148,6 +149,7 @@ class TestDgraphClientStubContextManager(helper.ClientIntegrationTestCase):
 
             # Create client and perform operations
             client = pydgraph.DgraphClient(client_stub)
+            client.login("groot", "password")
             txn = client.txn(read_only=True)
             query = "{ me(func: has(name)) { name } }"
             resp = txn.query(query)
@@ -157,6 +159,7 @@ class TestDgraphClientStubContextManager(helper.ClientIntegrationTestCase):
         """Test full workflow: stub context manager with client and transaction operations."""
         with pydgraph.DgraphClientStub(addr=self.TEST_SERVER_ADDR) as stub:
             client = pydgraph.DgraphClient(stub)
+            client.login("groot", "password")
 
             # Set schema
             schema = "test_name: string @index(fulltext) ."
