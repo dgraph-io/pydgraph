@@ -10,6 +10,7 @@ import urllib.parse
 import grpc
 
 from pydgraph import errors, txn, util
+from pydgraph.client_stub import DgraphClientStub
 from pydgraph.meta import VERSION
 from pydgraph.proto import api_pb2 as api
 
@@ -756,8 +757,6 @@ def open(connection_string: str) -> DgraphClient:
         credentials = grpc.composite_channel_credentials(
             grpc.ssl_channel_credentials(), call_credentials
         )
-
-    from pydgraph.client_stub import DgraphClientStub
 
     client_stub = DgraphClientStub(f"{host}:{port}", credentials, options)
     client = DgraphClient(client_stub)
