@@ -609,7 +609,7 @@ class TestSPStar(helper.ClientIntegrationTestCase):
 
 class TestContextManager(helper.ClientIntegrationTestCase):
     def setUp(self) -> None:
-        super(TestContextManager, self).setUp()
+        super().setUp()
         helper.drop_all(self.client)
         helper.set_schema(self.client, "name: string @index(fulltext) .")
 
@@ -624,7 +624,7 @@ class TestContextManager(helper.ClientIntegrationTestCase):
         """
         with self.client.begin(read_only=True, best_effort=True) as tx:
             response = tx.query(q)
-        self.assertIsNotNone(response)
+        assert response is not None
         _data = json.loads(response.json)
 
     def test_context_manager_by_class(self) -> None:
@@ -638,15 +638,15 @@ class TestContextManager(helper.ClientIntegrationTestCase):
         """
         with pydgraph.Txn(self.client, read_only=True, best_effort=True) as tx:
             response = tx.query(q)
-        self.assertIsNotNone(response)
+        assert response is not None
         _data = json.loads(response.json)
 
     def test_context_manager_auto_commit(self) -> None:
         """Test that write transactions automatically commit on successful completion."""
         with self.client.txn() as txn:
             response = txn.mutate(set_obj={"name": "Alice"})
-            self.assertEqual(1, len(response.uids), "Nothing was assigned")
-            uid = list(response.uids.values())[0]
+            assert len(response.uids) == 1, "Nothing was assigned"
+            uid = next(iter(response.uids.values()))
 
         # Verify the data was committed by querying in a new transaction
         query = f"""{{
@@ -656,14 +656,14 @@ class TestContextManager(helper.ClientIntegrationTestCase):
         }}"""
 
         resp = self.client.txn(read_only=True).query(query)
-        self.assertEqual([{"name": "Alice"}], json.loads(resp.json).get("me"))
+        assert json.loads(resp.json).get("me") == [{"name": "Alice"}]
 
     def test_context_manager_read_only_auto_discard(self) -> None:
         """Test that read-only transactions automatically discard."""
         # Create some data first
         txn = self.client.txn()
         response = txn.mutate(set_obj={"name": "Bob"})
-        uid = list(response.uids.values())[0]
+        uid = next(iter(response.uids.values()))
         txn.commit()
 
         # Read-only transaction should auto-discard (not commit)
@@ -675,16 +675,16 @@ class TestContextManager(helper.ClientIntegrationTestCase):
 
         with self.client.txn(read_only=True) as txn:
             resp = txn.query(query)
-            self.assertEqual([{"name": "Bob"}], json.loads(resp.json).get("me"))
+            assert json.loads(resp.json).get("me") == [{"name": "Bob"}]
 
         # Transaction should be finished after context manager exits
-        self.assertTrue(txn._finished)
+        assert txn._finished
 
     def test_context_manager_exception_handling(self) -> None:
         """Test that exceptions cause automatic discard and are re-raised."""
         with self.assertRaises(ValueError), self.client.txn() as txn:
             response = txn.mutate(set_obj={"name": "Charlie"})
-            _uid = list(response.uids.values())[0]
+            _uid = next(iter(response.uids.values()))
             raise ValueError("Test exception")
 
         # Verify transaction was discarded - data should not exist
@@ -699,16 +699,16 @@ class TestContextManager(helper.ClientIntegrationTestCase):
         # Should be empty or not contain Charlie
         if results:
             names = [r.get("name") for r in results]
-            self.assertNotIn("Charlie", names)
+            assert "Charlie" not in names
 
     def test_context_manager_transaction_finished_after_exit(self) -> None:
         """Test that transaction is marked as finished after exiting context manager."""
         with self.client.txn() as txn:
             txn.mutate(set_obj={"name": "David"})
-            self.assertFalse(txn._finished)
+            assert not txn._finished
 
         # Should be finished after exit
-        self.assertTrue(txn._finished)
+        assert txn._finished
 
         # Should not be able to use transaction after context manager
         with self.assertRaises(Exception):
@@ -718,10 +718,10 @@ class TestContextManager(helper.ClientIntegrationTestCase):
         """Test multiple mutations within a single context manager."""
         with self.client.txn() as txn:
             response1 = txn.mutate(set_obj={"name": "Eve"})
-            _uid1 = list(response1.uids.values())[0]
+            _uid1 = next(iter(response1.uids.values()))
 
             response2 = txn.mutate(set_obj={"name": "Frank"})
-            _uid2 = list(response2.uids.values())[0]
+            _uid2 = next(iter(response2.uids.values()))
 
         # Verify both mutations were committed
         query = """{
@@ -733,15 +733,15 @@ class TestContextManager(helper.ClientIntegrationTestCase):
         resp = self.client.txn(read_only=True).query(query)
         results = json.loads(resp.json).get("me")
         names = [r.get("name") for r in results]
-        self.assertIn("Eve", names)
-        self.assertIn("Frank", names)
+        assert "Eve" in names
+        assert "Frank" in names
 
     def test_context_manager_query_and_mutate(self) -> None:
         """Test both query and mutate operations within a context manager."""
         # Create initial data
         txn = self.client.txn()
         response = txn.mutate(set_obj={"name": "Grace"})
-        uid = list(response.uids.values())[0]
+        uid = next(iter(response.uids.values()))
         txn.commit()
 
         # Query and update in context manager
@@ -753,14 +753,14 @@ class TestContextManager(helper.ClientIntegrationTestCase):
             }}"""
 
             resp = txn.query(query)
-            self.assertEqual([{"name": "Grace"}], json.loads(resp.json).get("me"))
+            assert json.loads(resp.json).get("me") == [{"name": "Grace"}]
 
             # Update the name
             txn.mutate(set_obj={"uid": uid, "name": "Grace Updated"})
 
         # Verify the update was committed
         resp = self.client.txn(read_only=True).query(query)
-        self.assertEqual([{"name": "Grace Updated"}], json.loads(resp.json).get("me"))
+        assert json.loads(resp.json).get("me") == [{"name": "Grace Updated"}]
 
     def test_context_manager_invalid_nquad_exception(self) -> None:
         """Test that invalid operations cause proper exception handling and discard."""
@@ -769,13 +769,15 @@ class TestContextManager(helper.ClientIntegrationTestCase):
             txn.mutate(set_nquads="_:node <name> InvalidWithoutQuotes")
 
         # Transaction should be finished
-        self.assertTrue(txn._finished)
+        assert txn._finished
 
     def test_context_manager_read_only_cannot_mutate(self) -> None:
         """Test that read-only transactions cannot mutate within context manager."""
-        with self.assertRaises(Exception):
-            with self.client.txn(read_only=True) as txn:
-                txn.mutate(set_obj={"name": "Should Fail"})
+        with (
+            pytest.raises(Exception),  # noqa: PT011
+            self.client.txn(read_only=True) as txn,
+        ):
+            txn.mutate(set_obj={"name": "Should Fail"})
 
     def test_context_manager_no_mutations_auto_commit(self) -> None:
         """Test that transactions with no mutations don't error on auto-commit."""
@@ -784,7 +786,7 @@ class TestContextManager(helper.ClientIntegrationTestCase):
             _resp = txn.query(query)
 
         # Should complete without errors even though no mutations were made
-        self.assertTrue(txn._finished)
+        assert txn._finished
 
 
 def suite() -> unittest.TestSuite:
