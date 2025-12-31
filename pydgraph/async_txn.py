@@ -1,17 +1,22 @@
-# SPDX-FileCopyrightText: © Hypermode Inc. <hello@hypermode.com>
+# SPDX-FileCopyrightText: © 2017-2025 Istari Digital, Inc.
 # SPDX-License-Identifier: Apache-2.0
 
 """Dgraph async atomic transaction support."""
 
+from __future__ import annotations
+
 import asyncio
 import json
+from typing import Any, NoReturn
+
+import grpc
 
 from pydgraph import errors, util
 from pydgraph.meta import VERSION
 from pydgraph.proto import api_pb2 as api
 
-__author__ = "Hypermode Inc."
-__maintainer__ = "Hypermode Inc. <hello@hypermode.com>"
+__author__ = "Istari Digital, Inc."
+__maintainer__ = "Istari Digital, Inc. <dgraph-admin@istaridigital.com>"
 __version__ = VERSION
 __status__ = "development"
 
@@ -34,7 +39,9 @@ class AsyncTxn:
             # Automatically discarded on exit
     """
 
-    def __init__(self, client, read_only=False, best_effort=False):
+    def __init__(
+        self, client: Any, read_only: bool = False, best_effort: bool = False
+    ) -> None:
         """Initialize async transaction.
 
         Args:
@@ -43,10 +50,10 @@ class AsyncTxn:
             best_effort: If True, use best-effort mode (only for read-only)
 
         Raises:
-            Exception: If best_effort is True but read_only is False
+            ValueError: If best_effort is True but read_only is False
         """
         if not read_only and best_effort:
-            raise Exception(
+            raise ValueError(
                 "Best effort transactions are only compatible with "
                 "read-only transactions"
             )
@@ -63,13 +70,13 @@ class AsyncTxn:
 
     async def query(
         self,
-        query,
-        variables=None,
-        timeout=None,
-        metadata=None,
-        credentials=None,
-        resp_format="JSON",
-    ):
+        query: str,
+        variables: dict[str, str] | None = None,
+        timeout: float | None = None,
+        metadata: list[tuple[str, str]] | None = None,
+        credentials: grpc.CallCredentials | None = None,
+        resp_format: str = "JSON",
+    ) -> api.Response:
         """Executes a query operation.
 
         Args:
@@ -96,17 +103,17 @@ class AsyncTxn:
 
     async def mutate(
         self,
-        mutation=None,
-        set_obj=None,
-        del_obj=None,
-        set_nquads=None,
-        del_nquads=None,
-        cond=None,
-        commit_now=None,
-        timeout=None,
-        metadata=None,
-        credentials=None,
-    ):
+        mutation: api.Mutation | None = None,
+        set_obj: dict[str, Any] | None = None,
+        del_obj: dict[str, Any] | None = None,
+        set_nquads: str | None = None,
+        del_nquads: str | None = None,
+        cond: str | None = None,
+        commit_now: bool | None = None,
+        timeout: float | None = None,
+        metadata: list[tuple[str, str]] | None = None,
+        credentials: grpc.CallCredentials | None = None,
+    ) -> api.Response:
         """Executes a mutate operation.
 
         Args:
@@ -137,7 +144,13 @@ class AsyncTxn:
             req, timeout=timeout, metadata=metadata, credentials=credentials
         )
 
-    async def do_request(self, request, timeout=None, metadata=None, credentials=None):
+    async def do_request(  # noqa: C901
+        self,
+        request: api.Request,
+        timeout: float | None = None,
+        metadata: list[tuple[str, str]] | None = None,
+        credentials: grpc.CallCredentials | None = None,
+    ) -> api.Response:
         """Executes a query/mutate operation on the server.
 
         Handles JWT refresh automatically if token expires.
@@ -197,8 +210,8 @@ class AsyncTxn:
                         )
                     except asyncio.CancelledError:
                         raise
-                    except Exception as error:
-                        query_error = error
+                    except Exception as retry_error:
+                        query_error = retry_error
                 else:
                     query_error = error
 
@@ -210,9 +223,9 @@ class AsyncTxn:
                     )
                 except asyncio.CancelledError:
                     raise
-                except Exception:
+                except Exception:  # noqa: S110  # nosec B110
                     # Ignore discard error - user should see the original error
-                    pass  # nosec B110
+                    pass
 
                 self._common_except_mutate(query_error)
 
@@ -224,13 +237,13 @@ class AsyncTxn:
 
     def create_mutation(
         self,
-        mutation=None,
-        set_obj=None,
-        del_obj=None,
-        set_nquads=None,
-        del_nquads=None,
-        cond=None,
-    ):
+        mutation: api.Mutation | None = None,
+        set_obj: dict[str, Any] | None = None,
+        del_obj: dict[str, Any] | None = None,
+        set_nquads: str | None = None,
+        del_nquads: str | None = None,
+        cond: str | None = None,
+    ) -> api.Mutation:
         """Creates a mutation protobuf message.
 
         Args:
@@ -255,17 +268,17 @@ class AsyncTxn:
         if del_nquads:
             mutation.del_nquads = del_nquads.encode("utf8")
         if cond:
-            mutation.cond = cond.encode("utf8")
+            mutation.cond = cond.encode("utf8")  # type: ignore[assignment]
         return mutation
 
     def create_request(
         self,
-        query=None,
-        variables=None,
-        mutations=None,
-        commit_now=None,
-        resp_format="JSON",
-    ):
+        query: str | None = None,
+        variables: dict[str, str] | None = None,
+        mutations: list[api.Mutation] | None = None,
+        commit_now: bool | None = None,
+        resp_format: str = "JSON",
+    ) -> api.Request:
         """Creates a request protobuf message.
 
         Args:
@@ -282,9 +295,9 @@ class AsyncTxn:
             TransactionError: If resp_format is invalid or variables are not strings
         """
         if resp_format == "JSON":
-            resp_format = api.Request.RespFormat.JSON
+            format_enum = api.Request.RespFormat.JSON
         elif resp_format == "RDF":
-            resp_format = api.Request.RespFormat.RDF
+            format_enum = api.Request.RespFormat.RDF
         else:
             raise errors.TransactionError(
                 "Response format should be either RDF or JSON"
@@ -292,10 +305,10 @@ class AsyncTxn:
 
         request = api.Request(
             start_ts=self._ctx.start_ts,
-            commit_now=commit_now,
+            commit_now=commit_now or False,
             read_only=self._read_only,
             best_effort=self._best_effort,
-            resp_format=resp_format,
+            resp_format=format_enum,
         )
 
         if variables is not None:
@@ -307,13 +320,13 @@ class AsyncTxn:
                         "Values and keys in variable map must be strings"
                     )
         if query:
-            request.query = query.encode("utf8")
+            request.query = query.encode("utf8")  # type: ignore[assignment]
         if mutations:
             request.mutations.extend(mutations)
         return request
 
     @staticmethod
-    def _common_except_mutate(error):
+    def _common_except_mutate(error: Exception) -> NoReturn:
         """Maps gRPC errors to pydgraph exceptions.
 
         Args:
@@ -326,7 +339,7 @@ class AsyncTxn:
             The original error otherwise
         """
         if util.is_aborted_error(error):
-            raise errors.AbortedError()
+            raise errors.AbortedError
 
         if util.is_retriable_error(error):
             raise errors.RetriableError(error)
@@ -336,7 +349,12 @@ class AsyncTxn:
 
         raise error
 
-    async def commit(self, timeout=None, metadata=None, credentials=None):
+    async def commit(
+        self,
+        timeout: float | None = None,
+        metadata: list[tuple[str, str]] | None = None,
+        credentials: grpc.CallCredentials | None = None,
+    ) -> api.TxnContext | None:
         """Commits the transaction.
 
         Args:
@@ -379,12 +397,12 @@ class AsyncTxn:
                         )
                     except asyncio.CancelledError:
                         raise
-                    except Exception as error:
-                        return self._common_except_commit(error)
+                    except Exception as retry_error:
+                        return self._common_except_commit(retry_error)
 
                 self._common_except_commit(error)
 
-    def _common_commit(self):
+    def _common_commit(self) -> bool:
         """Validates and prepares for commit.
 
         Returns:
@@ -406,7 +424,7 @@ class AsyncTxn:
         return self._mutated
 
     @staticmethod
-    def _common_except_commit(error):
+    def _common_except_commit(error: Exception) -> NoReturn:
         """Maps commit errors to pydgraph exceptions.
 
         Args:
@@ -417,11 +435,16 @@ class AsyncTxn:
             The original error otherwise
         """
         if util.is_aborted_error(error):
-            raise errors.AbortedError()
+            raise errors.AbortedError
 
         raise error
 
-    async def discard(self, timeout=None, metadata=None, credentials=None):
+    async def discard(
+        self,
+        timeout: float | None = None,
+        metadata: list[tuple[str, str]] | None = None,
+        credentials: grpc.CallCredentials | None = None,
+    ) -> None:
         """Discards the transaction.
 
         Safe to call multiple times or after commit.
@@ -460,9 +483,9 @@ class AsyncTxn:
                         credentials=credentials,
                     )
                 else:
-                    raise error
+                    raise
 
-    def _common_discard(self):
+    def _common_discard(self) -> bool:
         """Validates and prepares for discard.
 
         Returns:
@@ -478,7 +501,7 @@ class AsyncTxn:
         self._ctx.aborted = True
         return True
 
-    def merge_context(self, src=None):
+    def merge_context(self, src: api.TxnContext | None = None) -> None:
         """Merges transaction context from server response.
 
         Args:
@@ -502,7 +525,7 @@ class AsyncTxn:
         self._ctx.keys.extend(src.keys)
         self._ctx.preds.extend(src.preds)
 
-    async def __aenter__(self):
+    async def __aenter__(self) -> AsyncTxn:
         """Async context manager entry.
 
         Returns:
@@ -510,7 +533,9 @@ class AsyncTxn:
         """
         return self
 
-    async def __aexit__(self, exc_type, exc_val, exc_tb):
+    async def __aexit__(
+        self, exc_type: Any, exc_val: Any, exc_tb: Any
+    ) -> bool:
         """Async context manager exit.
 
         Automatically discards transaction if not already finished.
@@ -531,7 +556,7 @@ class AsyncTxn:
             except asyncio.CancelledError:
                 # Preserve cancellation during cleanup
                 raise
-            except Exception:
+            except Exception:  # noqa: S110  # nosec B110
                 # Suppress discard errors during cleanup
-                pass  # nosec B110
+                pass
         return False
