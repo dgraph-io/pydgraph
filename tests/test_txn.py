@@ -38,7 +38,7 @@ class TestTxn(helper.ClientIntegrationTestCase):
             uid=uid
         )
 
-        with self.assertRaises(Exception):
+        with self.assertRaises(Exception):  # noqa: B017
             txn.query(query)
 
     def test_mutate_after_commit(self):
@@ -48,7 +48,7 @@ class TestTxn(helper.ClientIntegrationTestCase):
 
         txn.commit()
 
-        with self.assertRaises(Exception):
+        with self.assertRaises(Exception):  # noqa: B017
             txn.mutate(set_obj={"name": "Manish2"})
 
     def test_commit_now(self):
@@ -58,7 +58,7 @@ class TestTxn(helper.ClientIntegrationTestCase):
         for _, uid in response.uids.items():
             uid = uid
 
-        self.assertRaises(Exception, txn.commit)
+        self.assertRaises(Exception, txn.commit)  # noqa: B017
 
         query = """{{
             me(func: uid("{uid:s}")) {{
@@ -83,7 +83,7 @@ class TestTxn(helper.ClientIntegrationTestCase):
         _ = txn2.mutate(set_obj={"uid": uid, "name": "Manish2"})
 
         txn.discard()
-        self.assertRaises(Exception, txn.commit)
+        self.assertRaises(Exception, txn.commit)  # noqa: B017
 
         query = """{{
             me(func: uid("{uid:s}")) {{
@@ -97,11 +97,11 @@ class TestTxn(helper.ClientIntegrationTestCase):
 
     def test_mutate_error(self):
         txn = self.client.txn()
-        with self.assertRaises(Exception):
+        with self.assertRaises(Exception):  # noqa: B017
             # Following N-Quad is invalid
             _ = txn.mutate(set_nquads="_:node <name> Manish")
 
-        self.assertRaises(Exception, txn.commit)
+        self.assertRaises(Exception, txn.commit)  # noqa: B017
 
     def test_read_at_start_ts(self):
         """Tests read after write when readTs == startTs"""
@@ -274,9 +274,9 @@ class TestTxn(helper.ClientIntegrationTestCase):
         # Within the same transaction, timestamps should always be equal
         self.assertEqual(start_ts1, start_ts2)
 
-        with self.assertRaises(Exception):
+        with self.assertRaises(Exception):  # noqa: B017
             txn.mutate(set_obj={"name": "Manish"})
-        with self.assertRaises(Exception):
+        with self.assertRaises(Exception):  # noqa: B017
             txn.commit()
 
     def test_best_effort_txn(self):
@@ -285,7 +285,7 @@ class TestTxn(helper.ClientIntegrationTestCase):
         helper.drop_all(self.client)
         helper.set_schema(self.client, "name: string @index(exact) .")
 
-        with self.assertRaises(Exception):
+        with self.assertRaises(Exception):  # noqa: B017
             self.client.txn(read_only=False, best_effort=True)
 
         query = "{ me(func: has(name)) {name} }"
@@ -458,14 +458,14 @@ class TestTxn(helper.ClientIntegrationTestCase):
             }
         """
         variables = {"$a": 1234}
-        with self.assertRaises(Exception):
+        with self.assertRaises(Exception):  # noqa: B017
             _ = txn.query(query, variables=variables)
 
     def test_finished(self):
         txn = self.client.txn()
         txn.mutate(set_nquads='_:animesh <name> "Animesh" .', commit_now=True)
 
-        with self.assertRaises(Exception):
+        with self.assertRaises(Exception):  # noqa: B017
             txn.mutate(set_nquads='_:aman <name> "Aman" .', commit_now=True)
 
     def test_mutate_facet(self):
@@ -734,7 +734,7 @@ class TestContextManager(helper.ClientIntegrationTestCase):
         self.assertTrue(txn._finished)
 
         # Should not be able to use transaction after context manager
-        with self.assertRaises(Exception):
+        with self.assertRaises(Exception):  # noqa: B017
             txn.query("{ me() {} }")
 
     def test_context_manager_multiple_mutations(self):
@@ -789,7 +789,7 @@ class TestContextManager(helper.ClientIntegrationTestCase):
 
     def test_context_manager_invalid_nquad_exception(self):
         """Test that invalid operations cause proper exception handling and discard."""
-        with self.assertRaises(Exception):
+        with self.assertRaises(Exception):  # noqa: B017
             with self.client.txn() as txn:
                 # This should fail with invalid N-Quad syntax
                 txn.mutate(set_nquads="_:node <name> InvalidWithoutQuotes")
@@ -799,7 +799,7 @@ class TestContextManager(helper.ClientIntegrationTestCase):
 
     def test_context_manager_read_only_cannot_mutate(self):
         """Test that read-only transactions cannot mutate within context manager."""
-        with self.assertRaises(Exception):
+        with self.assertRaises(Exception):  # noqa: B017
             with self.client.txn(read_only=True) as txn:
                 txn.mutate(set_obj={"name": "Should Fail"})
 

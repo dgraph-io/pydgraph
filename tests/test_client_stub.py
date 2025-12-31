@@ -6,7 +6,6 @@
 __author__ = "Garvit Pahal"
 __maintainer__ = "Istari Digital, Inc. <dgraph-admin@istaridigital.com>"
 
-import sys
 import unittest
 
 import pydgraph
@@ -19,10 +18,6 @@ class TestDgraphClientStub(helper.ClientIntegrationTestCase):
 
     def validate_version_object(self, version):
         tag = version.tag
-        if sys.version_info[0] < 3:
-            self.assertIsInstance(tag, basestring)
-            return
-
         self.assertIsInstance(tag, str)
 
     def check_version(self, stub):
@@ -32,7 +27,7 @@ class TestDgraphClientStub(helper.ClientIntegrationTestCase):
         self.check_version(pydgraph.DgraphClientStub(addr=self.TEST_SERVER_ADDR))
 
     def test_timeout(self):
-        with self.assertRaises(Exception):
+        with self.assertRaises(Exception):  # noqa: B017
             pydgraph.DgraphClientStub(self.TEST_SERVER_ADDR).check_version(
                 pydgraph.Check(), timeout=-1
             )
@@ -41,7 +36,7 @@ class TestDgraphClientStub(helper.ClientIntegrationTestCase):
         client_stub = pydgraph.DgraphClientStub(addr=self.TEST_SERVER_ADDR)
         self.check_version(client_stub)
         client_stub.close()
-        with self.assertRaises(Exception):
+        with self.assertRaises(Exception):  # noqa: B017
             client_stub.check_version(pydgraph.Check())
 
 
@@ -101,7 +96,7 @@ class TestDgraphClientStubContextManager(helper.ClientIntegrationTestCase):
             self.assertIsNotNone(ver)
 
         # After exiting context, stub should be closed and unusable
-        with self.assertRaises(Exception):
+        with self.assertRaises(Exception):  # noqa: B017
             stub.check_version(pydgraph.Check())
 
     def test_context_manager_with_client(self):
@@ -127,7 +122,7 @@ class TestDgraphClientStubContextManager(helper.ClientIntegrationTestCase):
             pass
 
         # Stub should still be closed despite the exception
-        with self.assertRaises(Exception):
+        with self.assertRaises(Exception):  # noqa: B017
             stub_ref.check_version(pydgraph.Check())
 
     def test_context_manager_function_wrapper_closes(self):
@@ -139,7 +134,7 @@ class TestDgraphClientStubContextManager(helper.ClientIntegrationTestCase):
             self.assertIsNotNone(ver)
 
         # Stub should be closed after exiting
-        with self.assertRaises(Exception):
+        with self.assertRaises(Exception):  # noqa: B017
             stub_ref.check_version(pydgraph.Check())
 
     def test_context_manager_multiple_operations(self):

@@ -354,13 +354,12 @@ txn.do_request(request)
 
 ### Committing a Transaction
 
-A transaction can be committed using the `Txn#commit()` method. If your transaction
-consist solely of `Txn#query` or `Txn#queryWithVars` calls, and no calls to
-`Txn#mutate`, then calling `Txn#commit()` is not necessary.
+A transaction can be committed using the `Txn#commit()` method. If your transaction consist solely
+of `Txn#query` or `Txn#queryWithVars` calls, and no calls to `Txn#mutate`, then calling
+`Txn#commit()` is not necessary.
 
-An error is raised if another transaction(s) modify the same data concurrently that was
-modified in the current transaction. It is up to the user to retry transactions
-when they fail.
+An error is raised if another transaction(s) modify the same data concurrently that was modified in
+the current transaction. It is up to the user to retry transactions when they fail.
 
 ```python
 txn = client.txn()
@@ -380,11 +379,10 @@ finally:
 
 #### Using Transaction with Context Manager
 
-The Python context manager will automatically perform the "`commit`" action
-after all queries and mutations have been done, and perform "`discard`" action
-to clean the transaction.
-When something goes wrong in the scope of context manager, "`commit`" will not
-be called,and the "`discard`" action will be called to drop any potential changes.
+The Python context manager will automatically perform the "`commit`" action after all queries and
+mutations have been done, and perform "`discard`" action to clean the transaction. When something
+goes wrong in the scope of context manager, "`commit`" will not be called,and the "`discard`" action
+will be called to drop any potential changes.
 
 ```python
 with client.begin(read_only=False, best_effort=False) as txn:
@@ -398,8 +396,8 @@ with pydgraph.Txn(client, read_only=False, best_effort=False) as txn:
   # Do some queries or mutations here
 ```
 
-> `client.begin()` can only be used with "`with-as`" blocks, while `pydgraph.Txn` class can be directly called to instantiate a transaction object.
-
+> `client.begin()` can only be used with "`with-as`" blocks, while `pydgraph.Txn` class can be
+> directly called to instantiate a transaction object.
 
 ### Running a Query
 
@@ -577,9 +575,8 @@ with pydgraph.DgraphClientStub(SERVER_ADDR) as stub1:
     client = pydgraph.DgraphClient(stub1, stub2)
 ```
 
-Note: `client` should be used inside the "`with-as`" block. The resources related to
-`client` will be automatically released outside the block and `client` is not usable
-any more.
+Note: `client` should be used inside the "`with-as`" block. The resources related to `client` will
+be automatically released outside the block and `client` is not usable any more.
 
 ### Setting Metadata Headers
 
