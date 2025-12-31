@@ -113,7 +113,7 @@ class TestOpen(unittest.TestCase):
         with pytest.raises(ValueError, match="sslmode=require is not supported"):
             open(f"dgraph://{self.dgraph_host}:{self.dgraph_port}?sslmode=require")
 
-    @patch("pydgraph.client_stub.DgraphClientStub")
+    @patch("pydgraph.client.DgraphClientStub")
     def test_open_with_valid_integer_namespace(self, mock_stub_class: Any) -> None:
         """Test that open() accepts valid integer namespace with credentials."""
 
@@ -137,7 +137,7 @@ class TestOpen(unittest.TestCase):
         with pytest.raises(TypeError, match="namespace must be an integer"):
             open("dgraph://localhost:9080?namespace=123.5")
 
-    @patch("pydgraph.client_stub.DgraphClientStub")
+    @patch("pydgraph.client.DgraphClientStub")
     def test_open_with_zero_namespace(self, mock_stub_class: Any) -> None:
         """Test that open() accepts zero as valid namespace with credentials."""
 
@@ -165,7 +165,7 @@ class TestOpen(unittest.TestCase):
         ):
             open("dgraph://localhost:9080?namespace=123")
 
-    @patch("pydgraph.client_stub.DgraphClientStub")
+    @patch("pydgraph.client.DgraphClientStub")
     def test_namespace_with_username_password_succeeds(
         self, mock_stub_class: Any
     ) -> None:
