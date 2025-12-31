@@ -613,7 +613,7 @@ class TestContextManager(helper.ClientIntegrationTestCase):
         helper.drop_all(self.client)
         helper.set_schema(self.client, "name: string @index(fulltext) .")
 
-    def test_context_manager_by_contextlib(self):
+    def test_context_manager_by_contextlib(self) -> None:
         """Test context manager via client.begin() for read-only transactions."""
         q = """
         {
@@ -627,7 +627,7 @@ class TestContextManager(helper.ClientIntegrationTestCase):
         self.assertIsNotNone(response)
         _data = json.loads(response.json)
 
-    def test_context_manager_by_class(self):
+    def test_context_manager_by_class(self) -> None:
         """Test context manager using Txn class directly for read-only transactions."""
         q = """
         {
@@ -641,7 +641,7 @@ class TestContextManager(helper.ClientIntegrationTestCase):
         self.assertIsNotNone(response)
         _data = json.loads(response.json)
 
-    def test_context_manager_auto_commit(self):
+    def test_context_manager_auto_commit(self) -> None:
         """Test that write transactions automatically commit on successful completion."""
         with self.client.txn() as txn:
             response = txn.mutate(set_obj={"name": "Alice"})
@@ -658,7 +658,7 @@ class TestContextManager(helper.ClientIntegrationTestCase):
         resp = self.client.txn(read_only=True).query(query)
         self.assertEqual([{"name": "Alice"}], json.loads(resp.json).get("me"))
 
-    def test_context_manager_read_only_auto_discard(self):
+    def test_context_manager_read_only_auto_discard(self) -> None:
         """Test that read-only transactions automatically discard."""
         # Create some data first
         txn = self.client.txn()
@@ -680,7 +680,7 @@ class TestContextManager(helper.ClientIntegrationTestCase):
         # Transaction should be finished after context manager exits
         self.assertTrue(txn._finished)
 
-    def test_context_manager_exception_handling(self):
+    def test_context_manager_exception_handling(self) -> None:
         """Test that exceptions cause automatic discard and are re-raised."""
         with self.assertRaises(ValueError), self.client.txn() as txn:
             response = txn.mutate(set_obj={"name": "Charlie"})
@@ -701,7 +701,7 @@ class TestContextManager(helper.ClientIntegrationTestCase):
             names = [r.get("name") for r in results]
             self.assertNotIn("Charlie", names)
 
-    def test_context_manager_transaction_finished_after_exit(self):
+    def test_context_manager_transaction_finished_after_exit(self) -> None:
         """Test that transaction is marked as finished after exiting context manager."""
         with self.client.txn() as txn:
             txn.mutate(set_obj={"name": "David"})
@@ -714,7 +714,7 @@ class TestContextManager(helper.ClientIntegrationTestCase):
         with self.assertRaises(Exception):
             txn.query("{ me() {} }")
 
-    def test_context_manager_multiple_mutations(self):
+    def test_context_manager_multiple_mutations(self) -> None:
         """Test multiple mutations within a single context manager."""
         with self.client.txn() as txn:
             response1 = txn.mutate(set_obj={"name": "Eve"})
@@ -736,7 +736,7 @@ class TestContextManager(helper.ClientIntegrationTestCase):
         self.assertIn("Eve", names)
         self.assertIn("Frank", names)
 
-    def test_context_manager_query_and_mutate(self):
+    def test_context_manager_query_and_mutate(self) -> None:
         """Test both query and mutate operations within a context manager."""
         # Create initial data
         txn = self.client.txn()
@@ -762,7 +762,7 @@ class TestContextManager(helper.ClientIntegrationTestCase):
         resp = self.client.txn(read_only=True).query(query)
         self.assertEqual([{"name": "Grace Updated"}], json.loads(resp.json).get("me"))
 
-    def test_context_manager_invalid_nquad_exception(self):
+    def test_context_manager_invalid_nquad_exception(self) -> None:
         """Test that invalid operations cause proper exception handling and discard."""
         with self.assertRaises(Exception), self.client.txn() as txn:
             # This should fail with invalid N-Quad syntax
@@ -771,13 +771,13 @@ class TestContextManager(helper.ClientIntegrationTestCase):
         # Transaction should be finished
         self.assertTrue(txn._finished)
 
-    def test_context_manager_read_only_cannot_mutate(self):
+    def test_context_manager_read_only_cannot_mutate(self) -> None:
         """Test that read-only transactions cannot mutate within context manager."""
         with self.assertRaises(Exception):
             with self.client.txn(read_only=True) as txn:
                 txn.mutate(set_obj={"name": "Should Fail"})
 
-    def test_context_manager_no_mutations_auto_commit(self):
+    def test_context_manager_no_mutations_auto_commit(self) -> None:
         """Test that transactions with no mutations don't error on auto-commit."""
         with self.client.txn() as txn:
             query = "{ me(func: has(name)) { name } }"
