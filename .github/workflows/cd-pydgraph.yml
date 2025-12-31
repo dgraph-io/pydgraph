@@ -20,8 +20,10 @@ jobs:
         uses: ./.github/actions/setup-python-and-tooling
         with:
           python-version: "3.13"
-      - name: Sync python virtualenv
+      - name: Setup project dependencies
         run: INSTALL_MISSING=true make setup
+      - name: Sync python virtualenv
+        run: make sync
       - name: Check generated protobufs are current
         run: |
           make protogen
