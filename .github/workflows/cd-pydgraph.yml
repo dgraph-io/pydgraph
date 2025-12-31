@@ -10,27 +10,29 @@ permissions:
   contents: read
 jobs:
   pydgraph-build:
+    name: Release
     runs-on: ubuntu-latest
     steps:
       - uses: actions/checkout@v5
         with:
           ref: "${{ github.event.inputs.releasetag }}"
-      - name: Setup pydgraph tooling
+      - name: Setup python runtime
         uses: ./.github/actions/setup-python-and-tooling
         with:
           python-version: "3.13"
-      - name: Setup pydgraph virtualenv
+      - name: Sync python virtualenv
         run: INSTALL_MISSING=true make setup
-      - name: Verify generated protobufs are current
+      - name: Check generated protobufs are current
         run: |
           make protogen
           git diff --exit-code -- .
-      - name: Build pydgraph
-        run: |
-          rm -rf dist
-          # build binary wheel and a source tarball
-          python -m build
-      - name: Upload to PyPi
-        run:
-          twine upload --username ${{ secrets.DGRAPH_PYPI_USERNAME }} --password ${{
-          secrets.DGRAPH_PYPI_PASSWORD }} dist/*
+      - name: Check code quality
+        run: make check
+      - name: Run tests
+        run: make test
+      - name: Set version
+        run: uv version ${{ github.event.inputs.releasetag }}
+      - name: Build release
+        run: make clean build
+      - name: Publish release
+        run: make publish
