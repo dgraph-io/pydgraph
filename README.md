@@ -614,6 +614,164 @@ except Exception as e:
         # retry your request here.
 ```
 
+### Native Async/Await Client
+
+pydgraph provides a native async/await client using Python's `asyncio` library and `grpc.aio`. This
+provides true asynchronous operations with better concurrency compared to the futures-based approach
+above.
+
+#### Basic Usage
+
+```python
+import asyncio
+import pydgraph
+
+async def main():
+    # Create async client
+    client_stub = pydgraph.AsyncDgraphClientStub('localhost:9080')
+    client = pydgraph.AsyncDgraphClient(client_stub)
+
+    try:
+        # Login
+        await client.login("groot", "password")
+
+        # Alter schema
+        await client.alter(pydgraph.Operation(
+            schema="name: string @index(term) ."
+        ))
+
+        # Run mutation
+        txn = client.txn()
+        response = await txn.mutate(
+            set_obj={"name": "Alice"},
+            commit_now=True
+        )
+
+        # Run query
+        query = '{ me(func: has(name)) { name } }'
+        txn = client.txn(read_only=True)
+        response = await txn.query(query)
+        print(response.json)
+
+    finally:
+        await client.close()
+
+asyncio.run(main())
+```
+
+#### Using Connection Strings
+
+The async client supports the same connection string format as the sync client:
+
+```python
+import asyncio
+import pydgraph
+
+async def main():
+    # Using async_open with connection string
+    async with await pydgraph.async_open(
+        "dgraph://groot:password@localhost:9080"
+    ) as client:
+        version = await client.check_version()
+        print(f"Connected to Dgraph version: {version}")
+
+asyncio.run(main())
+```
+
+#### Using Context Managers
+
+Both the async client and transactions support async context managers for automatic resource
+cleanup:
+
+```python
+import asyncio
+import pydgraph
+
+async def main():
+    # Client auto-closes on exit
+    async with await pydgraph.async_open("dgraph://localhost:9080") as client:
+        await client.login("groot", "password")
+
+        # Transaction auto-discards on exit
+        async with client.txn() as txn:
+            response = await txn.query('{ me(func: has(name)) { name } }')
+            print(response.json)
+
+asyncio.run(main())
+```
+
+#### Concurrent Operations
+
+The async client excels at running many operations concurrently:
+
+```python
+import asyncio
+import pydgraph
+
+async def run_query(client, name):
+    """Run a single query"""
+    query = f'{{ me(func: eq(name, "{name}")) {{ name }} }}'
+    txn = client.txn(read_only=True)
+    return await txn.query(query)
+
+async def main():
+    async with await pydgraph.async_open("dgraph://localhost:9080") as client:
+        await client.login("groot", "password")
+
+        # Run 100 queries concurrently
+        names = [f"User{i}" for i in range(100)]
+        tasks = [run_query(client, name) for name in names]
+        results = await asyncio.gather(*tasks)
+
+        print(f"Completed {len(results)} queries concurrently")
+
+asyncio.run(main())
+```
+
+#### JWT Refresh
+
+The async client automatically handles JWT token refresh, just like the sync client:
+
+```python
+async with await pydgraph.async_open("dgraph://groot:password@localhost:9080") as client:
+    # JWT will be automatically refreshed if it expires during operations
+    response = await client.alter(pydgraph.Operation(schema="name: string ."))
+```
+
+#### Error Handling
+
+Error handling works the same as the sync client:
+
+```python
+import pydgraph
+
+async def main():
+    async with await pydgraph.async_open("dgraph://localhost:9080") as client:
+        try:
+            await client.login("groot", "wrong_password")
+        except Exception as e:
+            print(f"Login failed: {e}")
+
+        try:
+            txn = client.txn(read_only=True)
+            await txn.mutate(set_obj={"name": "Alice"})
+        except pydgraph.errors.TransactionError as e:
+            print(f"Cannot mutate in read-only transaction: {e}")
+
+asyncio.run(main())
+```
+
+#### Differences from Sync Client
+
+| Feature             | Sync Client                 | Async Client                      |
+| ------------------- | --------------------------- | --------------------------------- |
+| Import              | `pydgraph.DgraphClient`     | `pydgraph.AsyncDgraphClient`      |
+| Connection function | `pydgraph.open()`           | `await pydgraph.async_open()`     |
+| Method calls        | `client.query()`            | `await client.query()`            |
+| Context manager     | `with client.txn() as txn:` | `async with client.txn() as txn:` |
+| Concurrency         | Threading                   | Native asyncio                    |
+| JWT refresh         | Automatic                   | Automatic                         |
+
 ## Examples
 
 [tls]: ./examples/tls
