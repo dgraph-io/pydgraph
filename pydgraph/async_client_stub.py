@@ -123,7 +123,7 @@ class AsyncDgraphClientStub:
         try:
             await self.channel.close()
         except Exception:
-            pass
+            pass  # nosec B110 - Intentionally ignore errors during channel cleanup
 
     @staticmethod
     def parse_host(cloud_endpoint):

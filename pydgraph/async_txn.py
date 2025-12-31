@@ -212,7 +212,7 @@ class AsyncTxn:
                     raise
                 except Exception:
                     # Ignore discard error - user should see the original error
-                    pass
+                    pass  # nosec B110
 
                 self._common_except_mutate(query_error)
 
@@ -533,5 +533,5 @@ class AsyncTxn:
                 raise
             except Exception:
                 # Suppress discard errors during cleanup
-                pass
+                pass  # nosec B110
         return False

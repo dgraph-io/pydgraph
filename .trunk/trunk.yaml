@@ -21,6 +21,9 @@ lint:
     - linters: [ALL]
       paths:
         - pydgraph/proto/api_pb*.py
+    - linters: [bandit]
+      paths:
+        - tests/**
 
   enabled:
     - trivy@0.68.2
