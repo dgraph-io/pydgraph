@@ -19,10 +19,8 @@ jobs:
     steps:
       - name: Checkout code
         uses: actions/checkout@v5
-      - name: Install build tools
-        run: sudo apt-get update && sudo apt-get install -y build-essential
-      - name: Setup Python environment
-        uses: ./.github/actions/setup-python-env
+      - name: Setup test runner environment
+        uses: ./.github/actions/setup-test-runner
         with:
           python-version: "3.13"
       - name: Setup project and install tools
@@ -40,10 +38,8 @@ jobs:
     steps:
       - name: Checkout code
         uses: actions/checkout@v5
-      - name: Install build tools
-        run: sudo apt-get update && sudo apt-get install -y build-essential
-      - name: Setup Python environment
-        uses: ./.github/actions/setup-python-env
+      - name: Setup test runner environment
+        uses: ./.github/actions/setup-test-runner
         with:
           python-version: ${{ matrix.python-version }}
       - name: Pin Python version for uv
