@@ -20,32 +20,84 @@ jobs:
     name: Check Code Quality
     runs-on: ubuntu-latest
     steps:
-      - name: Checkout code
+      - name: Checkout pydgraph
         uses: actions/checkout@v5
-      - name: Setup runner
+        with:
+          repository: dgraph-io/pydgraph
+          ref: ${{ github.ref }}
+      - name: Setup pydgraph tooling
         uses: ./.github/actions/setup-runner
         with:
           python-version: "3.13"
-      - name: Setup project and install tooling
+      - name: Setup pydgraph virtualenv
         run: INSTALL_MISSING=true make setup
-      - name: Run code quality checks
-        run: make check
-  run-tests:
-    name: Run Tests (Python ${{ matrix.python-version }})
+      - name: Run pydgraph code quality checks
+        run: SKIP=trunk-check,trunk-fmt make check # (Skips trunk pre-commit checks, which have their own workflow)
+      - name: Verify generated protobufs are current
+        run: |
+          make protogen
+          git diff --exit-code -- .
+  test-dgraph-release:
+    name: Test Python ${{ matrix.python-version }} & DGraph Latest
     runs-on: ubuntu-latest
     strategy:
       matrix:
         python-version: ["3.9", "3.10", "3.11", "3.12", "3.13", "3.14"]
     steps:
-      - name: Checkout code
+      - name: Checkout pydgraph
         uses: actions/checkout@v5
-      - name: Setup runner
+        with:
+          repository: dgraph-io/pydgraph
+          ref: ${{ github.ref }}
+      - name: Setup pydgraph tooling
         uses: ./.github/actions/setup-runner
         with:
           python-version: ${{ matrix.python-version }}
-      - name: Pin Python version for uv
+      - name: Pin pydgraph python version
         run: uv python pin ${{ matrix.python-version }}
-      - name: Setup project and install tooling
+      - name: Setup pydgraph virtualenv
+        run: INSTALL_MISSING=true make setup
+      - name: Run pydgraph tests
+        run: make test
+  test-dgraph-head:
+    name: Test Python ${{ matrix.python-version }} & DGraph HEAD
+    runs-on: ubuntu-latest
+    strategy:
+      matrix:
+        python-version: ["3.9", "3.10", "3.11", "3.12", "3.13", "3.14"]
+    steps:
+      - name: Checkout Dgraph
+        uses: actions/checkout@v5
+        with:
+          path: dgraph
+          repository: dgraph-io/dgraph
+          ref: main
+      - name: Setup Go
+        uses: actions/setup-go@v6
+        with:
+          go-version-file: dgraph/go.mod
+      - name: Build dgraph binary
+        working-directory: ./dgraph
+        run: make docker-image # also builds dgraph binary
+      - name: Install dgraph binary
+        working-directory: ./dgraph
+        run: mv dgraph/dgraph ~/go/bin/dgraph
+      - name: Checkout pydgraph
+        uses: actions/checkout@v5
+        with:
+          path: pydgraph
+          repository: dgraph-io/pydgraph
+          ref: ${{ github.ref }}
+      - name: Setup pydgraph tooling
+        uses: ./pydgraph/.github/actions/setup-runner
+        with:
+          python-version: ${{ matrix.python-version }}
+      - name: Pin pydgraph python version
+        working-directory: ./pydgraph
+        run: uv python pin ${{ matrix.python-version }}
+      - name: Setup pydgraph virtualenv
+        working-directory: ./pydgraph
         run: INSTALL_MISSING=true make setup
       - name: Run tests
-        run: make test
+        working-directory: ./pydgraph
+        run: DGRAPH_IMAGE_TAG=local make test
