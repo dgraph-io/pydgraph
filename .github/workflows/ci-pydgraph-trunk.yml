@@ -1,4 +1,4 @@
-name: Trunk Code Quality
+name: ci-pydgraph-trunk
 on:
   pull_request:
     branches:
@@ -9,5 +9,5 @@ permissions:
   checks: write
 jobs:
   trunk-code-quality:
-    name: Trunk Code Quality
+    name: Trunk Code Quality Checks
     uses: dgraph-io/.github/.github/workflows/trunk.yml@main
