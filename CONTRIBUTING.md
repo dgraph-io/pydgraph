@@ -36,16 +36,14 @@ community.
 
 ### Setting Up Your Environment
 
-1. Install project dependencies and tools:
+1. Set up the project:
 
    ```sh
    make setup
    ```
 
    This will:
-   - Set up the correct Python version
-   - Create and configure a virtual environment
-   - Install all project dependencies
+   - Check for required tools (uv, trunk, docker)
    - Install pre-commit hooks
 
    **Note:** To automatically install missing tool dependencies (uv, trunk, docker), you can set
@@ -54,6 +52,17 @@ community.
    ```sh
    INSTALL_MISSING_DEPS=true make setup
    ```
+
+   After running `make setup`, you'll need to sync the Python environment and dependencies:
+
+   ```sh
+   make sync
+   ```
+
+   This will:
+   - Set up the correct Python version
+   - Create and configure a virtual environment
+   - Install all project dependencies
 
 2. Verify your setup:
    ```sh
