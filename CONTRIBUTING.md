@@ -39,15 +39,21 @@ community.
 1. Install project dependencies and tools:
 
    ```sh
-   INSTALL_MISSING_DEPS=true make setup
+   make setup
    ```
 
    This will:
-   - Install uv (if not already installed)
    - Set up the correct Python version
    - Create and configure a virtual environment
    - Install all project dependencies
    - Install pre-commit hooks
+
+   **Note:** To automatically install missing tool dependencies (uv, trunk, docker), you can set
+   `INSTALL_MISSING_DEPS` to `true`:
+
+   ```sh
+   INSTALL_MISSING_DEPS=true make setup
+   ```
 
 2. Verify your setup:
    ```sh
