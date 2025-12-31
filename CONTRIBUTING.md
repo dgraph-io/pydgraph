@@ -16,12 +16,16 @@ community.
 ## Getting Started
 
 1. Fork the repository on GitHub
+
 2. Clone your fork locally:
+
    ```sh
    git clone https://github.com/YOUR-USERNAME/pydgraph.git
    cd pydgraph
    ```
+
 3. Add the upstream repository:
+
    ```sh
    git remote add upstream https://github.com/dgraph-io/pydgraph.git
    ```
@@ -44,7 +48,7 @@ make help
 
 **Output:**
 
-```
+```text
 Environment Variables:
   INSTALL_MISSING_TOOLS=true    Enable automatic installation of missing tools (default: disabled)
 
@@ -85,6 +89,7 @@ deps-docker     Check and install Docker if needed (requires Docker 20.10.0+)
    ```
 
 2. Verify your setup:
+
    ```sh
    make check
    ```
@@ -150,6 +155,7 @@ This project requires grpcio 1.65.0 or higher. Older versions have practical lim
    **Important:** Before opening a pull request, make sure `make check test` succeeds locally.
 
 5. Commit your changes using [Conventional Commits](https://www.conventionalcommits.org/) format:
+
    ```sh
    git commit -m "feat: add new feature"
    git commit -m "fix: resolve issue with..."
@@ -292,7 +298,7 @@ Follow the [Conventional Commits](https://www.conventionalcommits.org/) specific
 
 Examples:
 
-```
+```text
 feat: add async client support
 fix: resolve connection timeout issue
 docs: update installation instructions
