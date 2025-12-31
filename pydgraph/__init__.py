@@ -32,19 +32,13 @@ from pydgraph.proto.api_pb2 import (
 from pydgraph.txn import Txn
 
 __all__ = [
-    # errors
     "AbortedError",
-    # async client
     "AsyncDgraphClient",
     "AsyncDgraphClientStub",
     "AsyncTxn",
-    "async_open",
-    # proto.api_pb2
     "Check",
     "ConnectionError",
-    # client
     "DgraphClient",
-    # client_stub
     "DgraphClientStub",
     "Facet",
     "Latency",
@@ -56,10 +50,10 @@ __all__ = [
     "Response",
     "RetriableError",
     "TransactionError",
-    # txn
     "Txn",
     "TxnContext",
     "Value",
     "Version",
+    "async_open",
     "open",
 ]
