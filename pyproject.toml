@@ -122,8 +122,19 @@ known-first-party = ["pydgraph"]
 [tool.ruff.lint.per-file-ignores]
 "tests/**" = [
   "S101",    # assert allowed in tests
+  "S106",    # hardcoded passwords OK in tests
+  "S110",    # try-except-pass OK in tests
+  "S112",    # try-except-continue OK in tests
+  "A001",    # variable name shadowing builtins OK in tests
+  "A004",    # import shadowing builtins OK in tests (pydgraph.open)
   "ARG001",  # unused function arguments OK in tests (fixtures)
+  "B017",    # pytest.raises(Exception) OK in tests
+  "N802",    # camelCase function names OK in tests (legacy)
+  "N806",    # camelCase variable names OK in tests
+  "PERF203", # try-except in loop OK in tests (performance not critical)
   "PLR2004", # magic values OK in tests
+  "PT027",   # unittest-style assertRaises OK in tests (legacy)
+  "SIM105",  # try-except-pass patterns OK in tests
 ]
 "examples/**" = [
   "S101",   # assert OK in examples

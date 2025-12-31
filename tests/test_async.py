@@ -54,4 +54,6 @@ class TestAsync(helper.ClientIntegrationTestCase):
         txn = self.client.txn()
         query_future = txn.async_query(query, variables={"$a": "Alice"})
         response = pydgraph.Txn.handle_query_future(query_future)
-        assert json.loads(response.json).get("me") == [{"name": "Alice", "follows": [{"name": "Greg"}]}]
+        assert json.loads(response.json).get("me") == [
+            {"name": "Alice", "follows": [{"name": "Greg"}]}
+        ]

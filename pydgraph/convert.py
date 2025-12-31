@@ -6,7 +6,7 @@
 from __future__ import annotations
 
 
-def extract_dict(
+def extract_dict(  # noqa: C901
     nodes: dict,
     edges: list,
     data: dict,

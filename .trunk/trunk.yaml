@@ -20,18 +20,22 @@ lint:
   ignore:
     - linters: [ALL]
       paths:
-        - pydgraph/proto/api_pb*.py
+        - pydgraph/proto/api_pb2.py
+        - pydgraph/proto/api_pb2.pyi
+        - pydgraph/proto/api_pb2_grpc.py
+        - pydgraph/proto/api_pb2_grpc.pyi
         - examples/notebook/**/*.ipynb
+    - linters: [bandit]
+      paths:
+        - tests/**/*.py
   enabled:
     - trivy@0.68.2
     - trivy@0.58.2
     - renovate@42.64.0
     - actionlint@1.7.9
     - bandit@1.9.2
-    - black@25.12.0
     - checkov@3.2.495
     - git-diff-check
-    - isort@7.0.0
     - markdownlint@0.47.0
     - prettier@3.7.4
     - ruff@0.14.10

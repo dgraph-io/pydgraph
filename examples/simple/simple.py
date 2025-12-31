@@ -185,4 +185,4 @@ if __name__ == "__main__":
         main()
         print("DONE!")
     except Exception as e:
-        print("Error: {}".format(e))
+        print(f"Error: {e}")

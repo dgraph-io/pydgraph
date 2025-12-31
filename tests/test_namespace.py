@@ -52,7 +52,9 @@ class TestNamespaces(helper.ClientIntegrationTestCase):
 
         # Final check after all retries
         namespaces = self.client.list_namespaces()
-        assert namespace_id not in namespaces, f"Namespace {namespace_id} still exists after {max_retries} retries"
+        assert namespace_id not in namespaces, (
+            f"Namespace {namespace_id} still exists after {max_retries} retries"
+        )
 
     def test_create_namespace(self) -> None:
         """Test creating a new namespace returns valid namespace ID."""

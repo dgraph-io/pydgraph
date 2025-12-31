@@ -11,8 +11,8 @@ Usage: uv run python scripts/protogen.py
 
 from __future__ import annotations
 
-import os
 import sys
+from pathlib import Path
 
 # Minimum required versions
 MIN_PYTHON_VERSION = (3, 13)
@@ -70,26 +70,26 @@ except ImportError:
     print("Warning: Could not verify grpcio version, proceeding anyway...")
     print("Ensure you ran 'make setup' or 'uv sync --group dev --extra dev' first.")
 
-dirpath = os.path.dirname(os.path.realpath(__file__))
-protopath = os.path.realpath(os.path.join(dirpath, "../pydgraph/proto"))
+dirpath = Path(__file__).resolve().parent
+protopath = (dirpath / "../pydgraph/proto").resolve()
 
 protoc.main(
     (
         "",
-        "-I" + protopath,
-        "--python_out=" + protopath,
-        "--mypy_out=" + protopath,
-        "--grpc_python_out=" + protopath,
-        "--mypy_grpc_out=" + protopath,
-        os.path.join(protopath, "api.proto"),
+        "-I" + str(protopath),
+        "--python_out=" + str(protopath),
+        "--mypy_out=" + str(protopath),
+        "--grpc_python_out=" + str(protopath),
+        "--mypy_grpc_out=" + str(protopath),
+        str(protopath / "api.proto"),
     )
 )
 
 # Fix import in generated stub file
 # mypy-protobuf generates `import api_pb2` but mypy needs a relative import
 # to properly resolve the module when checking the package
-api_pb2_grpc_pyi = os.path.join(protopath, "api_pb2_grpc.pyi")
-with open(api_pb2_grpc_pyi, "r") as f:
+api_pb2_grpc_pyi = protopath / "api_pb2_grpc.pyi"
+with open(api_pb2_grpc_pyi) as f:
     content = f.read()
 
 # Replace absolute import with relative import

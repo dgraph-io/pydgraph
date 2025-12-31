@@ -54,10 +54,10 @@ fi
 
 if [[ $# -eq 0 ]]; then
 	# No arguments provided, run all tests
-	$PYTEST_CMD
+	${PYTEST_CMD}
 else
 	# Run specific tests passed as arguments
-	$PYTEST_CMD "$@"
+	${PYTEST_CMD} "$@"
 fi
 tests_failed="$?"
 stopCluster

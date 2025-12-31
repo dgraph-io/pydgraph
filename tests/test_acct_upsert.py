@@ -104,9 +104,7 @@ class TestAccountUpsert(helper.ClientIntegrationTestCase):
                 last
                 age
             }}
-        }}""".format(
-            " ".join(firsts)
-        )
+        }}""".format(" ".join(firsts))
         logging.debug(query)
         result = json.loads(self.client.txn(read_only=True).query(query).json)
 
@@ -132,9 +130,7 @@ def upsert_account(
         acct(func:eq(first, "{first}")) @filter(eq(last, "{last}") AND eq(age, {age})) {{
             uid
         }}
-    }}""".format(
-        **account
-    )
+    }}""".format(**account)
 
     last_update_time = time.time() - 10000
     while True:
@@ -155,12 +151,11 @@ def upsert_account(
                     _:acct <first> "{first}" .
                     _:acct <last> "{last}" .
                     _:acct <age>  "{age}"^^<xs:int> .
-                """.format(
-                    **account
-                )
+                """.format(**account)
                 created = txn.mutate(set_nquads=nquads)
                 uid = created.uids.get("acct")
-                assert uid is not None and uid != "", "Account with uid None"
+                assert uid is not None, "Account with uid None"
+                assert uid != "", "Account with empty uid"
             else:
                 # account exists, read the uid
                 acct = result["acct"][0]
@@ -173,13 +168,13 @@ def upsert_account(
 
             with success_ctr.get_lock():
                 success_ctr.value += 1
-
-            # txn successful, break the loop
-            return
         except pydgraph.AbortedError:
             with retry_ctr.get_lock():
                 retry_ctr.value += 1
             # txn failed, retry the loop
+        else:
+            # txn successful, break the loop
+            return
         finally:
             txn.discard()
 
@@ -194,9 +189,7 @@ def upsert_account_upsert_block(
         acct(func:eq(first, "{first}")) @filter(eq(last, "{last}") AND eq(age, {age})) {{
             u as uid
         }}
-    }}""".format(
-        **account
-    )
+    }}""".format(**account)
 
     last_update_time = time.time() - 10000
     while True:
@@ -210,9 +203,7 @@ def upsert_account_upsert_block(
                 uid(u) <first> "{first}" .
                 uid(u) <last> "{last}" .
                 uid(u) <age>  "{age}"^^<xs:int> .
-            """.format(
-                **account
-            )
+            """.format(**account)
             mutation = txn.create_mutation(set_nquads=nquads)
             request = txn.create_request(
                 query=query, mutations=[mutation], commit_now=True
@@ -229,13 +220,13 @@ def upsert_account_upsert_block(
 
             with success_ctr.get_lock():
                 success_ctr.value += 1
-
-            # txn successful, break the loop
-            return
         except pydgraph.AbortedError:
             with retry_ctr.get_lock():
                 retry_ctr.value += 1
             # txn failed, retry the loop
+        else:
+            # txn successful, break the loop
+            return
         finally:
             txn.discard()
 

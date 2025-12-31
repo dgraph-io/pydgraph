@@ -87,9 +87,10 @@ def check_dgraph_version(
             clean_version = version_str
 
         is_compatible = version.parse(clean_version) >= version.parse(min_version)
-        return is_compatible, dgraph_version, None
     except Exception as e:
         return False, None, str(e)
+    else:
+        return is_compatible, dgraph_version, None
 
 
 def skip_if_dgraph_version_below(
