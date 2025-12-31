@@ -1,4 +1,5 @@
 # Add local bin directories to PATH
+SHELL := /bin/bash
 export PATH := $(HOME)/.local/bin:$(HOME)/.cargo/bin:$(PATH)
 
 # Source venv if it exists and isn't already active
@@ -14,7 +15,7 @@ else
   RUN :=
 endif
 
-.PHONY: help setup sync deps deps-uv deps-trunk deps-docker test check protogen
+.PHONY: help setup sync deps deps-uv deps-trunk deps-docker test check protogen clean build
 
 .DEFAULT_GOAL := help
 
@@ -28,13 +29,12 @@ help: ## Show this help message
 	@echo ""
 
 setup: deps ## Setup project (install tools and sync dependencies)
-	uv sync --group dev --extra dev
 	@if [ ! -f .git/hooks/pre-commit ] || ! grep -q "pre-commit" .git/hooks/pre-commit 2>/dev/null; then \
 		echo "Installing pre-commit hooks..."; \
 		uv run pre-commit install; \
 	fi
 
-sync: ## Sync project virtual environment dependencies
+sync: ## Sets up and syncs project virtual environment.
 	$(RUN) uv sync --group dev --extra dev
 
 check: ## Run pre-commit hooks on all files
@@ -43,7 +43,14 @@ check: ## Run pre-commit hooks on all files
 protogen: ## Regenerate protobuf files (requires Python 3.13+)
 	$(RUN) uv run python scripts/protogen.py
 
-test: deps-docker ## Run tests
+clean: ## Cleans build artifacts
+	rm -rf build/
+	mkdir -p build
+
+build: deps-uv sync protogen ## Builds release package
+	$(RUN) uv build
+
+test: deps sync protogen ## Run tests
 	bash scripts/local-test.sh
 
 deps: deps-uv deps-trunk deps-docker ## Check/install tool dependencies (set INSTALL_MISSING=true to auto-install)
