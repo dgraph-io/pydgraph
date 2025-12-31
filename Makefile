@@ -33,6 +33,7 @@ setup: deps ## Setup project (install tools and sync dependencies)
 		echo "Installing pre-commit hooks..."; \
 		uv run pre-commit install; \
 	fi
+	@$(MAKE) sync
 
 sync: ## Sets up and syncs project virtual environment.
 	$(RUN) uv sync --group dev --extra dev
