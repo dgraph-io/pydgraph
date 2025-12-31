@@ -1,5 +1,5 @@
-name: Setup Python Environment
-description: Sets up Python, uv, and trunk for pydgraph development
+name: Setup Test Runner
+description: Sets up test runner environment with build tools, Python, uv, and trunk
 inputs:
   python-version:
     description: Python version to install
@@ -11,6 +11,9 @@ inputs:
 runs:
   using: composite
   steps:
+    - name: Install build tools
+      shell: bash
+      run: sudo apt-get update && sudo apt-get install -y build-essential
     - name: Set up Python ${{ inputs.python-version }}
       uses: actions/setup-python@v6
       with:
