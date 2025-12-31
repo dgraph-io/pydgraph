@@ -20,8 +20,6 @@ __maintainer__ = "Istari Digital, Inc. <dgraph-admin@istaridigital.com>"
 __version__ = VERSION
 __status__ = "development"
 
-__all__ = ["DgraphClientStub"]
-
 
 class DgraphClientStub(object):
     """Stub for the Dgraph grpc client."""
