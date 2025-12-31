@@ -41,7 +41,13 @@ class Txn:
     """
 
     def __init__(
-        self, client: DgraphClient, read_only: bool = False, best_effort: bool = False
+        self,
+        client: DgraphClient,
+        read_only: bool = False,
+        best_effort: bool = False,
+        timeout: float | None = None,
+        metadata: list[tuple[str, str]] | None = None,
+        credentials: grpc.CallCredentials | None = None,
     ) -> None:
         if not read_only and best_effort:
             # FIXME: Should use errors.TransactionError for better exception handling
@@ -59,6 +65,23 @@ class Txn:
         self._mutated: bool = False
         self._read_only: bool = read_only
         self._best_effort: bool = best_effort
+        self._commit_kwargs: dict[str, Any] = {
+            "timeout": timeout,
+            "metadata": metadata,
+            "credentials": credentials,
+        }
+
+    def __enter__(self) -> Txn:
+        return self
+
+    def __exit__(self, exc_type: Any, exc_val: Any, exc_tb: Any) -> None:
+        if exc_type is not None:
+            self.discard(**self._commit_kwargs)
+            raise exc_val
+        if not self._read_only and not self._finished:
+            self.commit(**self._commit_kwargs)
+        else:
+            self.discard(**self._commit_kwargs)
 
     def query(
         self,
@@ -241,8 +264,8 @@ class Txn:
         except Exception as error:
             # Ignore error during discard - user should see the original error
             with contextlib.suppress(Exception):
-                txn.discard()
-            txn._common_except_mutate(error)
+                txn.discard(**txn._commit_kwargs)
+            Txn._common_except_mutate(error)
 
         if commit_now:
             txn._finished = True

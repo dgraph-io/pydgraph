@@ -9,6 +9,12 @@ adheres to [Semantic Versioning](http://semver.org/spec/v2.0.0.html).
 
 **Added**
 
+- Native async/await client support with `AsyncDgraphClient`, `AsyncDgraphClientStub`, and
+  `AsyncTxn` classes ([#280](https://github.com/dgraph-io/pydgraph/pull/280))
+  - True asynchronous operations using Python's asyncio and grpc.aio
+  - Async context manager support for client and transactions
+  - Connection string support via `async_open()` function
+  - Automatic JWT refresh handling
 - Dgraph v25 API support:
   - `run_dql()` method for executing DQL queries and mutations directly
   - `run_dql_with_vars()` method for DQL queries with variables

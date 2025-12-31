@@ -32,6 +32,9 @@ MANIFEST
 .idea
 pydgraph.iml
 
+# VS Code
+.vscode
+
 # Python Virtual Environments
 venv
 .venv

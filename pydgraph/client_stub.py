@@ -37,6 +37,14 @@ class DgraphClientStub:
 
         self.stub = api_grpc.DgraphStub(self.channel)
 
+    def __enter__(self) -> DgraphClientStub:
+        return self
+
+    def __exit__(self, exc_type: Any, exc_val: Any, exc_tb: Any) -> None:
+        self.close()
+        if exc_type is not None:
+            raise exc_val
+
     def login(
         self,
         login_req: api.LoginRequest,
@@ -225,3 +233,28 @@ class DgraphClientStub:
             options=options,
         )
         return client_stub
+
+
+@contextlib.contextmanager
+def client_stub(addr="localhost:9080", **kwargs):
+    """Create a managed DgraphClientStub instance.
+
+    Parameters
+    ----------
+    addr : str, optional
+    credentials : ChannelCredentials, optional
+    options: List[Dict]
+        An optional list of key-value pairs (``channel_arguments``
+        in gRPC Core runtime) to configure the channel.
+
+    Note
+    ----
+    Only use this function in ``with-as`` blocks.
+    """
+    stub = DgraphClientStub(addr=addr, **kwargs)
+    try:
+        yield stub
+    except Exception as e:
+        raise e
+    finally:
+        stub.close()

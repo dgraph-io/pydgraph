@@ -97,3 +97,6 @@ content = content.replace("import api_pb2\n", "from . import api_pb2\n")
 
 with open(api_pb2_grpc_pyi, "w") as f:
     f.write(content)
+
+# Note: Modern grpcio supports async via grpc.aio channels.
+# No separate async stub generation needed - use DgraphStub with grpc.aio.Channel

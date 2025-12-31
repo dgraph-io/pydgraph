@@ -5,6 +5,7 @@
 
 from __future__ import annotations
 
+import contextlib
 import secrets
 import urllib.parse
 from typing import TYPE_CHECKING, Any
@@ -12,6 +13,7 @@ from typing import TYPE_CHECKING, Any
 import grpc
 
 from pydgraph import errors, txn, util
+from pydgraph.client_stub import DgraphClientStub
 from pydgraph.meta import VERSION
 from pydgraph.proto import api_pb2 as api
 
@@ -344,10 +346,13 @@ class DgraphClient:
             operation, timeout=timeout, metadata=metadata, credentials=credentials
         )
 
-    def txn(self, read_only: bool = False, best_effort: bool = False) -> Txn:
+    def txn(
+        self, read_only: bool = False, best_effort: bool = False, **commit_kwargs: Any
+    ) -> Txn:
         """Creates a transaction."""
-
-        return txn.Txn(self, read_only=read_only, best_effort=best_effort)
+        return txn.Txn(
+            self, read_only=read_only, best_effort=best_effort, **commit_kwargs
+        )
 
     def run_dql(
         self,
@@ -760,6 +765,31 @@ class DgraphClient:
         for client in self._clients:
             client.close()
 
+    @contextlib.contextmanager
+    def begin(
+        self,
+        read_only: bool = False,
+        best_effort: bool = False,
+        timeout=None,
+        metadata=None,
+        credentials=None,
+    ):
+        """Start a managed transaction.
+
+        Note
+        ----
+        Only use this function in ``with-as`` blocks.
+        """
+        tx = self.txn(read_only=read_only, best_effort=best_effort)
+        try:
+            yield tx
+            if not read_only and not tx._finished:
+                tx.commit(timeout=timeout, metadata=metadata, credentials=credentials)
+        except Exception as e:
+            raise e
+        finally:
+            tx.discard()
+
 
 def open(connection_string: str) -> DgraphClient:  # noqa: A001, C901
     """Open a new Dgraph client. Use client.close() to close the client.
@@ -843,8 +873,6 @@ def open(connection_string: str) -> DgraphClient:  # noqa: A001, C901
         credentials = grpc.composite_channel_credentials(
             grpc.ssl_channel_credentials(), call_credentials
         )
-
-    from pydgraph.client_stub import DgraphClientStub
 
     client_stub = DgraphClientStub(f"{host}:{port}", credentials, options)
     client = DgraphClient(client_stub)
