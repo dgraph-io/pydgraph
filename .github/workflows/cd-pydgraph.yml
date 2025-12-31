@@ -35,4 +35,7 @@ jobs:
       - name: Build release
         run: make clean build
       - name: Publish release
+        env:
+          UV_PUBLISH_USERNAME: ${{ secrets.DGRAPH_PYPI_USERNAME }}
+          UV_PUBLISH_PASSWORD: ${{ secrets.DGRAPH_PYPI_PASSWORD }}
         run: make publish
