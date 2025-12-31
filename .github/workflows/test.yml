@@ -45,7 +45,7 @@ jobs:
           python-version: ${{ matrix.python-version }}
       - name: Pin Python version for uv
         run: uv python pin ${{ matrix.python-version }}
-      - name: Install deps
-        run: make deps
+      - name: Setup project and install tooling
+        run: INSTALL_MISSING=true make setup
       - name: Run tests
         run: make test
