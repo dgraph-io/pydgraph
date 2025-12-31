@@ -273,22 +273,9 @@ test: add integration tests for ACL
 
 ## Code of Conduct
 
-We are committed to providing a welcoming and inclusive environment. Please be respectful and
-constructive in all interactions.
-
-### Our Standards
-
-- Be respectful and considerate
-- Welcome newcomers and help them get started
-- Focus on what is best for the community
-- Show empathy towards other community members
-
-### Unacceptable Behavior
-
-- Harassment, discrimination, or hostile behavior
-- Personal attacks or inflammatory comments
-- Publishing others' private information
-- Other conduct that could reasonably be considered inappropriate
+This project follows the Contributor Covenant Code of Conduct. Please read our
+[Code of Conduct](CODE_OF_CONDUCT.md) to understand the standards we expect from all contributors
+and community members.
 
 ## Questions or Need Help?
 
