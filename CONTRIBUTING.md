@@ -77,7 +77,7 @@ deps-docker     Check and install Docker if needed (requires Docker 20.10.0+)
    - Create and configure a virtual environment
    - Install all project dependencies
 
-   **Note:** To automatically install missing tool dependencies (uv, trunk, docker), you can set
+   **Note:** To automatically install any missing tool dependencies (uv, trunk, docker), you can set
    `INSTALL_MISSING_DEPS` to `true`:
 
    ```sh
