@@ -28,10 +28,10 @@ help: ## Show this help message
 	@echo ""
 
 setup: deps ## Setup project (install tools and sync dependencies)
-	$(RUN) uv sync --group dev --extra dev
+	uv sync --group dev --extra dev
 	@if [ ! -f .git/hooks/pre-commit ] || ! grep -q "pre-commit" .git/hooks/pre-commit 2>/dev/null; then \
 		echo "Installing pre-commit hooks..."; \
-		$(RUN) pre-commit install; \
+		uv run pre-commit install; \
 	fi
 
 sync: ## Sync project virtual environment dependencies
