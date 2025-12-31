@@ -814,6 +814,18 @@ There are many ways to set up your local Python environment. We suggest some san
   version. It will install uv if not already available, create and configure a virtualenv, and sync
   all project dependencies.
 
+#### Automatic dependency installation
+
+By default, `make setup` and related commands will check for required tools (uv, trunk, docker) but
+will not automatically install them. To enable automatic installation of missing dependencies, set
+the `INSTALL_MISSING_DEPS` environment variable:
+
+```sh
+INSTALL_MISSING_DEPS=true make setup
+```
+
+This will automatically install any missing tools when they are not found on your system.
+
 ### Build from source
 
 To ensure the project is set up correctly, run:
