@@ -616,7 +616,9 @@ except Exception as e:
 
 ### Native Async/Await Client
 
-pydgraph provides a native async/await client using Python's `asyncio` library and `grpc.aio`. This provides true asynchronous operations with better concurrency compared to the futures-based approach above.
+pydgraph provides a native async/await client using Python's `asyncio` library and `grpc.aio`. This
+provides true asynchronous operations with better concurrency compared to the futures-based approach
+above.
 
 #### Basic Usage
 
@@ -678,7 +680,8 @@ asyncio.run(main())
 
 #### Using Context Managers
 
-Both the async client and transactions support async context managers for automatic resource cleanup:
+Both the async client and transactions support async context managers for automatic resource
+cleanup:
 
 ```python
 import asyncio
@@ -760,14 +763,14 @@ asyncio.run(main())
 
 #### Differences from Sync Client
 
-| Feature | Sync Client | Async Client |
-|---------|------------|--------------|
-| Import | `pydgraph.DgraphClient` | `pydgraph.AsyncDgraphClient` |
-| Connection function | `pydgraph.open()` | `await pydgraph.async_open()` |
-| Method calls | `client.query()` | `await client.query()` |
-| Context manager | `with client.txn() as txn:` | `async with client.txn() as txn:` |
-| Concurrency | Threading | Native asyncio |
-| JWT refresh | Automatic | Automatic |
+| Feature             | Sync Client                 | Async Client                      |
+| ------------------- | --------------------------- | --------------------------------- |
+| Import              | `pydgraph.DgraphClient`     | `pydgraph.AsyncDgraphClient`      |
+| Connection function | `pydgraph.open()`           | `await pydgraph.async_open()`     |
+| Method calls        | `client.query()`            | `await client.query()`            |
+| Context manager     | `with client.txn() as txn:` | `async with client.txn() as txn:` |
+| Concurrency         | Threading                   | Native asyncio                    |
+| JWT refresh         | Automatic                   | Automatic                         |
 
 ## Examples
 
