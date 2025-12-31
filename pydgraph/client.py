@@ -18,7 +18,6 @@ from pydgraph.meta import VERSION
 from pydgraph.proto import api_pb2 as api
 
 if TYPE_CHECKING:
-    from pydgraph.client_stub import DgraphClientStub
     from pydgraph.txn import Txn
 
 __author__ = "Mohit Ranka <mohitranka@gmail.com>"
