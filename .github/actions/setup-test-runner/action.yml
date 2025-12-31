@@ -13,7 +13,11 @@ runs:
   steps:
     - name: Install build tools
       shell: bash
-      run: sudo apt-get update && sudo apt-get install -y build-essential
+      run: |
+        sudo apt-get update
+        sudo apt-get install -y build-essential
+        echo "/usr/bin" >> $GITHUB_PATH
+        which make || echo "make not found after install"
     - name: Set up Python ${{ inputs.python-version }}
       uses: actions/setup-python@v6
       with:
