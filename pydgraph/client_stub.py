@@ -2,10 +2,10 @@
 # SPDX-License-Identifier: Apache-2.0
 
 """Stub for RPC request."""
-
 from __future__ import annotations
 
 import contextlib
+from collections.abc import Iterator
 from typing import Any
 from urllib.parse import urlparse
 
@@ -236,7 +236,9 @@ class DgraphClientStub:
 
 
 @contextlib.contextmanager
-def client_stub(addr="localhost:9080", **kwargs):
+def client_stub(
+    addr: str = "localhost:9080", **kwargs: Any
+) -> Iterator[DgraphClientStub]:
     """Create a managed DgraphClientStub instance.
 
     Parameters
@@ -254,7 +256,5 @@ def client_stub(addr="localhost:9080", **kwargs):
     stub = DgraphClientStub(addr=addr, **kwargs)
     try:
         yield stub
-    except Exception as e:
-        raise e
     finally:
         stub.close()

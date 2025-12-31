@@ -2,12 +2,12 @@
 # SPDX-License-Identifier: Apache-2.0
 
 """Dgraph python client."""
-
 from __future__ import annotations
 
 import contextlib
 import secrets
 import urllib.parse
+from collections.abc import Iterator
 from typing import TYPE_CHECKING, Any
 
 import grpc
@@ -770,10 +770,10 @@ class DgraphClient:
         self,
         read_only: bool = False,
         best_effort: bool = False,
-        timeout=None,
-        metadata=None,
-        credentials=None,
-    ):
+        timeout: float | None = None,
+        metadata: list[tuple[str, str]] | None = None,
+        credentials: grpc.CallCredentials | None = None,
+    ) -> Iterator[Txn]:
         """Start a managed transaction.
 
         Note
@@ -785,8 +785,6 @@ class DgraphClient:
             yield tx
             if not read_only and not tx._finished:
                 tx.commit(timeout=timeout, metadata=metadata, credentials=credentials)
-        except Exception as e:
-            raise e
         finally:
             tx.discard()
 
