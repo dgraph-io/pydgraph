@@ -15,6 +15,8 @@ on:
     - cron: 1 0 * * * # run workflow daily
 permissions:
   contents: read
+  actions: write
+  checks: write
 jobs:
   check-code-quality:
     name: Check Code Quality
@@ -25,20 +27,22 @@ jobs:
         with:
           repository: dgraph-io/pydgraph
           ref: ${{ github.ref }}
-      - name: Setup pydgraph tooling
+      - name: Setup python runtime and tooling
         uses: ./.github/actions/setup-python-and-tooling
         with:
           python-version: "3.13"
-      - name: Setup pydgraph virtualenv
+      - name: Sync python virtualenv
         run: INSTALL_MISSING=true make setup
-      - name: Run pydgraph code quality checks
-        run: SKIP=trunk-check,trunk-fmt make check # (Skips trunk pre-commit checks, which have their own workflow)
-      - name: Verify generated protobufs are current
+      - name: Check generated protobufs are current
         run: |
           make protogen
           git diff --exit-code -- .
-  test-dgraph-release:
-    name: Test Python ${{ matrix.python-version }} & DGraph Latest
+      - name: Run non-trunk code quality checks
+        run: SKIP=trunk-check,trunk-fmt make check # (Skips trunk checks, which have their own step)
+      - name: Run trunk code quality checks
+        uses: dgraph-io/.github/.github/workflows/trunk.yml@main
+  test-pydgraph-dgraph-latest:
+    name: Test Pydgraph (Python ${{ matrix.python-version }} / DGraph Latest)
     runs-on: ubuntu-latest
     strategy:
       matrix:
@@ -49,24 +53,24 @@ jobs:
         with:
           repository: dgraph-io/pydgraph
           ref: ${{ github.ref }}
-      - name: Setup pydgraph tooling
+      - name: Setup python runtime and tooling
         uses: ./.github/actions/setup-python-and-tooling
         with:
           python-version: ${{ matrix.python-version }}
-      - name: Pin pydgraph python version
+      - name: Pin python version
         run: uv python pin ${{ matrix.python-version }}
-      - name: Setup pydgraph virtualenv
+      - name: Sync python virtualenv
         run: INSTALL_MISSING=true make setup
-      - name: Run pydgraph tests
+      - name: Run tests
         run: make test
-  test-dgraph-head:
-    name: Test Python ${{ matrix.python-version }} & DGraph HEAD
+  test-pydgraph-dgraph-head:
+    name: Test Pydgraph (Python ${{ matrix.python-version }} / DGraph HEAD)
     runs-on: ubuntu-latest
     strategy:
       matrix:
         python-version: ["3.9", "3.10", "3.11", "3.12", "3.13", "3.14"]
     steps:
-      - name: Checkout Dgraph
+      - name: Checkout Dgraph main latest
         uses: actions/checkout@v5
         with:
           path: dgraph
@@ -88,14 +92,14 @@ jobs:
           path: pydgraph
           repository: dgraph-io/pydgraph
           ref: ${{ github.ref }}
-      - name: Setup pydgraph tooling
+      - name: Setup python runtime and tooling
         uses: ./pydgraph/.github/actions/setup-python-and-tooling
         with:
           python-version: ${{ matrix.python-version }}
-      - name: Pin pydgraph python version
+      - name: Pin python version
         working-directory: ./pydgraph
         run: uv python pin ${{ matrix.python-version }}
-      - name: Setup pydgraph virtualenv
+      - name: Sync python virtualenv
         working-directory: ./pydgraph
         run: INSTALL_MISSING=true make setup
       - name: Run tests
