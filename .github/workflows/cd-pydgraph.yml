@@ -15,19 +15,15 @@ jobs:
       - uses: actions/checkout@v5
         with:
           ref: "${{ github.event.inputs.releasetag }}"
-      - name: Set up Python
-        uses: actions/setup-python@v6
+      - name: Setup pydgraph tooling
+        uses: ./.github/actions/setup-runner
         with:
-          python-version: "3.12"
-      - name: Install dependencies
+          python-version: "3.13"
+      - name: Setup pydgraph virtualenv
+        run: INSTALL_MISSING=true make setup
+      - name: Verify generated protobufs are current
         run: |
-          python -m pip install --upgrade pip
-          python -m pip install .[dev]
-          # use twine to upload to pypi
-          python -m pip install twine
-      - name: Verify that protobufs are checked in
-        run: |
-          python scripts/protogen.py
+          make protogen
           git diff --exit-code -- .
       - name: Build pydgraph
         run: |
