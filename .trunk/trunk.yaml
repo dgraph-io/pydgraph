@@ -27,7 +27,7 @@ lint:
         - examples/notebook/**/*.ipynb
     - linters: [bandit]
       paths:
-        - tests/**/*.py
+        - tests/**
   enabled:
     - trivy@0.68.2
     - trivy@0.58.2

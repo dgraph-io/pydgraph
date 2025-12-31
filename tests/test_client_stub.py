@@ -70,10 +70,133 @@ class TestFromCloud(unittest.TestCase):
                     raise
 
 
+class TestDgraphClientStubContextManager(helper.ClientIntegrationTestCase):
+    def setUp(self) -> None:
+        super().setUp()
+
+    def test_context_manager(self) -> None:
+        """Test basic context manager usage for DgraphClientStub."""
+        with pydgraph.DgraphClientStub(addr=self.TEST_SERVER_ADDR) as client_stub:
+            ver = client_stub.check_version(pydgraph.Check())
+            self.assertIsNotNone(ver)
+
+    def test_context_manager_code_exception(self) -> None:
+        """Test that exceptions within context manager are properly handled."""
+        with self.assertRaises(AttributeError):
+            with pydgraph.DgraphClientStub(addr=self.TEST_SERVER_ADDR) as client_stub:
+                self.check_version(client_stub)  # AttributeError: no such method
+
+    def test_context_manager_function_wrapper(self) -> None:
+        """Test the client_stub() function wrapper for context manager."""
+        with pydgraph.client_stub(addr=self.TEST_SERVER_ADDR) as client_stub:
+            ver = client_stub.check_version(pydgraph.Check())
+            self.assertIsNotNone(ver)
+
+    def test_context_manager_closes_stub(self) -> None:
+        """Test that the stub is properly closed after exiting context manager."""
+        stub = None
+        with pydgraph.DgraphClientStub(addr=self.TEST_SERVER_ADDR) as client_stub:
+            stub = client_stub
+            ver = client_stub.check_version(pydgraph.Check())
+            self.assertIsNotNone(ver)
+
+        # After exiting context, stub should be closed and unusable
+        with self.assertRaises(Exception):
+            stub.check_version(pydgraph.Check())
+
+    def test_context_manager_with_client(self) -> None:
+        """Test using DgraphClientStub context manager with DgraphClient."""
+        with pydgraph.DgraphClientStub(addr=self.TEST_SERVER_ADDR) as client_stub:
+            client = pydgraph.DgraphClient(client_stub)
+            client.login("groot", "password")
+
+            # Perform a simple operation
+            txn = client.txn(read_only=True)
+            query = "{ me(func: has(name)) { name } }"
+            resp = txn.query(query)
+            self.assertIsNotNone(resp)
+
+    def test_context_manager_exception_still_closes(self) -> None:
+        """Test that stub is closed even when an exception occurs."""
+        stub_ref = None
+        try:
+            with pydgraph.DgraphClientStub(addr=self.TEST_SERVER_ADDR) as client_stub:
+                stub_ref = client_stub
+                client_stub.check_version(pydgraph.Check())
+                raise ValueError("Test exception")
+        except ValueError:
+            pass
+
+        # Stub should still be closed despite the exception
+        with self.assertRaises(Exception):
+            stub_ref.check_version(pydgraph.Check())
+
+    def test_context_manager_function_wrapper_closes(self) -> None:
+        """Test that client_stub() function wrapper properly closes the stub."""
+        stub_ref = None
+        with pydgraph.client_stub(addr=self.TEST_SERVER_ADDR) as client_stub:
+            stub_ref = client_stub
+            ver = client_stub.check_version(pydgraph.Check())
+            self.assertIsNotNone(ver)
+
+        # Stub should be closed after exiting
+        with self.assertRaises(Exception):
+            stub_ref.check_version(pydgraph.Check())
+
+    def test_context_manager_multiple_operations(self) -> None:
+        """Test performing multiple operations within context manager."""
+        with pydgraph.DgraphClientStub(addr=self.TEST_SERVER_ADDR) as client_stub:
+            # Check version multiple times
+            ver1 = client_stub.check_version(pydgraph.Check())
+            ver2 = client_stub.check_version(pydgraph.Check())
+            self.assertIsNotNone(ver1)
+            self.assertIsNotNone(ver2)
+
+            # Create client and perform operations
+            client = pydgraph.DgraphClient(client_stub)
+            client.login("groot", "password")
+            txn = client.txn(read_only=True)
+            query = "{ me(func: has(name)) { name } }"
+            resp = txn.query(query)
+            self.assertIsNotNone(resp)
+
+    def test_context_manager_nested_with_client_operations(self) -> None:
+        """Test full workflow: stub context manager with client and transaction operations."""
+        with pydgraph.DgraphClientStub(addr=self.TEST_SERVER_ADDR) as stub:
+            client = pydgraph.DgraphClient(stub)
+            client.login("groot", "password")
+
+            # Set schema
+            schema = "test_name: string @index(fulltext) ."
+            op = pydgraph.Operation(schema=schema)
+            client.alter(op)
+
+            # Perform mutation and query
+            with client.txn() as txn:
+                response = txn.mutate(set_obj={"test_name": "ContextManagerTest"})
+                self.assertEqual(1, len(response.uids))
+                uid = list(response.uids.values())[0]
+
+            # Verify data was committed
+            query = f"""{{
+                me(func: uid("{uid}")) {{
+                    test_name
+                }}
+            }}"""
+
+            with client.txn(read_only=True) as txn:
+                resp = txn.query(query)
+                import json
+
+                results = json.loads(resp.json).get("me")
+                self.assertEqual([{"test_name": "ContextManagerTest"}], results)
+
+
 def suite() -> unittest.TestSuite:
     """Returns a test suite object."""
     suite_obj = unittest.TestSuite()
     suite_obj.addTest(TestDgraphClientStub())
+    suite_obj.addTest(TestDgraphClientStubContextManager())
     return suite_obj
 
 

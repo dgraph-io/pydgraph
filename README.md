@@ -370,6 +370,53 @@ request = txn.create_request(mutations=[mutation], commit_now=True)
 txn.do_request(request)
 ```
 
+### Committing a Transaction
+
+A transaction can be committed using the `Txn#commit()` method. If your transaction consist solely
+of `Txn#query` or `Txn#queryWithVars` calls, and no calls to `Txn#mutate`, then calling
+`Txn#commit()` is not necessary.
+
+An error is raised if another transaction(s) modify the same data concurrently that was modified in
+the current transaction. It is up to the user to retry transactions when they fail.
+
+```python
+txn = client.txn()
+try:
+  # ...
+  # Perform any number of queries and mutations
+  # ...
+  # and finally...
+  txn.commit()
+except pydgraph.AbortedError:
+  # Retry or handle exception.
+finally:
+  # Clean up. Calling this after txn.commit() is a no-op
+  # and hence safe.
+  txn.discard()
+```
+
+#### Using Transaction with Context Manager
+
+The Python context manager will automatically perform the "`commit`" action after all queries and
+mutations have been done, and perform "`discard`" action to clean the transaction. When something
+goes wrong in the scope of context manager, "`commit`" will not be called,and the "`discard`" action
+will be called to drop any potential changes.
+
+```python
+with client.begin(read_only=False, best_effort=False) as txn:
+  # Do some queries or mutations here
+```
+
+or you can directly create a transaction from the `Txn` class.
+
+```python
+with pydgraph.Txn(client, read_only=False, best_effort=False) as txn:
+  # Do some queries or mutations here
+```
+
+> `client.begin()` can only be used with "`with-as`" blocks, while `pydgraph.Txn` class can be
+> directly called to instantiate a transaction object.
+
 ### Running a Query
 
 You can run a query by calling `Txn#query(string)`. You will need to pass in a
@@ -479,31 +526,6 @@ request = txn.create_request(mutations=[mutation], query=query, commit_now=True)
 txn.do_request(request)
 ```
 
-### Committing a Transaction
-
-A transaction can be committed using the `Txn#commit()` method. If your transaction consist solely
-of `Txn#query` or `Txn#queryWithVars` calls, and no calls to `Txn#mutate`, then calling
-`Txn#commit()` is not necessary.
-
-An error is raised if another transaction(s) modify the same data concurrently that was modified in
-the current transaction. It is up to the user to retry transactions when they fail.
-
-```python3
-txn = client.txn()
-try:
-  # ...
-  # Perform any number of queries and mutations
-  # ...
-  # and finally...
-  txn.commit()
-except pydgraph.AbortedError:
-  # Retry or handle exception.
-finally:
-  # Clean up. Calling this after txn.commit() is a no-op
-  # and hence safe.
-  txn.discard()
-```
-
 ### Cleaning Up Resources
 
 To clean up resources, you have to call `DgraphClientStub#close()` individually for all the
@@ -527,6 +549,27 @@ client = pydgraph.DgraphClient(stub1, stub2)
 stub1.close()
 stub2.close()
 ```
+
+#### Use context manager to automatically clean resources
+
+Use function call:
+
+```python
+with pydgraph.client_stub(SERVER_ADDR) as stub1:
+  with pydgraph.client_stub(SERVER_ADDR) as stub2:
+    client = pydgraph.DgraphClient(stub1, stub2)
+```
+
+Use class constructor:
+
+```python
+with pydgraph.DgraphClientStub(SERVER_ADDR) as stub1:
+  with pydgraph.DgraphClientStub(SERVER_ADDR) as stub2:
+    client = pydgraph.DgraphClient(stub1, stub2)
+```
+
+Note: `client` should be used inside the "`with-as`" block. The resources related to `client` will
+be automatically released outside the block and `client` is not usable any more.
 
 ### Setting Metadata Headers
 
@@ -588,6 +631,164 @@ except Exception as e:
     if pydgraph.util.is_jwt_expired(e):
         # retry your request here.
 ```
+
+### Native Async/Await Client
+
+pydgraph provides a native async/await client using Python's `asyncio` library and `grpc.aio`. This
+provides true asynchronous operations with better concurrency compared to the futures-based approach
+above.
+
+#### Basic Usage
+
+```python
+import asyncio
+import pydgraph
+
+async def main():
+    # Create async client
+    client_stub = pydgraph.AsyncDgraphClientStub('localhost:9080')
+    client = pydgraph.AsyncDgraphClient(client_stub)
+
+    try:
+        # Login
+        await client.login("groot", "password")
+
+        # Alter schema
+        await client.alter(pydgraph.Operation(
+            schema="name: string @index(term) ."
+        ))
+
+        # Run mutation
+        txn = client.txn()
+        response = await txn.mutate(
+            set_obj={"name": "Alice"},
+            commit_now=True
+        )
+
+        # Run query
+        query = '{ me(func: has(name)) { name } }'
+        txn = client.txn(read_only=True)
+        response = await txn.query(query)
+        print(response.json)
+
+    finally:
+        await client.close()
+
+asyncio.run(main())
+```
+
+#### Using Connection Strings
+
+The async client supports the same connection string format as the sync client:
+
+```python
+import asyncio
+import pydgraph
+
+async def main():
+    # Using async_open with connection string
+    async with await pydgraph.async_open(
+        "dgraph://groot:password@localhost:9080"
+    ) as client:
+        version = await client.check_version()
+        print(f"Connected to Dgraph version: {version}")
+
+asyncio.run(main())
+```
+
+#### Using Context Managers
+
+Both the async client and transactions support async context managers for automatic resource
+cleanup:
+
+```python
+import asyncio
+import pydgraph
+
+async def main():
+    # Client auto-closes on exit
+    async with await pydgraph.async_open("dgraph://localhost:9080") as client:
+        await client.login("groot", "password")
+
+        # Transaction auto-discards on exit
+        async with client.txn() as txn:
+            response = await txn.query('{ me(func: has(name)) { name } }')
+            print(response.json)
+
+asyncio.run(main())
+```
+
+#### Concurrent Operations
+
+The async client excels at running many operations concurrently:
+
+```python
+import asyncio
+import pydgraph
+
+async def run_query(client, name):
+    """Run a single query"""
+    query = f'{{ me(func: eq(name, "{name}")) {{ name }} }}'
+    txn = client.txn(read_only=True)
+    return await txn.query(query)
+
+async def main():
+    async with await pydgraph.async_open("dgraph://localhost:9080") as client:
+        await client.login("groot", "password")
+
+        # Run 100 queries concurrently
+        names = [f"User{i}" for i in range(100)]
+        tasks = [run_query(client, name) for name in names]
+        results = await asyncio.gather(*tasks)
+
+        print(f"Completed {len(results)} queries concurrently")
+
+asyncio.run(main())
+```
+
+#### JWT Refresh
+
+The async client automatically handles JWT token refresh, just like the sync client:
+
+```python
+async with await pydgraph.async_open("dgraph://groot:password@localhost:9080") as client:
+    # JWT will be automatically refreshed if it expires during operations
+    response = await client.alter(pydgraph.Operation(schema="name: string ."))
+```
+
+#### Error Handling
+
+Error handling works the same as the sync client:
+
+```python
+import pydgraph
+
+async def main():
+    async with await pydgraph.async_open("dgraph://localhost:9080") as client:
+        try:
+            await client.login("groot", "wrong_password")
+        except Exception as e:
+            print(f"Login failed: {e}")
+
+        try:
+            txn = client.txn(read_only=True)
+            await txn.mutate(set_obj={"name": "Alice"})
+        except pydgraph.errors.TransactionError as e:
+            print(f"Cannot mutate in read-only transaction: {e}")
+
+asyncio.run(main())
+```
+
+#### Differences from Sync Client
+
+| Feature             | Sync Client                 | Async Client                      |
+| ------------------- | --------------------------- | --------------------------------- |
+| Import              | `pydgraph.DgraphClient`     | `pydgraph.AsyncDgraphClient`      |
+| Connection function | `pydgraph.open()`           | `await pydgraph.async_open()`     |
+| Method calls        | `client.query()`            | `await client.query()`            |
+| Context manager     | `with client.txn() as txn:` | `async with client.txn() as txn:` |
+| Concurrency         | Threading                   | Native asyncio                    |
+| JWT refresh         | Automatic                   | Automatic                         |
 
 ## Examples
 

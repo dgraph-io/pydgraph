@@ -12,7 +12,7 @@ import json
 import logging
 import unittest
 
-from . import helper
+from tests import helper
 
 
 class TestEssentials(helper.ClientIntegrationTestCase):

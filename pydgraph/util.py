@@ -8,6 +8,7 @@ from __future__ import annotations
 from typing import Any
 
 import grpc
+import grpc.aio
 
 from pydgraph.meta import VERSION
 
@@ -29,7 +30,11 @@ def is_jwt_expired(exception: Exception) -> bool:
 
 def is_aborted_error(error: Exception) -> bool:
     """Returns true if the error is due to an aborted transaction."""
-    if isinstance(error, (grpc._channel._Rendezvous, grpc._channel._InactiveRpcError)):
+    # Check for both sync and async gRPC error types
+    if isinstance(
+        error,
+        (grpc._channel._Rendezvous, grpc._channel._InactiveRpcError, grpc.aio.AioRpcError),
+    ):
         status_code = error.code()
         if (
             status_code == grpc.StatusCode.ABORTED
