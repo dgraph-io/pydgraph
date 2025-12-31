@@ -50,7 +50,7 @@ clean: ## Cleans build artifacts
 build: deps-uv sync protogen ## Builds release package
 	$(RUN) uv build
 
-test: deps sync protogen ## Run tests
+test: deps sync ## Run tests
 	bash scripts/local-test.sh
 
 deps: deps-uv deps-trunk deps-docker ## Check/install tool dependencies (set INSTALL_MISSING=true to auto-install)
