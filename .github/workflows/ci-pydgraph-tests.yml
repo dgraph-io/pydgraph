@@ -37,10 +37,8 @@ jobs:
         run: |
           make protogen
           git diff --exit-code -- .
-      - name: Run non-trunk code quality checks
-        run: SKIP=trunk-check,trunk-fmt make check # (Skips trunk checks, which have their own step)
-      - name: Run trunk code quality checks
-        uses: dgraph-io/.github/.github/workflows/trunk.yml@main
+      - name: Run code quality checks
+        run: make check
   test-pydgraph-dgraph-latest:
     name: Test (Python ${{ matrix.python-version }} / DGraph Latest)
     runs-on: ubuntu-latest
