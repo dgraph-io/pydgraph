@@ -91,7 +91,7 @@ class TestDgraphClientStubContextManager(helper.ClientIntegrationTestCase):
             pytest.raises(AttributeError),
             pydgraph.DgraphClientStub(addr=self.TEST_SERVER_ADDR) as client_stub,
         ):
-            self.check_version(client_stub)  # AttributeError: no such method
+            client_stub.nonexistent_method()  # type: ignore[attr-defined]  # Intentionally calling non-existent method
 
     def test_context_manager_function_wrapper(self) -> None:
         """Test the client_stub() function wrapper for context manager."""
