@@ -9,8 +9,7 @@ __maintainer__ = "Istari Digital, Inc. <dgraph-admin@istaridigital.com>"
 import json
 
 import pydgraph
-
-from . import helper
+from tests import helper
 
 
 class TestAsync(helper.ClientIntegrationTestCase):
