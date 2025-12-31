@@ -34,6 +34,34 @@ community.
 - Docker and Docker Compose (for running tests)
 - Git
 
+### Makefile Commands
+
+This project uses a Makefile to simplify common development tasks. To see all available commands:
+
+```sh
+make help
+```
+
+**Output:**
+
+```
+Environment Variables:
+  INSTALL_MISSING_DEPS=true    Enable automatic installation of missing tools (default: disabled)
+
+Available targets:
+help            Show this help message
+setup           Setup project (install tools and sync dependencies)
+sync            Sets up and syncs project virtual environment.
+check           Run pre-commit hooks on all files
+protogen        Regenerate protobuf files (requires Python 3.13+)
+clean           Cleans build artifacts
+build           Builds release package
+test            Run tests
+publish         Publish a new release to PyPi (requires UV_PUBLISH_USERNAME and UV_PUBLISH_PASSWORD to be set)
+deps            Check/install tool dependencies (set INSTALL_MISSING_DEPS=true to auto-install)
+deps-docker     Check and install Docker if needed (requires Docker 20.10.0+)
+```
+
 ### Setting Up Your Environment
 
 1. Set up the project:
