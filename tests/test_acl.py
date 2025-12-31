@@ -31,12 +31,19 @@ class ACLTestBase(helper.ClientIntegrationTestCase):
     @staticmethod
     def run_acl_command(bash_command: str) -> None:
         """Run dgraph ACL commands in Docker container."""
-        docker_command = ["docker", "compose", "-p", "pydgraph", "exec", "-T", "alpha1", *bash_command.split()]
+        docker_command = [
+            "docker",
+            "compose",
+            "-p",
+            "pydgraph",
+            "exec",
+            "-T",
+            "alpha1",
+            *bash_command.split(),
+        ]
 
         try:
-            subprocess.check_output(
-                docker_command, stderr=subprocess.STDOUT
-            )  # nosec B603
+            subprocess.check_output(docker_command, stderr=subprocess.STDOUT)  # noqa: S603
         except subprocess.CalledProcessError as e:
             output_msg = ""
             if e.output:
@@ -143,7 +150,7 @@ class ACLTestBase(helper.ClientIntegrationTestCase):
 class TestACL(ACLTestBase):
     user_id = "alice"
     group_id = "dev"
-    user_password = "simplepassword"  # nosec B105
+    user_password = "simplepassword"  # noqa: S105
 
     def setUp(self) -> None:
         super().setUp()
@@ -233,11 +240,11 @@ class TestNamespaceACL(ACLTestBase):
     """Tests ACL functionality across multiple namespaces with different users."""
 
     bob_id: str = "bob"
-    bob_password: str = "bobpassword"  # nosec B105
+    bob_password: str = "bobpassword"  # noqa: S105
     bob_group: str = "bobgroup"
 
     alice_id: str = "alice"
-    alice_password: str = "alicepassword"  # nosec B105
+    alice_password: str = "alicepassword"  # noqa: S105
     alice_group: str = "alicegroup"
 
     bob_namespace: int | None = None
@@ -258,7 +265,7 @@ class TestNamespaceACL(ACLTestBase):
         cls.root_client = helper.create_client(
             cls.TEST_SERVER_ADDR,
             username="groot",
-            password="password",  # nosec B106
+            password="password",
         )
         helper.drop_all(cls.root_client)
 
@@ -269,7 +276,7 @@ class TestNamespaceACL(ACLTestBase):
         bob_groot_client = helper.create_client(
             cls.TEST_SERVER_ADDR,
             username="groot",
-            password="password",  # nosec B106
+            password="password",
             namespace=cls.bob_namespace,
         )
         helper.set_schema(bob_groot_client, "name: string .")
@@ -292,7 +299,7 @@ class TestNamespaceACL(ACLTestBase):
         alice_groot_client = helper.create_client(
             cls.TEST_SERVER_ADDR,
             username="groot",
-            password="password",  # nosec B106
+            password="password",
             namespace=cls.alice_namespace,
         )
         helper.set_schema(alice_groot_client, "name: string .")

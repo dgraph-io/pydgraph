@@ -368,9 +368,7 @@ class Txn:
                 "Transaction has already been committed or discarded"
             )
         if self._read_only:
-            raise errors.TransactionError(
-                "Readonly transaction cannot run mutations"
-            )
+            raise errors.TransactionError("Readonly transaction cannot run mutations")
 
         self._finished = True
         return self._mutated

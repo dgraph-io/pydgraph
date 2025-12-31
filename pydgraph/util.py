@@ -29,9 +29,7 @@ def is_jwt_expired(exception: Exception) -> bool:
 
 def is_aborted_error(error: Exception) -> bool:
     """Returns true if the error is due to an aborted transaction."""
-    if isinstance(error, grpc._channel._Rendezvous) or isinstance(
-        error, grpc._channel._InactiveRpcError
-    ):
+    if isinstance(error, (grpc._channel._Rendezvous, grpc._channel._InactiveRpcError)):
         status_code = error.code()
         if (
             status_code == grpc.StatusCode.ABORTED

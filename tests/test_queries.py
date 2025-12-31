@@ -76,10 +76,18 @@ class TestQueries(helper.ClientIntegrationTestCase):
         }"""
 
         response = self.client.txn().query(self.query, variables={"$a": "Alice"})
-        assert json.loads(response.json).get("me") == [{"name": "Alice", "follows": [{"name": "Greg"}]}]
-        assert is_number(response.latency.parsing_ns), "Parsing latency is not available"
-        assert is_number(response.latency.processing_ns), "Processing latency is not available"
-        assert is_number(response.latency.encoding_ns), "Encoding latency is not available"
+        assert json.loads(response.json).get("me") == [
+            {"name": "Alice", "follows": [{"name": "Greg"}]}
+        ]
+        assert is_number(response.latency.parsing_ns), (
+            "Parsing latency is not available"
+        )
+        assert is_number(response.latency.processing_ns), (
+            "Processing latency is not available"
+        )
+        assert is_number(response.latency.encoding_ns), (
+            "Encoding latency is not available"
+        )
 
         """ Run query with JSON and RDF resp_format and verify the result """
         response = self.client.txn().query(queryRDF, variables={"$a": "Alice"})
@@ -110,7 +118,9 @@ class TestQueries(helper.ClientIntegrationTestCase):
             resp_format="JSON",
             read_only=True,
         )
-        assert json.loads(response.json).get("me") == [{"name": "Alice", "follows": [{"name": "Greg"}]}]
+        assert json.loads(response.json).get("me") == [
+            {"name": "Alice", "follows": [{"name": "Greg"}]}
+        ]
 
     def test_run_dql_with_vars(self) -> None:
         """Call run_dql_with_vars (a version 25+ feature) and verify the result"""

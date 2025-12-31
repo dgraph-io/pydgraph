@@ -41,7 +41,9 @@ class TestTxn(helper.ClientIntegrationTestCase):
             }}
         }}"""
 
-        with pytest.raises(Exception, match="Transaction has already been committed or discarded"):
+        with pytest.raises(
+            Exception, match="Transaction has already been committed or discarded"
+        ):
             txn.query(query)
 
     def test_mutate_after_commit(self) -> None:
@@ -51,7 +53,9 @@ class TestTxn(helper.ClientIntegrationTestCase):
 
         txn.commit()
 
-        with pytest.raises(Exception, match="Transaction has already been committed or discarded"):
+        with pytest.raises(
+            Exception, match="Transaction has already been committed or discarded"
+        ):
             txn.mutate(set_obj={"name": "Manish2"})
 
     def test_commit_now(self) -> None:
@@ -248,7 +252,9 @@ class TestTxn(helper.ClientIntegrationTestCase):
         # Allow small timestamp differences due to v23+ rollup behavior
         # In most cases timestamps should be equal, but rollups may cause
         # small increments in CI environments
-        assert abs(start_ts1 - start_ts2) <= 5, "Timestamps should be equal or differ by at most 5 due to rollups"
+        assert abs(start_ts1 - start_ts2) <= 5, (
+            "Timestamps should be equal or differ by at most 5 due to rollups"
+        )
 
         txn = self.client.txn(read_only=True)
         resp1 = txn.query(query)
@@ -259,9 +265,13 @@ class TestTxn(helper.ClientIntegrationTestCase):
         # Within the same transaction, timestamps should always be equal
         assert start_ts1 == start_ts2
 
-        with pytest.raises(Exception, match="Readonly transaction cannot run mutations"):
+        with pytest.raises(
+            Exception, match="Readonly transaction cannot run mutations"
+        ):
             txn.mutate(set_obj={"name": "Manish"})
-        with pytest.raises(Exception, match="Readonly transaction cannot run mutations"):
+        with pytest.raises(
+            Exception, match="Readonly transaction cannot run mutations"
+        ):
             txn.commit()
 
     def test_best_effort_txn(self) -> None:
@@ -270,7 +280,9 @@ class TestTxn(helper.ClientIntegrationTestCase):
         helper.drop_all(self.client)
         helper.set_schema(self.client, "name: string @index(exact) .")
 
-        with pytest.raises(Exception, match="Best effort transactions are only compatible"):
+        with pytest.raises(
+            Exception, match="Best effort transactions are only compatible"
+        ):
             self.client.txn(read_only=False, best_effort=True)
 
         query = "{ me(func: has(name)) {name} }"
@@ -442,7 +454,9 @@ class TestTxn(helper.ClientIntegrationTestCase):
         txn = self.client.txn()
         txn.mutate(set_nquads='_:animesh <name> "Animesh" .', commit_now=True)
 
-        with pytest.raises(Exception, match="Transaction has already been committed or discarded"):
+        with pytest.raises(
+            Exception, match="Transaction has already been committed or discarded"
+        ):
             txn.mutate(set_nquads='_:aman <name> "Aman" .', commit_now=True)
 
     def test_mutate_facet(self) -> None:
@@ -480,8 +494,13 @@ _:a <friend> _:b (close_friend=true).
 """
         txn = self.client.txn()
         resp = txn.query(query)
-        assert json.loads(resp.json).get("q1") == [{"name": "aaa", "name|close_friend": True}, {"name": "bbb"}]
-        assert json.loads(resp.json).get("q2") == [{"friend": {"name": "bbb", "friend|close_friend": True}}]
+        assert json.loads(resp.json).get("q1") == [
+            {"name": "aaa", "name|close_friend": True},
+            {"name": "bbb"},
+        ]
+        assert json.loads(resp.json).get("q2") == [
+            {"friend": {"name": "bbb", "friend|close_friend": True}}
+        ]
 
 
 class TestSPStar(helper.ClientIntegrationTestCase):
@@ -528,7 +547,9 @@ class TestSPStar(helper.ClientIntegrationTestCase):
         }}"""
 
         resp = txn2.query(query)
-        assert [{"uid": uid1, "friend": [{"name": "Jan2", "uid": uid2}]}] == json.loads(resp.json).get("me")
+        assert [{"uid": uid1, "friend": [{"name": "Jan2", "uid": uid2}]}] == json.loads(
+            resp.json
+        ).get("me")
 
     def test_sp_star2(self) -> None:
         """Second test of Subject Predicate Star"""
@@ -555,7 +576,9 @@ class TestSPStar(helper.ClientIntegrationTestCase):
         }}"""
 
         resp = txn.query(query)
-        assert [{"uid": uid1, "friend": [{"name": "Jan", "uid": uid2}]}] == json.loads(resp.json).get("me")
+        assert [{"uid": uid1, "friend": [{"name": "Jan", "uid": uid2}]}] == json.loads(
+            resp.json
+        ).get("me")
 
         deleted = txn.mutate(del_obj={"uid": uid1, "friend": None})
         assert len(deleted.uids) == 0
@@ -575,7 +598,9 @@ class TestSPStar(helper.ClientIntegrationTestCase):
         uid2 = response2.uids["jan2"]
 
         resp = txn.query(query)
-        assert [{"uid": uid1, "friend": [{"name": "Jan2", "uid": uid2}]}] == json.loads(resp.json).get("me")
+        assert [{"uid": uid1, "friend": [{"name": "Jan2", "uid": uid2}]}] == json.loads(
+            resp.json
+        ).get("me")
 
         deleted2 = txn.mutate(del_obj={"uid": uid1, "friend": None})
         assert len(deleted2.uids) == 0

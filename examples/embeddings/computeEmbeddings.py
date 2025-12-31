@@ -147,7 +147,7 @@ def buildEmbeddings(embedding_def, only_missing=True, filehandle=sys.stdout):
     config = embedding_def["config"]
     provider = embedding_def["provider"]
     modelName = embedding_def["model"]
-    dimensions = embedding_def["dimensions"] if "dimensions" in embedding_def else None
+    dimensions = embedding_def.get("dimensions", None)
     index = embedding_def["index"]
 
     if "huggingface" == provider:
