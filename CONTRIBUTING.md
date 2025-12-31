@@ -1,0 +1,246 @@
+# Contributing to pydgraph
+
+Thank you for your interest in contributing to pydgraph! We welcome contributions from the
+community.
+
+## Table of Contents
+
+- [Getting Started](#getting-started)
+- [Development Setup](#development-setup)
+- [Making Changes](#making-changes)
+- [Code Style and Standards](#code-style-and-standards)
+- [Testing](#testing)
+- [Submitting a Pull Request](#submitting-a-pull-request)
+- [Code of Conduct](#code-of-conduct)
+
+## Getting Started
+
+1. Fork the repository on GitHub
+2. Clone your fork locally:
+   ```sh
+   git clone https://github.com/YOUR-USERNAME/pydgraph.git
+   cd pydgraph
+   ```
+3. Add the upstream repository:
+   ```sh
+   git remote add upstream https://github.com/dgraph-io/pydgraph.git
+   ```
+
+## Development Setup
+
+### Prerequisites
+
+- Python 3.13+ (for development; Python 3.9+ for using the library)
+- Docker and Docker Compose (for running tests)
+- Git
+
+### Setting Up Your Environment
+
+1. Install project dependencies and tools:
+
+   ```sh
+   INSTALL_MISSING_DEPS=true make setup
+   ```
+
+   This will:
+   - Install uv (if not already installed)
+   - Set up the correct Python version
+   - Create and configure a virtual environment
+   - Install all project dependencies
+   - Install pre-commit hooks
+
+2. Verify your setup:
+   ```sh
+   make check
+   ```
+
+## Making Changes
+
+1. Create a new branch for your changes:
+
+   ```sh
+   git checkout -b your-feature-name
+   ```
+
+2. Make your changes following our [Code Style and Standards](#code-style-and-standards)
+
+3. Add tests for your changes (see [Testing](#testing))
+
+4. Ensure all checks pass:
+
+   ```sh
+   make check test
+   ```
+
+   **Important:** Before opening a pull request, make sure `make check test` succeeds locally.
+
+5. Commit your changes using [Conventional Commits](https://www.conventionalcommits.org/) format:
+   ```sh
+   git commit -m "feat: add new feature"
+   git commit -m "fix: resolve issue with..."
+   git commit -m "docs: update README"
+   ```
+
+## Code Style and Standards
+
+### Python Code Standards
+
+- Follow PEP 8 style guidelines (enforced by ruff)
+- Use type hints for all function signatures
+- Add docstrings for public APIs
+- Maximum line length: handled by the formatter
+
+### File Headers
+
+Every new Python file should include proper attribution:
+
+```python
+"""
+Module description here.
+"""
+
+__author__ = "Your Name"
+__maintainer__ = "Istari Digital, Inc."
+```
+
+- `__author__`: Set to your name (the contributor's name)
+- `__maintainer__`: Always set to "Istari Digital, Inc."
+
+### Code Quality Tools
+
+This project uses several tools to maintain code quality:
+
+- **ruff**: Linting and code formatting
+- **mypy**: Static type checking
+- **trunk**: Additional code quality checks
+- **pre-commit**: Automated checks on commit
+
+Run all checks:
+
+```sh
+make check
+```
+
+## Testing
+
+### Running Tests
+
+Run the full test suite:
+
+```sh
+make test
+```
+
+Run specific tests:
+
+```sh
+bash scripts/local-test.sh -v tests/test_connect.py::TestOpen
+```
+
+Run a single test:
+
+```sh
+bash scripts/local-test.sh -v tests/test_connect.py::TestOpen::test_connection_with_auth
+```
+
+### Writing Tests
+
+- Add tests for all new features
+- Add regression tests for bug fixes
+- Tests should be clear, concise, and well-documented
+- Use descriptive test names that explain what is being tested
+
+### Test Requirements
+
+Tests are automatically run in CI/CD against:
+
+- Python versions: 3.9, 3.10, 3.11, 3.12, 3.13, 3.14
+- Dgraph latest release
+- Dgraph HEAD (main branch)
+
+## Submitting a Pull Request
+
+1. Push your changes to your fork:
+
+   ```sh
+   git push origin your-feature-name
+   ```
+
+2. Open a pull request on GitHub
+
+3. Fill out the pull request template (see
+   [PULL_REQUEST_TEMPLATE.md](.github/PULL_REQUEST_TEMPLATE.md))
+
+### Pull Request Requirements
+
+- **Title**: Must follow [Conventional Commits](https://www.conventionalcommits.org/) format
+  - Examples: `feat: add connection pooling`, `fix: resolve memory leak`,
+    `docs: update API reference`
+- **Description**: Clearly explain what the PR does and why
+- **Checklist**: Complete all applicable items in the PR template
+- **Tests**: All tests must pass (`make check test` succeeds)
+- **Code Quality**: All linting and type checking must pass
+- **Documentation**: Update docs if adding/changing public APIs
+
+### Commit Message Guidelines
+
+Follow the [Conventional Commits](https://www.conventionalcommits.org/) specification:
+
+- `feat:` - New features
+- `fix:` - Bug fixes
+- `docs:` - Documentation changes
+- `style:` - Code style changes (formatting, etc.)
+- `refactor:` - Code refactoring
+- `test:` - Adding or updating tests
+- `chore:` - Maintenance tasks
+- `ci:` - CI/CD changes
+
+Examples:
+
+```
+feat: add async client support
+fix: resolve connection timeout issue
+docs: update installation instructions
+refactor: simplify error handling
+test: add integration tests for ACL
+```
+
+### Review Process
+
+1. Maintainers will review your PR
+2. Address any feedback or requested changes
+3. Once approved, a maintainer will merge your PR
+
+## Code of Conduct
+
+We are committed to providing a welcoming and inclusive environment. Please be respectful and
+constructive in all interactions.
+
+### Our Standards
+
+- Be respectful and considerate
+- Welcome newcomers and help them get started
+- Focus on what is best for the community
+- Show empathy towards other community members
+
+### Unacceptable Behavior
+
+- Harassment, discrimination, or hostile behavior
+- Personal attacks or inflammatory comments
+- Publishing others' private information
+- Other conduct that could reasonably be considered inappropriate
+
+## Questions or Need Help?
+
+- Open an issue for bugs or feature requests
+- Join the [Dgraph Community Slack](https://slack.dgraph.io) for discussions
+- Check the [Dgraph documentation](https://dgraph.io/docs)
+
+## Additional Resources
+
+- [README.md](README.md) - Project overview and usage
+- [PULL_REQUEST_TEMPLATE.md](.github/PULL_REQUEST_TEMPLATE.md) - PR template
+- [Conventional Commits](https://www.conventionalcommits.org/) - Commit message format
+- [Dgraph Documentation](https://dgraph.io/docs) - Product documentation
+
+Thank you for contributing to pydgraph! 🎉
