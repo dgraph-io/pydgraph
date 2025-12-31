@@ -26,7 +26,7 @@ jobs:
           repository: dgraph-io/pydgraph
           ref: ${{ github.ref }}
       - name: Setup pydgraph tooling
-        uses: ./.github/actions/setup-runner
+        uses: ./.github/actions/setup-python-and-tooling
         with:
           python-version: "3.13"
       - name: Setup pydgraph virtualenv
@@ -50,7 +50,7 @@ jobs:
           repository: dgraph-io/pydgraph
           ref: ${{ github.ref }}
       - name: Setup pydgraph tooling
-        uses: ./.github/actions/setup-runner
+        uses: ./.github/actions/setup-python-and-tooling
         with:
           python-version: ${{ matrix.python-version }}
       - name: Pin pydgraph python version
@@ -89,7 +89,7 @@ jobs:
           repository: dgraph-io/pydgraph
           ref: ${{ github.ref }}
       - name: Setup pydgraph tooling
-        uses: ./pydgraph/.github/actions/setup-runner
+        uses: ./pydgraph/.github/actions/setup-python-and-tooling
         with:
           python-version: ${{ matrix.python-version }}
       - name: Pin pydgraph python version

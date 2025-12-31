@@ -16,7 +16,7 @@ jobs:
         with:
           ref: "${{ github.event.inputs.releasetag }}"
       - name: Setup pydgraph tooling
-        uses: ./.github/actions/setup-runner
+        uses: ./.github/actions/setup-python-and-tooling
         with:
           python-version: "3.13"
       - name: Setup pydgraph virtualenv
