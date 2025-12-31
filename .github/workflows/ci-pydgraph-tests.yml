@@ -35,7 +35,7 @@ jobs:
       - name: Pin python version
         run: uv python pin ${{ matrix.python-version }}
       - name: Setup project dependencies
-        run: INSTALL_MISSING_DEPS=true make setup
+        run: INSTALL_MISSING_TOOLS=true make setup
       - name: Sync python virtualenv
         run: make sync
       - name: Run tests
@@ -78,7 +78,7 @@ jobs:
         run: uv python pin ${{ matrix.python-version }}
       - name: Setup project dependencies
         working-directory: ./pydgraph
-        run: INSTALL_MISSING_DEPS=true make setup
+        run: INSTALL_MISSING_TOOLS=true make setup
       - name: Sync python virtualenv
         working-directory: ./pydgraph
         run: make sync

@@ -46,7 +46,7 @@ make help
 
 ```
 Environment Variables:
-  INSTALL_MISSING_DEPS=true    Enable automatic installation of missing tools (default: disabled)
+  INSTALL_MISSING_TOOLS=true    Enable automatic installation of missing tools (default: disabled)
 
 Available targets:
 help            Show this help message
@@ -58,7 +58,7 @@ clean           Cleans build artifacts
 build           Builds release package
 test            Run tests
 publish         Publish a new release to PyPi (requires UV_PUBLISH_USERNAME and UV_PUBLISH_PASSWORD to be set)
-deps            Check/install tool dependencies (set INSTALL_MISSING_DEPS=true to auto-install)
+deps            Check/install tool dependencies (set INSTALL_MISSING_TOOLS=true to auto-install)
 deps-docker     Check and install Docker if needed (requires Docker 20.10.0+)
 ```
 
@@ -78,10 +78,10 @@ deps-docker     Check and install Docker if needed (requires Docker 20.10.0+)
    - Install all project dependencies
 
    **Note:** To automatically install any missing tool dependencies (uv, trunk, docker), you can set
-   `INSTALL_MISSING_DEPS` to `true`:
+   `INSTALL_MISSING_TOOLS` to `true`:
 
    ```sh
-   INSTALL_MISSING_DEPS=true make setup
+   INSTALL_MISSING_TOOLS=true make setup
    ```
 
 2. Verify your setup:

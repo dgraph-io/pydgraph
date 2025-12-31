@@ -21,7 +21,7 @@ jobs:
         with:
           python-version: "3.13"
       - name: Setup project dependencies
-        run: INSTALL_MISSING_DEPS=true make setup
+        run: INSTALL_MISSING_TOOLS=true make setup
       - name: Sync python virtualenv
         run: make sync
       - name: Check generated protobufs are current
