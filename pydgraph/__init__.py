@@ -1,6 +1,7 @@
 # SPDX-FileCopyrightText: © 2017-2025 Istari Digital, Inc.
 # SPDX-License-Identifier: Apache-2.0
 
+# ruff: noqa: F401, F403
 from pydgraph.client import *
 from pydgraph.client_stub import *
 from pydgraph.errors import *

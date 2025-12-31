@@ -13,8 +13,7 @@ import unittest
 
 import pydgraph
 from pydgraph import open
-
-from . import helper
+from tests import helper
 
 
 class TestQueries(helper.ClientIntegrationTestCase):
