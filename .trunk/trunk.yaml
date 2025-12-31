@@ -28,6 +28,7 @@ lint:
     - linters: [bandit]
       paths:
         - tests/**
+        - examples/**
   enabled:
     - trivy@0.68.2
     - trivy@0.58.2
