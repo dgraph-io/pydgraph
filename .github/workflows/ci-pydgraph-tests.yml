@@ -38,7 +38,7 @@ jobs:
           make protogen
           git diff --exit-code -- .
       - name: Run code quality checks
-        run: make check
+        run: SKIP=trunk-check,trunk-fmt make check
   test-pydgraph-dgraph-latest:
     name: Test (Python ${{ matrix.python-version }} / DGraph Latest)
     runs-on: ubuntu-latest

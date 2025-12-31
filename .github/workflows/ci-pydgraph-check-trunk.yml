@@ -1,0 +1,13 @@
+name: Trunk Code Quality
+on:
+  pull_request:
+    branches:
+      - main
+permissions:
+  contents: read
+  actions: write
+  checks: write
+jobs:
+  trunk-code-quality:
+    name: Trunk Code Quality
+    uses: dgraph-io/.github/.github/workflows/trunk.yml@main
