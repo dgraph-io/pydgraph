@@ -54,6 +54,46 @@ community.
    make check
    ```
 
+### Syncing Dependencies
+
+After making changes to dependencies or pulling updates:
+
+```sh
+make sync
+```
+
+This syncs the project virtual environment with the latest dependencies.
+
+### Regenerating Protocol Buffers
+
+If you make changes to `pydgraph/proto/api.proto`, regenerate the source files:
+
+```sh
+make protogen
+```
+
+Or directly with uv:
+
+```sh
+uv run python scripts/protogen.py
+```
+
+**Important:** This project uses Python 3.13+ with grpcio-tools 1.66.2+ as the canonical development
+environment. The generated proto files include mypy type stubs for better type checking. The script
+will verify you have the correct Python and grpcio-tools versions before generating files.
+
+### About grpcio Version Requirements
+
+This project requires grpcio 1.65.0 or higher. Older versions have practical limitations:
+
+- **Compilation failures**: grpcio versions older than ~1.60.0 fail to compile from source on modern
+  systems (macOS with recent Xcode, newer Linux distributions) due to C++ compiler compatibility
+  issues and outdated build configurations.
+- **No pre-built wheels**: PyPI doesn't provide pre-built wheels for very old grpcio versions on
+  modern Python versions (3.11+), forcing compilation from source.
+- **Build tool incompatibility**: The build process for older grpcio versions uses deprecated
+  compiler flags and build patterns that modern toolchains reject.
+
 ## Making Changes
 
 1. Create a new branch for your changes:
@@ -92,9 +132,11 @@ community.
 
 ### File Headers
 
-Every new Python file should include proper attribution:
+Every new Python file must start with SPDX headers followed by proper attribution:
 
 ```python
+# SPDX-FileCopyrightText: © 2017-2026 Istari Digital, Inc.
+# SPDX-License-Identifier: Apache-2.0
 """
 Module description here.
 """
@@ -103,6 +145,9 @@ __author__ = "Your Name"
 __maintainer__ = "Istari Digital, Inc."
 ```
 
+**Requirements:**
+
+- **SPDX Headers**: All new Python files must start with the two SPDX comment lines shown above
 - `__author__`: Set to your name (the contributor's name)
 - `__maintainer__`: Always set to "Istari Digital, Inc."
 
@@ -142,6 +187,21 @@ Run a single test:
 ```sh
 bash scripts/local-test.sh -v tests/test_connect.py::TestOpen::test_connection_with_auth
 ```
+
+### Test Infrastructure
+
+The test script requires Docker and Docker Compose to be installed on your machine.
+
+The script will:
+
+- Automatically bring up a Dgraph cluster
+- Connect to randomly selected ports for HTTP and gRPC to prevent interference with clusters running
+  on default ports
+- Run the tests
+- Bring down the cluster after tests complete
+
+For Docker installation instructions, refer to the
+[official Docker documentation](https://docs.docker.com/).
 
 ### Writing Tests
 
