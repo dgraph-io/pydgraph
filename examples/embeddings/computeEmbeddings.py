@@ -180,16 +180,16 @@ def buildEmbeddings(embedding_def, only_missing=True, filehandle=sys.stdout):
         f"compute embeddings for {predicate} using  model {modelName} from {provider}"
     )
     if only_missing:
-        filter = f"@filter( NOT has({predicate}))"
+        filter_clause = f"@filter( NOT has({predicate}))"
     else:
-        filter = ""
+        filter_clause = ""
     # Run query.
     after = ""
     while True:
         print(".")
         txn = client.txn(read_only=True)
         query = (
-            f"{{list(func: type({entity}),first:100 {after}) {filter}  {querypart} }}"
+            f"{{list(func: type({entity}),first:100 {after}) {filter_clause}  {querypart} }}"
         )
         try:
             res = txn.query(query)
@@ -266,13 +266,15 @@ if confirm == "y":
         definitions = embeddings["embeddings"]
 
         if outputfile is not None:
-            out = open(outputfile, "w")
+            with open(outputfile, "w") as out:
+                for embedding_def in definitions:
+                    total = buildEmbeddings(embedding_def, only_missing, out)
+                    print(
+                        f"{total} embeddings for {embedding_def['entityType']}.{embedding_def['attribute']}"
+                    )
         else:
-            out = None
-        for embedding_def in definitions:
-            total = buildEmbeddings(embedding_def, only_missing, out)
-            print(
-                f"{total} embeddings for {embedding_def['entityType']}.{embedding_def['attribute']}"
-            )
-        if out is not None:
-            out.close()
+            for embedding_def in definitions:
+                total = buildEmbeddings(embedding_def, only_missing, None)
+                print(
+                    f"{total} embeddings for {embedding_def['entityType']}.{embedding_def['attribute']}"
+                )

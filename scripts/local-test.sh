@@ -10,6 +10,7 @@ function DockerCompose() {
 function wait-for-healthy() {
 	printf 'wait-for-healthy: Waiting for %s to return 200 OK\n' "$1"
 	tries=0
+	# shellcheck disable=SC2312
 	until curl -sL -w '%{http_code}\n' "$1" -o /dev/null | grep -q 200; do
 		tries=${tries}+1
 		if [[ ${tries} -gt 300 ]]; then
@@ -24,6 +25,7 @@ function wait-for-healthy() {
 
 function restartCluster() {
 	DockerCompose up --detach --force-recreate
+	# shellcheck disable=SC2312
 	alphaHttpPort=$(DockerCompose port alpha1 8080 | awk -F: '{print $2}')
 	wait-for-healthy localhost:"${alphaHttpPort}"/health
 	sleep 5
@@ -40,6 +42,7 @@ readonly SRCDIR
 pushd "$(dirname "${SRCDIR}")" || exit
 pushd "${SRCDIR}"/../tests || exit
 restartCluster
+# shellcheck disable=SC2312
 alphaGrpcPort=$(DockerCompose port alpha1 9080 | awk -F: '{print $2}')
 popd || exit
 export TEST_SERVER_ADDR="localhost:${alphaGrpcPort}"

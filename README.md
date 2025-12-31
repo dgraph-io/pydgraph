@@ -212,7 +212,8 @@ client.alter(op)
 
 Indexes can be computed in the background. You can set the `run_in_background` field of
 `pydgraph.Operation` to `True` before passing it to the `Alter` function. You can find more details
-[here](https://docs.dgraph.io/master/query-language/#indexes-in-background).
+in the
+[Dgraph documentation on background indexes](https://docs.dgraph.io/master/query-language/#indexes-in-background).
 
 **Note** To deploy the GraphQL schema in python you have to use GraphQL client such as
 [python-graphql-client](https://github.com/prodigyeducation/python-graphql-client) to invoke the
@@ -507,7 +508,8 @@ The upsert block also allows specifying a conditional mutation block using an `@
 mutation is executed only when the specified condition is true. If the condition is false, the
 mutation is silently ignored.
 
-See more about Conditional Upserts [here](https://docs.dgraph.io/mutations/#conditional-upsert).
+See more about
+[conditional upserts in the Dgraph documentation](https://docs.dgraph.io/mutations/#conditional-upsert).
 
 ```python3
 query = """
