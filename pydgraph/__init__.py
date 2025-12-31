@@ -27,10 +27,3 @@ from pydgraph.proto.api_pb2 import (
     Version,
 )
 from pydgraph.txn import *
-
-__all__ = [
-    "AsyncDgraphClient",
-    "AsyncDgraphClientStub",
-    "AsyncTxn",
-    "async_open",
-]
