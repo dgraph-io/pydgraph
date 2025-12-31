@@ -508,31 +508,6 @@ request = txn.create_request(mutations=[mutation], query=query, commit_now=True)
 txn.do_request(request)
 ```
 
-### Committing a Transaction
-
-A transaction can be committed using the `Txn#commit()` method. If your transaction consist solely
-of `Txn#query` or `Txn#queryWithVars` calls, and no calls to `Txn#mutate`, then calling
-`Txn#commit()` is not necessary.
-
-An error is raised if another transaction(s) modify the same data concurrently that was modified in
-the current transaction. It is up to the user to retry transactions when they fail.
-
-```python3
-txn = client.txn()
-try:
-  # ...
-  # Perform any number of queries and mutations
-  # ...
-  # and finally...
-  txn.commit()
-except pydgraph.AbortedError:
-  # Retry or handle exception.
-finally:
-  # Clean up. Calling this after txn.commit() is a no-op
-  # and hence safe.
-  txn.discard()
-```
-
 ### Cleaning Up Resources
 
 To clean up resources, you have to call `DgraphClientStub#close()` individually for all the
