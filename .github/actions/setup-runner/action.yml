@@ -1,5 +1,5 @@
-name: Setup Test Runner
-description: Sets up test runner environment with build tools, Python, uv, and trunk
+name: Setup Runner
+description: Sets up runner environment with build tools, Python, uv, and trunk
 inputs:
   python-version:
     description: Python version to install
