@@ -7,7 +7,6 @@ from __future__ import annotations
 import contextlib
 from collections.abc import Iterator
 from typing import Any
-from urllib.parse import urlparse
 
 import grpc
 
@@ -194,45 +193,6 @@ class DgraphClientStub:
         del self.channel
         del self.stub
 
-    @staticmethod
-    def parse_host(cloud_endpoint: str) -> str:
-        """Converts any cloud endpoint to grpc endpoint"""
-        host = cloud_endpoint
-        if cloud_endpoint.startswith("http"):  # catch http:// and https://
-            host = urlparse(cloud_endpoint).netloc
-        host = host.split(":", 1)[0]  # remove port if any
-        if ".grpc." not in host:
-            url_parts = host.split(".", 1)
-            host = url_parts[0] + ".grpc." + url_parts[1]
-        return host
-
-    # accepts grpc endpoint as copied in cloud console as well as graphql endpoint
-    # Usage:
-    @staticmethod
-    def from_cloud(
-        cloud_endpoint: str,
-        api_key: str,
-        options: list[tuple[str, Any]] | None = None,
-    ) -> DgraphClientStub:
-        """Returns Dgraph Client stub for the Dgraph Cloud endpoint"""
-        host = DgraphClientStub.parse_host(cloud_endpoint)
-        creds = grpc.ssl_channel_credentials()
-        call_credentials = grpc.metadata_call_credentials(
-            lambda _context, callback: callback((("authorization", api_key),), None)
-        )
-        composite_credentials = grpc.composite_channel_credentials(
-            creds, call_credentials
-        )
-        if options is None:
-            options = [("grpc.enable_http_proxy", 0)]
-        else:
-            options.append(("grpc.enable_http_proxy", 0))
-        client_stub = DgraphClientStub(
-            "{host}:{port}".format(host=host, port="443"),
-            composite_credentials,
-            options=options,
-        )
-        return client_stub
 
 
 @contextlib.contextmanager
