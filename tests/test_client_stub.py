@@ -45,31 +45,6 @@ class TestDgraphClientStub(helper.ClientIntegrationTestCase):
             client_stub.check_version(pydgraph.Check())
 
 
-class TestFromCloud(unittest.TestCase):
-    """Tests the from_cloud function"""
-
-    def test_from_cloud(self) -> None:
-        testcases: list[dict[str, Any]] = [
-            {"endpoint": "godly.grpc.region.aws.cloud.dgraph.io"},
-            {"endpoint": "godly.grpc.region.aws.cloud.dgraph.io:443"},
-            {"endpoint": "https://godly.grpc.region.aws.cloud.dgraph.io:443"},
-            {"endpoint": "https://godly.region.aws.cloud.dgraph.io/graphql"},
-            {"endpoint": "godly.region.aws.cloud.dgraph.io"},
-            {"endpoint": "https://godly.region.aws.cloud.dgraph.io"},
-            {"endpoint": "godly.region.aws.cloud.dgraph.io:random"},
-            {"endpoint": "random:url", "error": True},
-            {"endpoint": "google", "error": True},
-        ]
-
-        for case in testcases:
-            try:
-                pydgraph.DgraphClientStub.from_cloud(case["endpoint"], "api-key")  # type: ignore[arg-type]
-            except IndexError:
-                if not case.get("error", False):
-                    # we didn't expect an error
-                    raise
-
-
 class TestDgraphClientStubContextManager(helper.ClientIntegrationTestCase):
     def setUp(self) -> None:
         super().setUp()

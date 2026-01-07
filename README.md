@@ -24,7 +24,6 @@ Before using this client, we highly recommend that you read the the product docu
   - [Using a client](#using-a-client)
     - [Creating a Client](#creating-a-client)
     - [Login into a Namespace](#login-into-a-namespace)
-    - [Connecting To Dgraph Cloud](#connecting-to-dgraph-cloud)
     - [Altering the Database](#altering-the-database)
     - [Creating a Transaction](#creating-a-transaction)
     - [Running a Mutation](#running-a-mutation)
@@ -115,7 +114,6 @@ Valid connection string args:
 
 | Arg         | Value                           | Description                                                                                                                                                   |
 | ----------- | ------------------------------- | ------------------------------------------------------------------------------------------------------------------------------------------------------------- |
-| apikey      | \<key\>                         | a Dgraph Cloud API Key                                                                                                                                        |
 | bearertoken | \<token\>                       | an access token                                                                                                                                               |
 | sslmode     | disable \| require \| verify-ca | TLS option, the default is `disable`. If `verify-ca` is set, the TLS certificate configured in the Dgraph cluster must be from a valid certificate authority. |
 | namespace   | \<namespace\>                   | a previously created integer-based namespace, username and password must be supplied                                                                          |
@@ -127,13 +125,12 @@ should use the existing stub/client initialization steps for self-signed certs a
 
 Some example connection strings:
 
-| Value                                                                                                        | Explanation                                                                         |
-| ------------------------------------------------------------------------------------------------------------ | ----------------------------------------------------------------------------------- |
-| dgraph://localhost:9080                                                                                      | Connect to localhost, no ACL, no TLS                                                |
-| dgraph://sally:supersecret@dg.example.com:443?sslmode=verify-ca                                              | Connect to remote server, use ACL and require TLS and a valid certificate from a CA |
-| dgraph://foo-bar.grpc.us-west-2.aws.cloud.dgraph.io:443?sslmode=verify-ca&apikey=\<your-api-connection-key\> | Connect to a Dgraph Cloud cluster                                                   |
-| dgraph://foo-bar.grpc.dgraph-io.com:443?sslmode=verify-ca&bearertoken=\<some access token\>                  | Connect to a Dgraph cluster protected by a secure gateway                           |
-| dgraph://sally:supersecret@dg.example.com:443?namespace=2                                                    | Connect to a ACL enabled Dgraph cluster in namespace 2                              |
+| Value                                                                                       | Explanation                                                                         |
+| ------------------------------------------------------------------------------------------- | ----------------------------------------------------------------------------------- |
+| dgraph://localhost:9080                                                                     | Connect to localhost, no ACL, no TLS                                                |
+| dgraph://sally:supersecret@dg.example.com:443?sslmode=verify-ca                             | Connect to remote server, use ACL and require TLS and a valid certificate from a CA |
+| dgraph://foo-bar.grpc.dgraph-io.com:443?sslmode=verify-ca&bearertoken=\<some access token\> | Connect to a Dgraph cluster protected by a secure gateway                           |
+| dgraph://sally:supersecret@dg.example.com:443?namespace=2                                   | Connect to a ACL enabled Dgraph cluster in namespace 2                              |
 
 Using the `Open` function with a connection string:
 
@@ -166,33 +163,6 @@ API.
 ```python3
 client.login_into_namespace("groot", "password", "123")
 ```
-
-### Connecting To Dgraph Cloud
-
-If you want to connect to Dgraph running on [Dgraph Cloud](https://cloud.dgraph.io) instance, then
-get the gRPC endpoint of your cluster that you can find in the
-[Settings section](https://cloud.dgraph.io/_/settings) of Dgraph Cloud console and obtain a Client
-or Admin API key (created in the [API key tab](https://cloud.dgraph.io/_/settings?tab=api-keys) of
-the Setting section). Create the `client_stub` using the gRPC endpoint and the API key:
-
-```python3
-client_stub = pydgraph.DgraphClientStub.from_cloud(
-    "https://morning-glade.grpc.us-east-1.aws.cloud.dgraph.io:443", "<api-key>")
-client = pydgraph.DgraphClient(client_stub)
-```
-
-Alternatively, you can simply use a Dgraph connection string with the `open` function. For example:
-
-```python
-conn_str = "dgraph://foo-bar.grpc.us-west-2.aws.cloud.dgraph.io:443?sslmode=verify-ca&apikey=<your-api-connection-key>"
-client = pydgraph.open(conn_str)
-
-# some time later...
-client.close()
-```
-
-The `DgraphClientStub.from_slash_endpoint()` method has been removed v23.0. Please use
-`DgraphClientStub.from_cloud()` instead.
 
 ### Altering the Database
 
@@ -801,6 +771,7 @@ asyncio.run(main())
 ## Contributing
 
 We welcome contributions! Please see [CONTRIBUTING.md](CONTRIBUTING.md) for detailed information on:
+/
 
 - Setting up your development environment
 - Code style and standards

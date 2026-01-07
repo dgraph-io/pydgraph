@@ -40,24 +40,14 @@ global client  # dgrpah client is a global variable
 
 assert "DGRAPH_GRPC" in os.environ, "DGRAPH_GRPC must be defined"
 dgraph_grpc = os.environ["DGRAPH_GRPC"]
-if "cloud.dgraph" in dgraph_grpc:
-    assert "DGRAPH_ADMIN_KEY" in os.environ, "DGRAPH_ADMIN_KEY must be defined"
-    APIAdminKey = os.environ["DGRAPH_ADMIN_KEY"]
-else:
-    APIAdminKey = None
 
 # TRANSFORMER_API_KEY must be defined in env variables
-# client stub for on-prem requires grpc host:port without protocol
-# client stub for cloud requires the grpc endpoint of graphql endpoint or base url of the cluster
-# to run on a self-hosted env, unset ADMIN_KEY and set DGRAPH_GRPC
+# client stub requires grpc host:port without protocol
 
 
 def setClient():
     global client
-    if APIAdminKey is None:
-        client_stub = pydgraph.DgraphClientStub(dgraph_grpc)
-    else:
-        client_stub = pydgraph.DgraphClientStub.from_cloud(dgraph_grpc, APIAdminKey)
+    client_stub = pydgraph.DgraphClientStub(dgraph_grpc)
     client = pydgraph.DgraphClient(client_stub)
 
 
@@ -236,12 +226,8 @@ def replace_env(matchobj):
     return os.environ.get(key)
 
 
-if APIAdminKey is None:
-    print("using no API key")
-    print(dgraph_grpc)
-else:
-    print("using cloud API key")
-    print(dgraph_grpc)
+print(f"Connecting to Dgraph at {dgraph_grpc}")
+
 if len(sys.argv) == 2:
     outputfile = sys.argv[1]
     print(f"Produce RDF file in {outputfile}")
