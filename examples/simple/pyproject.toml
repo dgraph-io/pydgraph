@@ -1,0 +1,6 @@
+[project]
+name = "simple"
+version = "0.1.0"
+description = "Simple example demonstrating the use of pydgraph, the official Python client for Dgraph"
+requires-python = ">=3.9"
+dependencies = ["pydgraph>=25.0.0"]
