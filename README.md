@@ -1,6 +1,6 @@
 # pydgraph
 
-This is the official Dgraph database client implementation for Python (Python >= v3.7), using
+This is the official Dgraph database client implementation for Python (Python >= v3.9), using
 [gRPC][grpc].
 
 [grpc]: https://grpc.io/
@@ -24,7 +24,6 @@ Before using this client, we highly recommend that you read the the product docu
   - [Using a client](#using-a-client)
     - [Creating a Client](#creating-a-client)
     - [Login into a Namespace](#login-into-a-namespace)
-    - [Connecting To Dgraph Cloud](#connecting-to-dgraph-cloud)
     - [Altering the Database](#altering-the-database)
     - [Creating a Transaction](#creating-a-transaction)
     - [Running a Mutation](#running-a-mutation)
@@ -38,10 +37,7 @@ Before using this client, we highly recommend that you read the the product docu
     - [Setting a timeout](#setting-a-timeout)
     - [Async methods](#async-methods)
   - [Examples](#examples)
-  - [Development](#development)
-    - [Setting up environment](#setting-up-environment)
-    - [Build from source](#build-from-source)
-    - [Running tests](#running-tests)
+  - [Contributing](#contributing)
 
 ## Install
 
@@ -49,6 +45,24 @@ Install using pip:
 
 ```sh
 pip install pydgraph
+```
+
+### Protobuf Version Compatibility
+
+pydgraph supports protobuf versions 4.23.0 through 6.x. The specific version installed depends on
+your environment:
+
+- **Modern environments**: protobuf 6.x is recommended and will be installed by default on Python
+  3.13+
+- **Legacy environments**: If you need to use protobuf 4.x or 5.x (e.g., for compatibility with
+  other packages), you can pin the version:
+
+```sh
+# For protobuf 4.x compatibility
+pip install pydgraph "protobuf>=4.23.0,<5.0.0"
+
+# For protobuf 5.x compatibility
+pip install pydgraph "protobuf>=5.0.0,<6.0.0"
 ```
 
 ## Supported Versions
@@ -100,7 +114,6 @@ Valid connection string args:
 
 | Arg         | Value                           | Description                                                                                                                                                   |
 | ----------- | ------------------------------- | ------------------------------------------------------------------------------------------------------------------------------------------------------------- |
-| apikey      | \<key\>                         | a Dgraph Cloud API Key                                                                                                                                        |
 | bearertoken | \<token\>                       | an access token                                                                                                                                               |
 | sslmode     | disable \| require \| verify-ca | TLS option, the default is `disable`. If `verify-ca` is set, the TLS certificate configured in the Dgraph cluster must be from a valid certificate authority. |
 | namespace   | \<namespace\>                   | a previously created integer-based namespace, username and password must be supplied                                                                          |
@@ -112,13 +125,12 @@ should use the existing stub/client initialization steps for self-signed certs a
 
 Some example connection strings:
 
-| Value                                                                                                        | Explanation                                                                         |
-| ------------------------------------------------------------------------------------------------------------ | ----------------------------------------------------------------------------------- |
-| dgraph://localhost:9080                                                                                      | Connect to localhost, no ACL, no TLS                                                |
-| dgraph://sally:supersecret@dg.example.com:443?sslmode=verify-ca                                              | Connect to remote server, use ACL and require TLS and a valid certificate from a CA |
-| dgraph://foo-bar.grpc.us-west-2.aws.cloud.dgraph.io:443?sslmode=verify-ca&apikey=\<your-api-connection-key\> | Connect to a Dgraph Cloud cluster                                                   |
-| dgraph://foo-bar.grpc.dgraph-io.com:443?sslmode=verify-ca&bearertoken=\<some access token\>                  | Connect to a Dgraph cluster protected by a secure gateway                           |
-| dgraph://sally:supersecret@dg.example.com:443?namespace=2                                                    | Connect to a ACL enabled Dgraph cluster in namespace 2                              |
+| Value                                                                                       | Explanation                                                                         |
+| ------------------------------------------------------------------------------------------- | ----------------------------------------------------------------------------------- |
+| dgraph://localhost:9080                                                                     | Connect to localhost, no ACL, no TLS                                                |
+| dgraph://sally:supersecret@dg.example.com:443?sslmode=verify-ca                             | Connect to remote server, use ACL and require TLS and a valid certificate from a CA |
+| dgraph://foo-bar.grpc.dgraph-io.com:443?sslmode=verify-ca&bearertoken=\<some access token\> | Connect to a Dgraph cluster protected by a secure gateway                           |
+| dgraph://sally:supersecret@dg.example.com:443?namespace=2                                   | Connect to a ACL enabled Dgraph cluster in namespace 2                              |
 
 Using the `Open` function with a connection string:
 
@@ -152,33 +164,6 @@ API.
 client.login_into_namespace("groot", "password", "123")
 ```
 
-### Connecting To Dgraph Cloud
-
-If you want to connect to Dgraph running on [Dgraph Cloud](https://cloud.dgraph.io) instance, then
-get the gRPC endpoint of your cluster that you can find in the
-[Settings section](https://cloud.dgraph.io/_/settings) of Dgraph Cloud console and obtain a Client
-or Admin API key (created in the [API key tab](https://cloud.dgraph.io/_/settings?tab=api-keys) of
-the Setting section). Create the `client_stub` using the gRPC endpoint and the API key:
-
-```python3
-client_stub = pydgraph.DgraphClientStub.from_cloud(
-    "https://morning-glade.grpc.us-east-1.aws.cloud.dgraph.io:443", "<api-key>")
-client = pydgraph.DgraphClient(client_stub)
-```
-
-Alternatively, you can simply use a Dgraph connection string with the `open` function. For example:
-
-```python
-conn_str = "dgraph://foo-bar.grpc.us-west-2.aws.cloud.dgraph.io:443?sslmode=verify-ca&apikey=<your-api-connection-key>"
-client = pydgraph.open(conn_str)
-
-# some time later...
-client.close()
-```
-
-The `DgraphClientStub.from_slash_endpoint()` method has been removed v23.0. Please use
-`DgraphClientStub.from_cloud()` instead.
-
 ### Altering the Database
 
 #### Set the Dgraph types schema
@@ -194,7 +179,8 @@ client.alter(op)
 
 Indexes can be computed in the background. You can set the `run_in_background` field of
 `pydgraph.Operation` to `True` before passing it to the `Alter` function. You can find more details
-[here](https://docs.dgraph.io/master/query-language/#indexes-in-background).
+in the
+[Dgraph documentation on background indexes](https://docs.dgraph.io/master/query-language/#indexes-in-background).
 
 **Note** To deploy the GraphQL schema in python you have to use GraphQL client such as
 [python-graphql-client](https://github.com/prodigyeducation/python-graphql-client) to invoke the
@@ -489,7 +475,8 @@ The upsert block also allows specifying a conditional mutation block using an `@
 mutation is executed only when the specified condition is true. If the condition is false, the
 mutation is silently ignored.
 
-See more about Conditional Upserts [here](https://docs.dgraph.io/mutations/#conditional-upsert).
+See more about
+[conditional upserts in the Dgraph documentation](https://docs.dgraph.io/mutations/#conditional-upsert).
 
 ```python3
 query = """
@@ -781,87 +768,12 @@ asyncio.run(main())
 - [tls][]: Quickstart example that uses TLS.
 - [parse_datetime]: Demonstration of converting Dgraph's DateTime strings to native python datetime.
 
-## Development
+## Contributing
 
-### Setting up environment
+We welcome contributions! Please see [CONTRIBUTING.md](CONTRIBUTING.md) for detailed information on:
+/
 
-There are many ways to set up your local Python environment. We suggest some sane defaults here.
-
-- Use [pyenv](https://github.com/pyenv/pyenv) to manage your Python installations.
-- Most recent versions of Python should work, but the version of Python officially supported is
-  located in `.python-version`
-- Create a Python virtual environment using `python -m venv .venv`
-- Activate virtual environment via `source .venv/bin/activate`
-- Install
-  [trunk](https://docs.trunk.io/code-quality/overview/getting-started/install#install-the-launcher).
-  Our CI uses trunk to lint and check code, having it installed locally will save you time.
-
-### Build from source
-
-To build and install pydgraph locally, run
-
-```sh
-pip install -e ".[dev]"
-```
-
-#### Regenerating protobufs
-
-If you have made changes to the `pydgraph/proto/api.proto` file, you need need to regenerate the
-source files generated by Protocol Buffer tools. To do that, install the
-[grpcio-tools][grpcio-tools] library and then run the following command:
-
-[grpcio-tools]: https://pypi.python.org/pypi/grpcio-tools
-
-```sh
-python scripts/protogen.py
-```
-
-**Important**: This project uses grpcio-tools 1.65.x to ensure compatibility with the minimum
-supported grpcio version (1.65.0). This version generates code that issues warnings (not errors) for
-users with older grpcio versions, providing a graceful upgrade path. It also uses protobuf 5.x which
-eliminates Python 3.12+ deprecation warnings. The dev dependencies in `pyproject.toml` are pinned to
-the correct version (grpcio-tools 1.65.x)
-
-If you are using python version 3.13 or higher, an error will be raised if you try to run
-`scripts/protogen.py`. This is to prevent generating protobufs that are incompatible with older
-grpcio-tools versions.
-
-#### grpcio 1.65.0 is the minimum version
-
-Older grpcio versions have practical limitations:
-
-- **Compilation failures**: grpcio versions older than ~1.60.0 fail to compile from source on modern
-  systems (macOS with recent Xcode, newer Linux distributions) due to C++ compiler compatibility
-  issues and outdated build configurations.
-- **No pre-built wheels**: PyPI doesn't provide pre-built wheels for very old grpcio versions on
-  modern Python versions (3.11+), forcing compilation from source.
-- **Build tool incompatibility**: The build process for older grpcio versions uses deprecated
-  compiler flags and build patterns that modern toolchains reject.
-
-### Running tests
-
-To run the tests in your local machine, run:
-
-```bash
-bash scripts/local-test.sh
-```
-
-You can run a specific test suite:
-
-```bash
-bash scripts/local-test.sh -v tests/test_connect.py::TestOpen
-```
-
-or an individual test:
-
-```bash
-bash scripts/local-test.sh -v tests/test_connect.py::TestOpen::test_connection_with_auth
-```
-
-The test script requires that `docker` and `docker compose` are installed on your machine.
-
-The script will take care of bringing up a Dgraph cluster and bringing it down after the tests are
-executed. The script connects to randomly selected ports for HTTP and gRPC requests to prevent
-interference with clusters running on the default port. Docker and docker-compose need to be
-installed before running the script. Refer to the official
-[Docker documentation](https://docs.docker.com/) for instructions on how to install those packages.
+- Setting up your development environment
+- Code style and standards
+- Testing procedures
+- Submitting pull requests
