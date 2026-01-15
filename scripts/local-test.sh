@@ -30,19 +30,19 @@ function restartCluster() {
 	alphaGrpcPort=$(DockerCompose port alpha1 9080 | awk -F: '{print $2}')
 
 	# Wait for HTTP health endpoint
-	wait-for-healthy localhost:"${alphaHttpPort}"/health
+	wait-for-healthy 127.0.0.1:"${alphaHttpPort}"/health
 
 	# Wait for gRPC service to be ready
 	# Use uv if available to ensure grpc dependency is available
 	if command -v uv >/dev/null 2>&1; then
-		uv run python3 "${SRCDIR}"/wait_for_grpc_ready.py localhost "${alphaGrpcPort}"
+		uv run python3 "${SRCDIR}"/wait_for_grpc_ready.py 127.0.0.1 "${alphaGrpcPort}"
 	else
-		python3 "${SRCDIR}"/wait_for_grpc_ready.py localhost "${alphaGrpcPort}"
+		python3 "${SRCDIR}"/wait_for_grpc_ready.py 127.0.0.1 "${alphaGrpcPort}"
 	fi
 }
 
 function stopCluster() {
-	DockerCompose down -t 5
+	DockerCompose down -t 5 -v
 }
 
 SRCDIR=$(readlink -f "${BASH_SOURCE[0]%/*}")
@@ -55,7 +55,7 @@ restartCluster
 # shellcheck disable=SC2312
 alphaGrpcPort=$(DockerCompose port alpha1 9080 | awk -F: '{print $2}')
 popd || exit
-export TEST_SERVER_ADDR="localhost:${alphaGrpcPort}"
+export TEST_SERVER_ADDR="127.0.0.1:${alphaGrpcPort}"
 echo "Using TEST_SERVER_ADDR=${TEST_SERVER_ADDR}"
 
 # Use uv if available, otherwise run pytest directly

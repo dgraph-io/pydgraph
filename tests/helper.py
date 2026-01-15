@@ -10,6 +10,7 @@ import re
 import time
 import unittest
 
+import grpc
 from packaging import version
 
 import pydgraph
@@ -44,13 +45,55 @@ def create_client(
 def set_schema(
     client: pydgraph.DgraphClient, schema: str
 ) -> pydgraph.proto.api_pb2.Payload:
-    """Sets the schema in the given client."""
-    return client.alter(pydgraph.Operation(schema=schema))
+    """Sets the schema in the given client.
+
+    Retries on connection errors as the cluster may not be fully ready
+    for heavy operations immediately after startup.
+    """
+    max_retries = 10
+    retry_delay = 0.5
+
+    for attempt in range(max_retries):
+        try:
+            return client.alter(pydgraph.Operation(schema=schema))
+        except Exception as e:
+            # Check if it's a gRPC error with UNAVAILABLE status
+            if hasattr(e, 'code') and callable(e.code):
+                try:
+                    if e.code() == grpc.StatusCode.UNAVAILABLE:
+                        if attempt < max_retries - 1:
+                            time.sleep(retry_delay)
+                            continue
+                except Exception:
+                    pass
+            # For other errors or last attempt, raise
+            raise
 
 
 def drop_all(client: pydgraph.DgraphClient) -> pydgraph.proto.api_pb2.Payload:
-    """Drops all data in the given client."""
-    return client.alter(pydgraph.Operation(drop_all=True))
+    """Drops all data in the given client.
+
+    Retries on connection errors as the cluster may not be fully ready
+    for heavy operations immediately after startup.
+    """
+    max_retries = 10
+    retry_delay = 0.5
+
+    for attempt in range(max_retries):
+        try:
+            return client.alter(pydgraph.Operation(drop_all=True))
+        except Exception as e:
+            # Check if it's a gRPC error with UNAVAILABLE status
+            if hasattr(e, 'code') and callable(e.code):
+                try:
+                    if e.code() == grpc.StatusCode.UNAVAILABLE:
+                        if attempt < max_retries - 1:
+                            time.sleep(retry_delay)
+                            continue
+                except Exception:
+                    pass
+            # For other errors or last attempt, raise
+            raise
 
 
 def setup() -> pydgraph.DgraphClient:
@@ -130,6 +173,8 @@ class ClientIntegrationTestCase(unittest.TestCase):
                 self.client.login("groot", "password")
                 break
             except Exception as e:
-                if "user not found" not in str(e):
+                error_str = str(e)
+                # Retry for ACL initialization errors
+                if "user not found" not in error_str and "invalid username or password" not in error_str:
                     raise
             time.sleep(0.1)
