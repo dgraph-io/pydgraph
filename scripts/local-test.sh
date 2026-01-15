@@ -27,8 +27,18 @@ function restartCluster() {
 	DockerCompose up --detach --force-recreate
 	# shellcheck disable=SC2312
 	alphaHttpPort=$(DockerCompose port alpha1 8080 | awk -F: '{print $2}')
+	alphaGrpcPort=$(DockerCompose port alpha1 9080 | awk -F: '{print $2}')
+
+	# Wait for HTTP health endpoint
 	wait-for-healthy localhost:"${alphaHttpPort}"/health
-	sleep 5
+
+	# Wait for gRPC service to be ready
+	# Use uv if available to ensure grpc dependency is available
+	if command -v uv >/dev/null 2>&1; then
+		uv run python3 "${SRCDIR}"/wait_for_grpc_ready.py localhost "${alphaGrpcPort}"
+	else
+		python3 "${SRCDIR}"/wait_for_grpc_ready.py localhost "${alphaGrpcPort}"
+	fi
 }
 
 function stopCluster() {
