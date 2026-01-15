@@ -2,11 +2,14 @@
 # SPDX-License-Identifier: Apache-2.0
 
 """Stub for RPC request."""
+
 from __future__ import annotations
 
 import contextlib
+import warnings
 from collections.abc import Iterator
 from typing import Any
+from urllib.parse import urlparse
 
 import grpc
 
@@ -186,13 +189,90 @@ class DgraphClientStub:
             req, timeout=timeout, metadata=metadata, credentials=credentials
         )
 
+    @staticmethod
+    def parse_host(cloud_endpoint: str) -> str:
+        """Converts any cloud endpoint to grpc endpoint.
+
+        .. deprecated:: 25.1.0
+            Dgraph Cloud service has been discontinued. This method will be
+            removed in version 26.0.0. Use the standard DgraphClientStub
+            constructor with grpc.ssl_channel_credentials() instead.
+        """
+        warnings.warn(
+            "parse_host() is deprecated as Dgraph Cloud has been discontinued. "
+            "This method will be removed in version 26.0.0. "
+            "Use the standard DgraphClientStub constructor with SSL credentials instead.",
+            DeprecationWarning,
+            stacklevel=2,
+        )
+
+        host = cloud_endpoint
+        if cloud_endpoint.startswith("http"):
+            host = urlparse(cloud_endpoint).netloc
+        host = host.split(":", 1)[0]
+        if ".grpc." not in host:
+            url_parts = host.split(".", 1)
+            host = url_parts[0] + ".grpc." + url_parts[1]
+        return host
+
+    @staticmethod
+    def from_cloud(
+        cloud_endpoint: str,
+        api_key: str,
+        options: list[tuple[str, Any]] | None = None,
+    ) -> DgraphClientStub:
+        """Returns Dgraph Client stub for the Dgraph Cloud endpoint.
+
+        .. deprecated:: 25.1.0
+            Dgraph Cloud service has been discontinued. This method will be
+            removed in version 26.0.0. Use the standard DgraphClientStub
+            constructor with grpc.ssl_channel_credentials() instead.
+
+        Example migration:
+            Old: stub = DgraphClientStub.from_cloud(endpoint, api_key)
+
+            New:
+                import grpc
+                creds = grpc.ssl_channel_credentials()
+                call_creds = grpc.metadata_call_credentials(
+                    lambda _c, cb: cb((("authorization", api_key),), None)
+                )
+                composite = grpc.composite_channel_credentials(creds, call_creds)
+                stub = DgraphClientStub(endpoint, composite)
+        """
+        warnings.warn(
+            "from_cloud() is deprecated as Dgraph Cloud has been discontinued. "
+            "This method will be removed in version 26.0.0. "
+            "Use the standard DgraphClientStub constructor with SSL credentials. "
+            "See the docstring for migration examples.",
+            DeprecationWarning,
+            stacklevel=2,
+        )
+
+        host = DgraphClientStub.parse_host(cloud_endpoint)
+        creds = grpc.ssl_channel_credentials()
+        call_credentials = grpc.metadata_call_credentials(
+            lambda _context, callback: callback((("authorization", api_key),), None)
+        )
+        composite_credentials = grpc.composite_channel_credentials(
+            creds, call_credentials
+        )
+        if options is None:
+            options = [("grpc.enable_http_proxy", 0)]
+        else:
+            options.append(("grpc.enable_http_proxy", 0))
+        return DgraphClientStub(
+            f"{host}:443",
+            composite_credentials,
+            options=options,
+        )
+
     def close(self) -> None:
         """Deletes channel and stub."""
         with contextlib.suppress(Exception):
             self.channel.close()
         del self.channel
         del self.stub
-
 
 
 @contextlib.contextmanager
