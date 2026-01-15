@@ -12,6 +12,16 @@ from pydgraph.async_txn import AsyncTxn
 from pydgraph.client import *
 from pydgraph.client_stub import *
 from pydgraph.errors import *
+
+# Retry utilities
+from pydgraph.retry import (
+    retry,
+    retry_async,
+    run_transaction,
+    run_transaction_async,
+    with_retry,
+    with_retry_async,
+)
 from pydgraph.proto.api_pb2 import (
     Check,
     Facet,
