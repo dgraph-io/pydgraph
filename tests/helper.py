@@ -58,16 +58,21 @@ def set_schema(
             return client.alter(pydgraph.Operation(schema=schema))
         except Exception as e:
             # Check if it's a gRPC error with UNAVAILABLE status
-            if hasattr(e, 'code') and callable(e.code):
+            if hasattr(e, "code") and callable(e.code):
                 try:
-                    if e.code() == grpc.StatusCode.UNAVAILABLE:
-                        if attempt < max_retries - 1:
-                            time.sleep(retry_delay)
-                            continue
+                    if (
+                        e.code() == grpc.StatusCode.UNAVAILABLE
+                        and attempt < max_retries - 1
+                    ):
+                        time.sleep(retry_delay)
+                        continue
                 except Exception:
                     pass
             # For other errors or last attempt, raise
             raise
+
+    # Should never reach here, but satisfy type checker
+    raise RuntimeError("Unexpected: all retries exhausted without success or error")
 
 
 def drop_all(client: pydgraph.DgraphClient) -> pydgraph.proto.api_pb2.Payload:
@@ -84,16 +89,21 @@ def drop_all(client: pydgraph.DgraphClient) -> pydgraph.proto.api_pb2.Payload:
             return client.alter(pydgraph.Operation(drop_all=True))
         except Exception as e:
             # Check if it's a gRPC error with UNAVAILABLE status
-            if hasattr(e, 'code') and callable(e.code):
+            if hasattr(e, "code") and callable(e.code):
                 try:
-                    if e.code() == grpc.StatusCode.UNAVAILABLE:
-                        if attempt < max_retries - 1:
-                            time.sleep(retry_delay)
-                            continue
+                    if (
+                        e.code() == grpc.StatusCode.UNAVAILABLE
+                        and attempt < max_retries - 1
+                    ):
+                        time.sleep(retry_delay)
+                        continue
                 except Exception:
                     pass
             # For other errors or last attempt, raise
             raise
+
+    # Should never reach here, but satisfy type checker
+    raise RuntimeError("Unexpected: all retries exhausted without success or error")
 
 
 def setup() -> pydgraph.DgraphClient:
