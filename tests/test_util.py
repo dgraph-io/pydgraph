@@ -10,7 +10,19 @@ __maintainer__ = "Istari Digital, Inc. <dgraph-admin@istaridigital.com>"
 
 import unittest
 
+import grpc
+
 from pydgraph import util
+
+
+class MockGrpcError:
+    """Mock gRPC error with code() method for testing."""
+
+    def __init__(self, status_code):
+        self._code = status_code
+
+    def code(self):
+        return self._code
 
 
 class TestUtil(unittest.TestCase):
@@ -21,6 +33,30 @@ class TestUtil(unittest.TestCase):
         assert util.is_string("a")
         assert not util.is_string(object())
         assert not util.is_string({})
+
+    def test_is_aborted_error_with_aborted_status(self):
+        """Test is_aborted_error returns True for ABORTED status."""
+        error = MockGrpcError(grpc.StatusCode.ABORTED)
+        self.assertTrue(util.is_aborted_error(error))
+
+    def test_is_aborted_error_with_failed_precondition(self):
+        """Test is_aborted_error returns True for FAILED_PRECONDITION status."""
+        error = MockGrpcError(grpc.StatusCode.FAILED_PRECONDITION)
+        self.assertTrue(util.is_aborted_error(error))
+
+    def test_is_aborted_error_with_other_status(self):
+        """Test is_aborted_error returns False for other status codes."""
+        error = MockGrpcError(grpc.StatusCode.UNAVAILABLE)
+        self.assertFalse(util.is_aborted_error(error))
+
+        error = MockGrpcError(grpc.StatusCode.INTERNAL)
+        self.assertFalse(util.is_aborted_error(error))
+
+    def test_is_aborted_error_with_non_grpc_error(self):
+        """Test is_aborted_error returns False for non-gRPC errors."""
+        self.assertFalse(util.is_aborted_error(ValueError("test")))
+        self.assertFalse(util.is_aborted_error(Exception("test")))
+        self.assertFalse(util.is_aborted_error("not an error"))
 
 
 def suite() -> unittest.TestSuite:
