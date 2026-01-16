@@ -28,7 +28,7 @@ def is_jwt_expired(exception: Exception) -> bool:
     return "Token is expired" in str(exception)
 
 
-def is_aborted_error(error: Exception) -> bool:
+def is_aborted_error(error: Any) -> bool:
     """Returns true if the error is due to an aborted transaction.
 
     Uses duck typing to check for gRPC errors, which works with both

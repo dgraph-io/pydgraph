@@ -589,7 +589,7 @@ class DgraphClient:
         if how_many <= 0:
             raise ValueError("how_many must be greater than 0")
         new_metadata = self.add_login_metadata(metadata)
-        req = api.AllocateIDsRequest(how_many=how_many, lease_type=lease_type)  # type: ignore[arg-type]
+        req = api.AllocateIDsRequest(how_many=how_many, lease_type=lease_type)
         try:
             response = self.any_client().allocate_ids(
                 req,

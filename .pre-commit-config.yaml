@@ -24,10 +24,12 @@ repos:
       - id: python-check-blanket-type-ignore
       - id: python-no-eval
       - id: python-use-type-annotations
-  - repo: https://github.com/sondrelg/pep585-upgrade
-    rev: v1.0.1
-    hooks:
-      - id: upgrade-type-hints
+  # Disabled: auto-upgrades to X | Y syntax which requires Python 3.10+
+  # but project targets Python 3.9
+  # - repo: https://github.com/sondrelg/pep585-upgrade
+  #   rev: v1.0.1
+  #   hooks:
+  #     - id: upgrade-type-hints
   - repo: https://github.com/charliermarsh/ruff-pre-commit
     rev: v0.14.0
     hooks:

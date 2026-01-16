@@ -137,6 +137,8 @@ known-first-party = ["pydgraph"]
   "N806",    # camelCase variable names OK in tests
   "PERF203", # try-except in loop OK in tests (performance not critical)
   "PLR2004", # magic values OK in tests
+  "PT011",   # pytest.raises() is too broad OK in tests
+  "PT012",   # pytest.raises() block complexity OK in tests
   "PT027",   # unittest-style assertRaises OK in tests (legacy)
   "SIM105",  # try-except-pass patterns OK in tests
 ]
@@ -191,6 +193,11 @@ ignore_missing_imports = true
 [[tool.mypy.overrides]]
 module = "grpc.*"
 ignore_missing_imports = true
+
+[[tool.mypy.overrides]]
+module = "pydgraph.client"
+# Disable arg-type: protobuf enum type mismatch with grpc-stubs; ty handles this correctly
+disable_error_code = ["arg-type"]
 
 [[tool.mypy.overrides]]
 module = "google.*"

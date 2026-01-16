@@ -99,7 +99,7 @@ class TestTxn(helper.ClientIntegrationTestCase):
 
     def test_mutate_error(self) -> None:
         txn = self.client.txn()
-        with pytest.raises(Exception):  # noqa: PT011 - server error, no predictable message
+        with pytest.raises(Exception):
             # Following N-Quad is invalid
             _ = txn.mutate(set_nquads="_:node <name> Manish")
 
@@ -445,8 +445,8 @@ class TestTxn(helper.ClientIntegrationTestCase):
                 }
             }
         """
-        variables = {"$a": 1234}  # type: ignore[dict-item]
-        with pytest.raises(Exception):  # noqa: PT011 - server validation error
+        variables = {"$a": 1234}
+        with pytest.raises(Exception):
             _ = txn.query(query, variables=variables)  # type: ignore[arg-type]
 
     def test_finished(self) -> None:
@@ -774,7 +774,7 @@ class TestContextManager(helper.ClientIntegrationTestCase):
     def test_context_manager_read_only_cannot_mutate(self) -> None:
         """Test that read-only transactions cannot mutate within context manager."""
         with (
-            pytest.raises(Exception),  # noqa: PT011
+            pytest.raises(Exception),
             self.client.txn(read_only=True) as txn,
         ):
             txn.mutate(set_obj={"name": "Should Fail"})

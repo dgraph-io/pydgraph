@@ -32,7 +32,7 @@ class TestDgraphClientStub(helper.ClientIntegrationTestCase):
         self.check_version(pydgraph.DgraphClientStub(addr=self.TEST_SERVER_ADDR))
 
     def test_timeout(self) -> None:
-        with pytest.raises(Exception):  # noqa: PT011 - gRPC timeout error
+        with pytest.raises(Exception):
             pydgraph.DgraphClientStub(self.TEST_SERVER_ADDR).check_version(
                 pydgraph.Check(), timeout=-1
             )
@@ -41,7 +41,7 @@ class TestDgraphClientStub(helper.ClientIntegrationTestCase):
         client_stub = pydgraph.DgraphClientStub(addr=self.TEST_SERVER_ADDR)
         self.check_version(client_stub)
         client_stub.close()
-        with pytest.raises(Exception):  # noqa: PT011 - gRPC channel closed error
+        with pytest.raises(Exception):
             client_stub.check_version(pydgraph.Check())
 
 
@@ -83,7 +83,7 @@ class TestDgraphClientStubContextManager(helper.ClientIntegrationTestCase):
             assert ver is not None
 
         # After exiting context, stub should be closed and unusable
-        with pytest.raises(Exception):  # noqa: PT011
+        with pytest.raises(Exception):
             stub.check_version(pydgraph.Check())
 
     def test_context_manager_with_client(self) -> None:
@@ -111,7 +111,7 @@ class TestDgraphClientStubContextManager(helper.ClientIntegrationTestCase):
 
         # Stub should still be closed despite the exception
         assert stub_ref is not None
-        with pytest.raises(Exception):  # noqa: PT011
+        with pytest.raises(Exception):
             stub_ref.check_version(pydgraph.Check())
 
     def test_context_manager_function_wrapper_closes(self) -> None:
@@ -123,7 +123,7 @@ class TestDgraphClientStubContextManager(helper.ClientIntegrationTestCase):
             assert ver is not None
 
         # Stub should be closed after exiting
-        with pytest.raises(Exception):  # noqa: PT011
+        with pytest.raises(Exception):
             stub_ref.check_version(pydgraph.Check())
 
     def test_context_manager_multiple_operations(self) -> None:

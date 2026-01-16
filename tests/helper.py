@@ -14,6 +14,7 @@ import grpc
 from packaging import version
 
 import pydgraph
+import pydgraph.proto.api_pb2
 
 __author__ = "Garvit Pahal"
 __maintainer__ = "Istari Digital, Inc. <dgraph-admin@istaridigital.com>"
@@ -61,7 +62,7 @@ def set_schema(
             if hasattr(e, "code") and callable(e.code):
                 try:
                     if (
-                        e.code() == grpc.StatusCode.UNAVAILABLE
+                        e.code() == grpc.StatusCode.UNAVAILABLE  # type: ignore[operator]
                         and attempt < max_retries - 1
                     ):
                         time.sleep(retry_delay)
@@ -92,7 +93,7 @@ def drop_all(client: pydgraph.DgraphClient) -> pydgraph.proto.api_pb2.Payload:
             if hasattr(e, "code") and callable(e.code):
                 try:
                     if (
-                        e.code() == grpc.StatusCode.UNAVAILABLE
+                        e.code() == grpc.StatusCode.UNAVAILABLE  # type: ignore[operator]
                         and attempt < max_retries - 1
                     ):
                         time.sleep(retry_delay)
