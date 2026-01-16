@@ -24,13 +24,14 @@ def is_jwt_expired(exception):
 
 
 def is_aborted_error(error):
-    """Returns true if the error is due to an aborted transaction."""
-    # Check for both sync and async gRPC error types
-    if (
-        isinstance(error, grpc._channel._Rendezvous)
-        or isinstance(error, grpc._channel._InactiveRpcError)
-        or isinstance(error, grpc.aio.AioRpcError)
-    ):
+    """Returns true if the error is due to an aborted transaction.
+
+    Uses duck typing to check for gRPC errors, which works with both
+    sync (grpc.RpcError) and async (grpc.aio.AioRpcError) error types,
+    and is compatible with all grpcio versions.
+    """
+    # Use duck typing - check if error has code() method (works for all grpc errors)
+    if hasattr(error, "code") and callable(error.code):
         status_code = error.code()
         if (
             status_code == grpc.StatusCode.ABORTED
