@@ -29,6 +29,15 @@ from pydgraph.proto.api_pb2 import (
     Value,
     Version,
 )
+# Retry utilities
+from pydgraph.retry import (
+    retry,
+    retry_async,
+    run_transaction,
+    run_transaction_async,
+    with_retry,
+    with_retry_async,
+)
 from pydgraph.txn import Txn
 
 __all__ = [
@@ -57,4 +66,10 @@ __all__ = [
     "async_open",
     "client_stub",
     "open",
+    "retry",
+    "retry_async",
+    "run_transaction",
+    "run_transaction_async",
+    "with_retry",
+    "with_retry_async",
 ]
