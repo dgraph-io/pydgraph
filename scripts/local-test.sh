@@ -31,14 +31,6 @@ function restartCluster() {
 
 	# Wait for HTTP health endpoint
 	wait-for-healthy 127.0.0.1:"${alphaHttpPort}"/health
-
-	# Wait for gRPC service to be ready
-	# Use uv if available to ensure grpc dependency is available
-	if command -v uv >/dev/null 2>&1; then
-		uv run python3 "${SRCDIR}"/wait_for_grpc_ready.py 127.0.0.1 "${alphaGrpcPort}"
-	else
-		python3 "${SRCDIR}"/wait_for_grpc_ready.py 127.0.0.1 "${alphaGrpcPort}"
-	fi
 }
 
 function stopCluster() {
