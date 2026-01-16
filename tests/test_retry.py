@@ -4,9 +4,8 @@
 """Tests for transaction retry utilities."""
 
 import asyncio
-import time as time_module
 import unittest
-from unittest.mock import AsyncMock, MagicMock, patch
+from unittest.mock import MagicMock
 
 import pydgraph
 from pydgraph import errors
