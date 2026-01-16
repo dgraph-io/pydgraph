@@ -59,7 +59,7 @@ publish: clean build  ## Publish a new release to PyPi (requires UV_PUBLISH_USER
 
 deps: deps-uv deps-trunk deps-docker ## Check/install tool dependencies (set INSTALL_MISSING_TOOLS=true to auto-install)
 
-deps-uv:
+deps-uv: ## Check for uv/uvx installation (installs if INSTALL_MISSING_TOOLS=true)
 	@(command -v uv >/dev/null 2>&1 && command -v uvx >/dev/null 2>&1) || { \
 		if [ "$(INSTALL_MISSING_TOOLS)" = "true" ]; then \
 			echo "uv/uvx not found, installing..."; \
@@ -91,7 +91,7 @@ deps-uv:
 		fi; \
 	}
 
-deps-trunk:
+deps-trunk: ## Check for trunk installation (installs if INSTALL_MISSING_TOOLS=true)
 	@command -v trunk >/dev/null 2>&1 || { \
 		if [ "$(INSTALL_MISSING_TOOLS)" = "true" ]; then \
 			echo "trunk not found, installing..."; \
@@ -119,7 +119,7 @@ deps-trunk:
 		fi; \
 	}
 
-deps-docker: ## Check and install Docker if needed (requires Docker 20.10.0+)
+deps-docker: ## Check for Docker installation (installs if INSTALL_MISSING_TOOLS=true, requires 20.10.0+)
 	@if ! command -v docker >/dev/null 2>&1; then \
 		if [ "$(INSTALL_MISSING_TOOLS)" = "true" ]; then \
 			echo "Docker not found, installing..."; \
