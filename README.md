@@ -37,6 +37,14 @@ Before using this client, we highly recommend that you read the the product docu
     - [Setting Metadata Headers](#setting-metadata-headers)
     - [Setting a timeout](#setting-a-timeout)
     - [Async methods](#async-methods)
+    - [Native Async/Await Client](#native-asyncawait-client)
+  - [Handling Transaction Conflicts](#handling-transaction-conflicts)
+    - [Using run_transaction (Recommended)](#using-run_transaction-recommended)
+    - [Using the Retry Decorator](#using-the-retry-decorator)
+    - [Using the Retry Generator](#using-the-retry-generator)
+    - [Retry Parameters](#retry-parameters)
+    - [Which Errors Are Retried?](#which-errors-are-retried)
+    - [Example: High-Contention Counter](#example-high-contention-counter)
   - [Examples](#examples)
   - [Development](#development)
     - [Setting up environment](#setting-up-environment)
@@ -771,6 +779,171 @@ asyncio.run(main())
 | Context manager     | `with client.txn() as txn:` | `async with client.txn() as txn:` |
 | Concurrency         | Threading                   | Native asyncio                    |
 | JWT refresh         | Automatic                   | Automatic                         |
+
+## Handling Transaction Conflicts
+
+Dgraph uses **optimistic concurrency control** (MVCC). When multiple transactions modify the same
+data simultaneously, conflicts can occur and Dgraph will abort one of the transactions with an
+`AbortedError`. When this happens, the entire transaction must be retried from scratch.
+
+pydgraph provides built-in retry utilities with exponential backoff to handle these conflicts
+automatically.
+
+### Using `run_transaction` (Recommended)
+
+The simplest approach - pass your operation as a callable:
+
+```python
+import pydgraph
+
+def create_user(txn):
+    """Transaction operation that will be retried on conflict."""
+    response = txn.mutate(set_obj={"name": "Alice", "age": 30})
+    txn.commit()
+    return response.uids
+
+client = pydgraph.DgraphClient(pydgraph.DgraphClientStub("localhost:9080"))
+
+# Automatically retries on AbortedError with exponential backoff
+result = pydgraph.run_transaction(client, create_user, max_retries=5)
+print(f"Created user: {result}")
+```
+
+For async code:
+
+```python
+async def create_user_async(txn):
+    response = await txn.mutate(set_obj={"name": "Alice", "age": 30})
+    await txn.commit()
+    return response.uids
+
+result = await pydgraph.run_transaction_async(client, create_user_async)
+```
+
+### Using the Retry Decorator
+
+Wrap any function that performs Dgraph operations:
+
+```python
+import pydgraph
+
+@pydgraph.with_retry(max_retries=5, base_delay=0.1)
+def upsert_counter(client, counter_id):
+    """Increment a counter atomically - automatically retried on conflict."""
+    txn = client.txn()
+    try:
+        # Query current value
+        query = f'{{ counter(func: uid({counter_id})) {{ value }} }}'
+        result = txn.query(query)
+        current = json.loads(result.json).get("counter", [{}])[0].get("value", 0)
+
+        # Increment and update
+        txn.mutate(set_obj={"uid": counter_id, "value": current + 1})
+        txn.commit()
+    finally:
+        txn.discard()
+
+# Called normally - retries happen transparently
+upsert_counter(client, "0x123")
+```
+
+For async functions:
+
+```python
+@pydgraph.with_retry_async(max_retries=5)
+async def upsert_counter_async(client, counter_id):
+    async with client.txn() as txn:
+        # ... async operations
+        pass
+```
+
+### Using the Retry Generator
+
+For fine-grained control within a function:
+
+```python
+import pydgraph
+
+def transfer_funds(client, from_account, to_account, amount):
+    """Transfer funds between accounts with manual retry control."""
+    for attempt in pydgraph.retry(max_retries=5, base_delay=0.1):
+        with attempt:
+            txn = client.txn()
+            try:
+                # Perform the transfer (queries and mutations)
+                # If AbortedError is raised, retry() handles it
+                txn.commit()
+            finally:
+                txn.discard()
+```
+
+For async code:
+
+```python
+async def transfer_funds_async(client, from_account, to_account, amount):
+    async for attempt in pydgraph.retry_async(max_retries=5):
+        with attempt:
+            async with client.txn() as txn:
+                # ... async operations
+                pass
+```
+
+### Retry Parameters
+
+All retry utilities accept these parameters:
+
+| Parameter     | Default | Description                                           |
+| ------------- | ------- | ----------------------------------------------------- |
+| `max_retries` | 5       | Maximum number of retry attempts                      |
+| `base_delay`  | 0.1     | Initial delay in seconds between retries              |
+| `max_delay`   | 5.0     | Maximum delay cap in seconds                          |
+| `jitter`      | 0.1     | Random jitter factor (0-1) to prevent thundering herd |
+
+### Which Errors Are Retried?
+
+Only these errors trigger automatic retries:
+
+- `pydgraph.AbortedError` - Transaction conflict (optimistic concurrency)
+- `pydgraph.RetriableError` - Transient server errors
+
+All other exceptions propagate immediately.
+
+### Example: High-Contention Counter
+
+Here's a complete example handling a high-contention scenario:
+
+```python
+import json
+import pydgraph
+
+def increment_counter(client, counter_uid):
+    """Atomically increment a counter, handling conflicts automatically."""
+
+    def operation(txn):
+        # Read current value
+        query = f'{{ counter(func: uid({counter_uid})) {{ count }} }}'
+        result = txn.query(query)
+        data = json.loads(result.json)
+        current = data.get("counter", [{}])[0].get("count", 0)
+
+        # Increment
+        txn.mutate(set_obj={"uid": counter_uid, "count": current + 1})
+        txn.commit()
+        return current + 1
+
+    return pydgraph.run_transaction(
+        client, operation,
+        max_retries=10,   # More retries for high contention
+        base_delay=0.05,  # Start with shorter delays
+        max_delay=2.0,
+        jitter=0.25       # Higher jitter to spread out retries
+    )
+
+# Usage
+client = pydgraph.DgraphClient(pydgraph.DgraphClientStub("localhost:9080"))
+new_value = increment_counter(client, "0x1")
+print(f"Counter is now: {new_value}")
+```
 
 ## Examples
 
