@@ -26,4 +26,14 @@ from pydgraph.proto.api_pb2 import (
     Value,
     Version,
 )
+
+# Retry utilities
+from pydgraph.retry import (
+    retry,
+    retry_async,
+    run_transaction,
+    run_transaction_async,
+    with_retry,
+    with_retry_async,
+)
 from pydgraph.txn import *
