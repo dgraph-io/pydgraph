@@ -7,22 +7,21 @@ name = "pydgraph"
 authors = [
   { name = "Istari Digital, Inc.", email = "dgraph-admin@istaridigital.com" },
 ]
-license = { file = "LICENSE" }
+license = "Apache-2.0"
 description = "Official Dgraph client implementation for Python"
 readme = "README.md"
-requires-python = ">=3.7"
+requires-python = ">=3.9"
 classifiers = [
   'Intended Audience :: Developers',
-  'License :: OSI Approved :: Apache Software License',
   'Operating System :: OS Independent',
   'Topic :: Database',
   'Topic :: Software Development',
-  'Programming Language :: Python :: 3.7',
-  'Programming Language :: Python :: 3.8',
   'Programming Language :: Python :: 3.9',
   'Programming Language :: Python :: 3.10',
   'Programming Language :: Python :: 3.11',
   'Programming Language :: Python :: 3.12',
+  'Programming Language :: Python :: 3.13',
+  'Programming Language :: Python :: 3.14',
 ]
 dependencies = ["grpcio>=1.65.0,<2.0.0", "protobuf>=4.23.0,<7.0.0"]
 dynamic = ["version"]
@@ -30,14 +29,29 @@ dynamic = ["version"]
 [tool.setuptools.dynamic]
 version = { attr = "pydgraph.meta.VERSION" }
 
+[dependency-groups]
+dev = [
+  "grpc-stubs>=1.53.0.6",
+  "mypy>=1.14.1",
+  "mypy-protobuf>=4.0.0",
+  "pre-commit>=3.5.0",
+  "pydantic-settings>=2.8.1",
+  "ruff>=0.8.4",
+  "shellcheck-py>=0.10.0.1",
+  "ty>=0.0.8",
+  "types-grpcio>=1.0.0.20251009",
+  "types-protobuf>=6.32.1.20251210",
+  "types-requests>=2.32.0.20241016",
+]
+
 [project.optional-dependencies]
 dev = [
   "build>=1.2.2.post1",
-  "grpcio-tools>=1.65.0,<1.66.0; python_version<'3.13'",
-  # Python 3.13 requires grpcio-tools >=1.66.2
-  "grpcio-tools>=1.66.2; python_version>='3.13'",
+  "grpcio-tools>=1.66.2",
   "pytest>=8.3.3",
   "pytest-asyncio>=0.23.0",
+  "ruff>=0.8.4",
+  "ty>=0.0.8",
 ]
 
 
@@ -47,3 +61,148 @@ dev = [
 [tool.pytest.ini_options]
 asyncio_mode = "auto"
 asyncio_default_fixture_loop_scope = "function"
+
+[tool.ruff]
+target-version = "py39"
+exclude = [
+  ".venv",
+  "build",
+  "pydgraph/proto/api_pb2.py",
+  "pydgraph/proto/api_pb2.pyi",
+  "pydgraph/proto/api_pb2_grpc.py",
+  "pydgraph/proto/api_pb2_grpc.pyi",
+  "examples/embeddings/",
+  "examples/notebook/",
+]
+
+[tool.ruff.lint]
+# Maximal best-practices ruleset
+select = [
+  "A",     # flake8-builtins (shadowing builtins)
+  "ARG",   # flake8-unused-arguments
+  "ASYNC", # flake8-async
+  "B",     # flake8-bugbear
+  "C4",    # flake8-comprehensions
+  "C90",   # mccabe complexity
+  "E",     # pycodestyle errors
+  "ERA",   # eradicate (commented-out code)
+  "F",     # pyflakes
+  "FURB",  # refurb (modernize idioms)
+  "G",     # flake8-logging-format
+  "I",     # isort (import sorting)
+  "ICN",   # flake8-import-conventions
+  "N",     # pep8-naming
+  "PERF",  # perflint (performance)
+  "PIE",   # flake8-pie (misc lints)
+  "PT",    # flake8-pytest-style
+  "PTH",   # flake8-use-pathlib
+  "RET",   # flake8-return
+  "RSE",   # flake8-raise
+  "RUF",   # ruff-specific rules
+  "S",     # flake8-bandit (security)
+  "SIM",   # flake8-simplify
+  "TID",   # flake8-tidy-imports
+  "TRY",   # tryceratops (exception handling)
+  "UP",    # pyupgrade
+  "W",     # pycodestyle warnings
+]
+
+ignore = [
+  "E501",   # line-too-long (handled by formatter)
+  "S101",   # assert-used (OK in tests, configured per-file below)
+  "TRY003", # Avoid specifying long messages outside exception class
+  "SIM108", # Use ternary operator (can reduce readability)
+  "RET504", # Unnecessary variable assignment before return
+  "PTH123", # open() should be replaced by Path.open() (too strict)
+  "G004",   # Logging statement uses f-string (acceptable in modern Python)
+]
+
+[tool.ruff.lint.mccabe]
+max-complexity = 10
+
+[tool.ruff.lint.isort]
+known-first-party = ["pydgraph"]
+
+[tool.ruff.lint.per-file-ignores]
+"tests/**" = [
+  "S101",    # assert allowed in tests
+  "S106",    # hardcoded passwords OK in tests
+  "S110",    # try-except-pass OK in tests
+  "S112",    # try-except-continue OK in tests
+  "A001",    # variable name shadowing builtins OK in tests
+  "A004",    # import shadowing builtins OK in tests (pydgraph.open)
+  "ARG001",  # unused function arguments OK in tests (fixtures)
+  "B017",    # pytest.raises(Exception) OK in tests
+  "N802",    # camelCase function names OK in tests (legacy)
+  "N806",    # camelCase variable names OK in tests
+  "PERF203", # try-except in loop OK in tests (performance not critical)
+  "PLR2004", # magic values OK in tests
+  "PT011",   # pytest.raises() is too broad OK in tests
+  "PT012",   # pytest.raises() block complexity OK in tests
+  "PT027",   # unittest-style assertRaises OK in tests (legacy)
+  "SIM105",  # try-except-pass patterns OK in tests
+]
+"examples/**" = [
+  "S101",   # assert OK in examples
+  "T201",   # print statements OK in examples
+  "ERA001", # commented-out code OK in examples (docs/demos)
+  "N802",   # camelCase function names OK in examples
+  "N803",   # camelCase argument names OK in examples
+  "N806",   # camelCase variable names OK in examples
+  "SIM300", # Yoda conditions OK in examples
+  "ARG001", # unused arguments OK in examples
+  "ARG002", # unused method arguments OK in examples
+  "C901",   # complex functions OK in examples
+  "PIE808", # unnecessary range(0, x) OK in examples
+]
+
+[tool.mypy]
+python_version = "3.9"
+warn_unused_configs = true
+disallow_untyped_defs = true
+disallow_incomplete_defs = true
+check_untyped_defs = true
+no_site_packages = true
+exclude = [".venv", "build", "pydgraph/proto/", "examples/embeddings/"]
+
+[[tool.mypy.overrides]]
+module = "pydgraph.proto.api_pb2"
+follow_imports = "skip"
+
+[[tool.mypy.overrides]]
+module = "pydgraph.proto.api_pb2_grpc"
+follow_imports = "skip"
+disable_error_code = ["overload-cannot-match"]
+
+[[tool.mypy.overrides]]
+module = "examples.embeddings.computeEmbeddings"
+ignore_errors = true
+
+[[tool.mypy.overrides]]
+module = "grpc_tools.*"
+ignore_missing_imports = true
+
+[[tool.mypy.overrides]]
+module = "packaging.*"
+ignore_missing_imports = true
+
+[[tool.mypy.overrides]]
+module = "pytest.*"
+ignore_missing_imports = true
+
+[[tool.mypy.overrides]]
+module = "grpc.*"
+ignore_missing_imports = true
+
+[[tool.mypy.overrides]]
+module = "pydgraph.client"
+# Disable arg-type: protobuf enum type mismatch with grpc-stubs; ty handles this correctly
+disable_error_code = ["arg-type"]
+
+[[tool.mypy.overrides]]
+module = "google.*"
+ignore_missing_imports = true
+
+[[tool.mypy.overrides]]
+module = "google.protobuf.*"
+ignore_missing_imports = true

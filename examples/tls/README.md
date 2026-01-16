@@ -83,5 +83,5 @@ docker compose up
 ### Run Example Code
 
 ```bash
-python tls_example.py
+uv run python tls_example.py
 ```

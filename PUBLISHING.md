@@ -25,6 +25,8 @@ This document contains instructions to create a new pydgraph release and publish
 
    - Verify readme and metadata look correct at testpypi
 
+1. Regenerate protobufs if api.proto was changed: run `make protogen` (requires Python 3.13+ as
+   specified in `.python-version` file)
 1. Update the `CHANGELOG.md` file to reflect new changes. Sonnet 4.5 does a great job of doing this.
    Example prompt:
 

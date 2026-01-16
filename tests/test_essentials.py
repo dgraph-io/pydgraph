@@ -1,7 +1,9 @@
-# SPDX-FileCopyrightText: © 2017-2025 Istari Digital, Inc.
+# SPDX-FileCopyrightText: © 2017-2026 Istari Digital, Inc.
 # SPDX-License-Identifier: Apache-2.0
 
 """Tests mutation after query behavior."""
+
+from __future__ import annotations
 
 __author__ = "Shailesh Kochhar <shailesh.kochhar@gmail.com>"
 __maintainer__ = "Istari Digital, Inc. <dgraph-admin@istaridigital.com>"
@@ -16,7 +18,7 @@ from tests import helper
 class TestEssentials(helper.ClientIntegrationTestCase):
     """Tests mutation after query behavior."""
 
-    def testMutationAfterQuery(self):
+    def testMutationAfterQuery(self) -> None:
         """Tests what happens when making a mutation on a txn after querying."""
 
         _ = self.client.txn(read_only=True).query(
@@ -25,19 +27,19 @@ class TestEssentials(helper.ClientIntegrationTestCase):
 
         txn = self.client.txn()
         mutation = txn.mutate(set_nquads='_:node <first> "Node name first" .')
-        self.assertTrue(len(mutation.uids) > 0, "Mutation did not create new node")
+        assert len(mutation.uids) > 0, "Mutation did not create new node"
 
         created = mutation.uids.get("node")
-        self.assertIsNotNone(created)
+        assert created is not None
 
         txn.commit()
 
-        query = "{{node(func: uid({uid:s})) {{ uid }} }}".format(uid=created)
+        query = f"{{node(func: uid({created:s})) {{ uid }} }}"
         reread = self.client.txn(read_only=True).query(query)
-        self.assertEqual(created, json.loads(reread.json).get("node")[0]["uid"])
+        assert created == json.loads(reread.json).get("node")[0]["uid"]
 
 
-def suite():
+def suite() -> unittest.TestSuite:
     """Returns a test suite object."""
     suite_obj = unittest.TestSuite()
     suite_obj.addTest(TestEssentials())

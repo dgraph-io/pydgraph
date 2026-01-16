@@ -1,0 +1,30 @@
+name: Setup Runner
+description: Sets up runner environment with build tools, Python, uv, and trunk
+inputs:
+  python-version:
+    description: Python version to install
+    required: true
+  enable-uv-cache:
+    description: Enable uv cache
+    required: false
+    default: "true"
+runs:
+  using: composite
+  steps:
+    - name: Install build tools
+      shell: bash
+      run: |
+        sudo apt-get update
+        sudo apt-get install -y build-essential
+        echo "/usr/bin" >> $GITHUB_PATH
+        which make || echo "make not found after install"
+    - name: Set up Python ${{ inputs.python-version }}
+      uses: actions/setup-python@v6
+      with:
+        python-version: ${{ inputs.python-version }}
+    - name: Install uv
+      uses: astral-sh/setup-uv@v5
+      with:
+        enable-cache: ${{ inputs.enable-uv-cache }}
+    - name: Install trunk
+      uses: trunk-io/trunk-action/setup@v1

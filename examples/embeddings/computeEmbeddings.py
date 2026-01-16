@@ -40,24 +40,14 @@ global client  # dgrpah client is a global variable
 
 assert "DGRAPH_GRPC" in os.environ, "DGRAPH_GRPC must be defined"
 dgraph_grpc = os.environ["DGRAPH_GRPC"]
-if "cloud.dgraph" in dgraph_grpc:
-    assert "DGRAPH_ADMIN_KEY" in os.environ, "DGRAPH_ADMIN_KEY must be defined"
-    APIAdminKey = os.environ["DGRAPH_ADMIN_KEY"]
-else:
-    APIAdminKey = None
 
 # TRANSFORMER_API_KEY must be defined in env variables
-# client stub for on-prem requires grpc host:port without protocol
-# client stub for cloud requires the grpc endpoint of graphql endpoint or base url of the cluster
-# to run on a self-hosted env, unset ADMIN_KEY and set DGRAPH_GRPC
+# client stub requires grpc host:port without protocol
 
 
 def setClient():
     global client
-    if APIAdminKey is None:
-        client_stub = pydgraph.DgraphClientStub(dgraph_grpc)
-    else:
-        client_stub = pydgraph.DgraphClientStub.from_cloud(dgraph_grpc, APIAdminKey)
+    client_stub = pydgraph.DgraphClientStub(dgraph_grpc)
     client = pydgraph.DgraphClient(client_stub)
 
 
@@ -147,7 +137,7 @@ def buildEmbeddings(embedding_def, only_missing=True, filehandle=sys.stdout):
     config = embedding_def["config"]
     provider = embedding_def["provider"]
     modelName = embedding_def["model"]
-    dimensions = embedding_def["dimensions"] if "dimensions" in embedding_def else None
+    dimensions = embedding_def.get("dimensions", None)
     index = embedding_def["index"]
 
     if "huggingface" == provider:
@@ -180,16 +170,16 @@ def buildEmbeddings(embedding_def, only_missing=True, filehandle=sys.stdout):
         f"compute embeddings for {predicate} using  model {modelName} from {provider}"
     )
     if only_missing:
-        filter = f"@filter( NOT has({predicate}))"
+        filter_clause = f"@filter( NOT has({predicate}))"
     else:
-        filter = ""
+        filter_clause = ""
     # Run query.
     after = ""
     while True:
         print(".")
         txn = client.txn(read_only=True)
         query = (
-            f"{{list(func: type({entity}),first:100 {after}) {filter}  {querypart} }}"
+            f"{{list(func: type({entity}),first:100 {after}) {filter_clause}  {querypart} }}"
         )
         try:
             res = txn.query(query)
@@ -236,12 +226,8 @@ def replace_env(matchobj):
     return os.environ.get(key)
 
 
-if APIAdminKey is None:
-    print("using no API key")
-    print(dgraph_grpc)
-else:
-    print("using cloud API key")
-    print(dgraph_grpc)
+print(f"Connecting to Dgraph at {dgraph_grpc}")
+
 if len(sys.argv) == 2:
     outputfile = sys.argv[1]
     print(f"Produce RDF file in {outputfile}")
@@ -266,13 +252,15 @@ if confirm == "y":
         definitions = embeddings["embeddings"]
 
         if outputfile is not None:
-            out = open(outputfile, "w")
+            with open(outputfile, "w") as out:
+                for embedding_def in definitions:
+                    total = buildEmbeddings(embedding_def, only_missing, out)
+                    print(
+                        f"{total} embeddings for {embedding_def['entityType']}.{embedding_def['attribute']}"
+                    )
         else:
-            out = None
-        for embedding_def in definitions:
-            total = buildEmbeddings(embedding_def, only_missing, out)
-            print(
-                f"{total} embeddings for {embedding_def['entityType']}.{embedding_def['attribute']}"
-            )
-        if out is not None:
-            out.close()
+            for embedding_def in definitions:
+                total = buildEmbeddings(embedding_def, only_missing, None)
+                print(
+                    f"{total} embeddings for {embedding_def['entityType']}.{embedding_def['attribute']}"
+                )

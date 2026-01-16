@@ -1,7 +1,9 @@
-# SPDX-FileCopyrightText: © 2017-2025 Istari Digital, Inc.
+# SPDX-FileCopyrightText: © 2017-2026 Istari Digital, Inc.
 # SPDX-License-Identifier: Apache-2.0
 
 """Errors thrown by the Dgraph client."""
+
+from __future__ import annotations
 
 from pydgraph.meta import VERSION
 
@@ -14,32 +16,32 @@ __status__ = "development"
 class AbortedError(Exception):
     """Error thrown by aborted transactions."""
 
-    def __init__(self):
-        super(AbortedError, self).__init__("Transaction has been aborted. Please retry")
+    def __init__(self) -> None:
+        super().__init__("Transaction has been aborted. Please retry")
 
 
 class RetriableError(Exception):
     """Error thrown when the error return by Dgraph indicates the op should be retried."""
 
-    def __init__(self, exception):
+    def __init__(self, exception: Exception) -> None:
         self.exception = exception
 
-    def __str__(self):
+    def __str__(self) -> str:
         return str(self.exception)
 
 
-class ConnectionError(Exception):
+class ConnectionError(Exception):  # noqa: A001
     """Error thrown when the error return when the client has trouble connecting to Dgraph."""
 
-    def __init__(self, exception):
+    def __init__(self, exception: Exception) -> None:
         self.exception = exception
 
-    def __str__(self):
+    def __str__(self) -> str:
         return str(self.exception)
 
 
 class TransactionError(Exception):
     """Error thrown when the transaction is invalid (e.g trying to mutate in read-only mode)."""
 
-    def __init__(self, msg):
-        super(TransactionError, self).__init__(msg)
+    def __init__(self, msg: str) -> None:
+        super().__init__(msg)

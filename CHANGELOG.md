@@ -30,6 +30,17 @@ adheres to [Semantic Versioning](http://semver.org/spec/v2.0.0.html).
   - `set_schema()` - Sets the DQL schema
 - Updated proto definitions to support Dgraph v25 API
 
+**Deprecated**
+
+- `DgraphClientStub.from_cloud()` and `AsyncDgraphClientStub.from_cloud()` methods (deprecated in
+  25.1.0, removal planned for 26.0.0)
+  - Dgraph Cloud service has been discontinued
+  - Use standard `DgraphClientStub` constructor with `grpc.ssl_channel_credentials()` instead
+  - Docstrings include migration examples
+- `DgraphClientStub.parse_host()` and `AsyncDgraphClientStub.parse_host()` methods (deprecated in
+  25.1.0, removal planned for 26.0.0)
+  - Use standard gRPC hostname handling instead
+
 **Chore**
 
 - Updated GitHub Actions workflows to v5/v6
