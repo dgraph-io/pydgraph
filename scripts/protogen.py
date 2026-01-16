@@ -88,6 +88,7 @@ protoc.main(
 # Fix import in generated stub file
 # mypy-protobuf generates `import api_pb2` but mypy needs a relative import
 # to properly resolve the module when checking the package
+print("Patching api_pb2_grpc.pyi: fixing import path...")
 api_pb2_grpc_pyi = protopath / "api_pb2_grpc.pyi"
 with open(api_pb2_grpc_pyi) as f:
     content = f.read()
@@ -96,6 +97,30 @@ with open(api_pb2_grpc_pyi) as f:
 content = content.replace("import api_pb2\n", "from . import api_pb2\n")
 
 with open(api_pb2_grpc_pyi, "w") as f:
+    f.write(content)
+
+# Patch api_pb2_grpc.py to use warning instead of RuntimeError for version mismatch.
+# grpcio-tools generates code that raises RuntimeError if the installed grpc version
+# is older than the version used to generate the code. This breaks apps that may still
+# work fine with older grpc versions. Use a warning instead for graceful degradation.
+# See: https://github.com/dgraph-io/pydgraph/pull/282#discussion_r2699925951
+print("Patching api_pb2_grpc.py: changing RuntimeError to warning for version check...")
+api_pb2_grpc_py = protopath / "api_pb2_grpc.py"
+with open(api_pb2_grpc_py) as f:
+    content = f.read()
+
+# Replace raise RuntimeError(...) with warnings.warn(..., RuntimeWarning)
+content = content.replace(
+    "raise RuntimeError(",
+    "warnings.warn(",
+)
+# Add RuntimeWarning as the warning category (find the closing paren of the message)
+content = content.replace(
+    "f' or downgrade your generated code using grpcio-tools<={GRPC_VERSION}.'\n    )",
+    "f' or downgrade your generated code using grpcio-tools<={GRPC_VERSION}.',\n        RuntimeWarning,\n    )",
+)
+
+with open(api_pb2_grpc_py, "w") as f:
     f.write(content)
 
 # Note: Modern grpcio supports async via grpc.aio channels.
