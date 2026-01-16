@@ -34,29 +34,29 @@ class TestUtil(unittest.TestCase):
         assert not util.is_string(object())
         assert not util.is_string({})
 
-    def test_is_aborted_error_with_aborted_status(self):
+    def test_is_aborted_error_with_aborted_status(self) -> None:
         """Test is_aborted_error returns True for ABORTED status."""
         error = MockGrpcError(grpc.StatusCode.ABORTED)
-        self.assertTrue(util.is_aborted_error(error))
+        assert util.is_aborted_error(error)
 
-    def test_is_aborted_error_with_failed_precondition(self):
+    def test_is_aborted_error_with_failed_precondition(self) -> None:
         """Test is_aborted_error returns True for FAILED_PRECONDITION status."""
         error = MockGrpcError(grpc.StatusCode.FAILED_PRECONDITION)
-        self.assertTrue(util.is_aborted_error(error))
+        assert util.is_aborted_error(error)
 
-    def test_is_aborted_error_with_other_status(self):
+    def test_is_aborted_error_with_other_status(self) -> None:
         """Test is_aborted_error returns False for other status codes."""
         error = MockGrpcError(grpc.StatusCode.UNAVAILABLE)
-        self.assertFalse(util.is_aborted_error(error))
+        assert not util.is_aborted_error(error)
 
         error = MockGrpcError(grpc.StatusCode.INTERNAL)
-        self.assertFalse(util.is_aborted_error(error))
+        assert not util.is_aborted_error(error)
 
-    def test_is_aborted_error_with_non_grpc_error(self):
+    def test_is_aborted_error_with_non_grpc_error(self) -> None:
         """Test is_aborted_error returns False for non-gRPC errors."""
-        self.assertFalse(util.is_aborted_error(ValueError("test")))
-        self.assertFalse(util.is_aborted_error(Exception("test")))
-        self.assertFalse(util.is_aborted_error("not an error"))
+        assert not util.is_aborted_error(ValueError("test"))
+        assert not util.is_aborted_error(Exception("test"))
+        assert not util.is_aborted_error("not an error")
 
 
 def suite() -> unittest.TestSuite:
