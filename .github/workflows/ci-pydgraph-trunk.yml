@@ -9,5 +9,5 @@ permissions:
   checks: write
 jobs:
   trunk-code-quality:
-    name: Trunk Code Quality Checks
+    name: Trunk Code Quality
     uses: dgraph-io/.github/.github/workflows/trunk.yml@main
