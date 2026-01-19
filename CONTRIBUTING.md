@@ -258,6 +258,11 @@ Tests are automatically run in CI/CD against:
 - Python versions: 3.9, 3.10, 3.11, 3.12, 3.13, 3.14
 - Dgraph latest release
 - Dgraph HEAD (main branch)
+- Protobuf versions: default (6.x) for all Python versions, plus 4.x and 5.x on Python 3.9 and 3.14
+
+The CI matrix tests all Python versions with the default protobuf, and additionally tests older
+protobuf versions (4.x, 5.x) on the edge Python versions (3.9 and 3.14) to ensure backwards
+compatibility without excessive CI runtime.
 
 ## Submitting a Pull Request
 
