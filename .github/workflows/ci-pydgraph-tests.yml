@@ -17,11 +17,24 @@ permissions:
   contents: read
 jobs:
   test-pydgraph-dgraph-latest:
-    name: Test (Python ${{ matrix.python-version }} / DGraph Latest)
+    name:
+      Test (Python ${{ matrix.python-version }}${{ matrix.protobuf-version && format(' / {0}',
+      matrix.protobuf-version) || '' }} / DGraph Latest)
     runs-on: ubuntu-latest
     strategy:
       matrix:
         python-version: ["3.9", "3.10", "3.11", "3.12", "3.13", "3.14"]
+        protobuf-version: [""]
+        include:
+          # Test older protobuf versions only on edge Python versions
+          - python-version: "3.9"
+            protobuf-version: protobuf>=4.23.0,<5.0.0
+          - python-version: "3.9"
+            protobuf-version: protobuf>=5.0.0,<6.0.0
+          - python-version: "3.14"
+            protobuf-version: protobuf>=4.23.0,<5.0.0
+          - python-version: "3.14"
+            protobuf-version: protobuf>=5.0.0,<6.0.0
     steps:
       - name: Checkout pydgraph
         uses: actions/checkout@v5
@@ -38,14 +51,30 @@ jobs:
         run: INSTALL_MISSING_TOOLS=true make setup
       - name: Sync python virtualenv
         run: make sync
+      - name: Install specific protobuf version
+        if: matrix.protobuf-version != ''
+        run: uv pip install "${{ matrix.protobuf-version }}"
       - name: Run tests
         run: make test
   test-pydgraph-dgraph-head:
-    name: Test Pydgraph (Python ${{ matrix.python-version }} / DGraph HEAD)
+    name:
+      Test Pydgraph (Python ${{ matrix.python-version }}${{ matrix.protobuf-version && format(' /
+      {0}', matrix.protobuf-version) || '' }} / DGraph HEAD)
     runs-on: ubuntu-latest
     strategy:
       matrix:
         python-version: ["3.9", "3.10", "3.11", "3.12", "3.13", "3.14"]
+        protobuf-version: [""]
+        include:
+          # Test older protobuf versions only on edge Python versions
+          - python-version: "3.9"
+            protobuf-version: protobuf>=4.23.0,<5.0.0
+          - python-version: "3.9"
+            protobuf-version: protobuf>=5.0.0,<6.0.0
+          - python-version: "3.14"
+            protobuf-version: protobuf>=4.23.0,<5.0.0
+          - python-version: "3.14"
+            protobuf-version: protobuf>=5.0.0,<6.0.0
     steps:
       - name: Checkout Dgraph main latest
         uses: actions/checkout@v5
@@ -82,88 +111,8 @@ jobs:
       - name: Sync python virtualenv
         working-directory: ./pydgraph
         run: make sync
-      - name: Run tests
-        working-directory: ./pydgraph
-        run: DGRAPH_IMAGE_TAG=local make test
-  test-pydgraph-protobuf-compat-dgraph-latest:
-    name:
-      Test Pydgraph (Python ${{ matrix.python-version }} / ${{ matrix.protobuf-version }} / DGraph
-      Latest)
-    runs-on: ubuntu-latest
-    strategy:
-      matrix:
-        python-version: ["3.9", "3.14"]
-        protobuf-version:
-          - protobuf>=4.23.0,<5.0.0
-          - protobuf>=5.0.0,<6.0.0
-    steps:
-      - name: Checkout pydgraph
-        uses: actions/checkout@v5
-        with:
-          repository: dgraph-io/pydgraph
-          ref: ${{ github.ref }}
-      - name: Setup python runtime and tooling
-        uses: ./.github/actions/setup-python-and-tooling
-        with:
-          python-version: ${{ matrix.python-version }}
-      - name: Pin python version
-        run: uv python pin ${{ matrix.python-version }}
-      - name: Setup project dependencies
-        run: INSTALL_MISSING_TOOLS=true make setup
-      - name: Sync python virtualenv
-        run: make sync
       - name: Install specific protobuf version
-        run: uv pip install "${{ matrix.protobuf-version }}"
-      - name: Run tests
-        run: make test
-  test-pydgraph-protobuf-compat-dgraph-head:
-    name:
-      Test Pydgraph (Python ${{ matrix.python-version }} / ${{ matrix.protobuf-version }} / DGraph
-      HEAD)
-    runs-on: ubuntu-latest
-    strategy:
-      matrix:
-        python-version: ["3.9", "3.14"]
-        protobuf-version:
-          - protobuf>=4.23.0,<5.0.0
-          - protobuf>=5.0.0,<6.0.0
-    steps:
-      - name: Checkout Dgraph main latest
-        uses: actions/checkout@v5
-        with:
-          path: dgraph
-          repository: dgraph-io/dgraph
-          ref: main
-      - name: Setup Go
-        uses: actions/setup-go@v6
-        with:
-          go-version-file: dgraph/go.mod
-      - name: Build dgraph binary
-        working-directory: ./dgraph
-        run: make docker-image
-      - name: Install dgraph binary
-        working-directory: ./dgraph
-        run: mv dgraph/dgraph ~/go/bin/dgraph
-      - name: Checkout pydgraph
-        uses: actions/checkout@v5
-        with:
-          path: pydgraph
-          repository: dgraph-io/pydgraph
-          ref: ${{ github.ref }}
-      - name: Setup python runtime and tooling
-        uses: ./pydgraph/.github/actions/setup-python-and-tooling
-        with:
-          python-version: ${{ matrix.python-version }}
-      - name: Pin python version
-        working-directory: ./pydgraph
-        run: uv python pin ${{ matrix.python-version }}
-      - name: Setup project dependencies
-        working-directory: ./pydgraph
-        run: INSTALL_MISSING_TOOLS=true make setup
-      - name: Sync python virtualenv
-        working-directory: ./pydgraph
-        run: make sync
-      - name: Install specific protobuf version
+        if: matrix.protobuf-version != ''
         working-directory: ./pydgraph
         run: uv pip install "${{ matrix.protobuf-version }}"
       - name: Run tests
