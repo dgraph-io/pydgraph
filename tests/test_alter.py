@@ -1,19 +1,23 @@
-# SPDX-FileCopyrightText: © 2017-2025 Istari Digital, Inc.
+# SPDX-FileCopyrightText: © 2017-2026 Istari Digital, Inc.
 # SPDX-License-Identifier: Apache-2.0
 
-__author__ = "Istari Digital, Inc."
-__maintainer__ = "Istari Digital, Inc. <dgraph-admin@istaridigital.com>"
+from __future__ import annotations
 
 import json
 import unittest
 
+import pytest
+
 from . import helper
+
+__author__ = "Istari Digital, Inc."
+__maintainer__ = "Istari Digital, Inc. <dgraph-admin@istaridigital.com>"
 
 
 class TestAlter(helper.ClientIntegrationTestCase):
     """Tests convenience methods for altering the database."""
 
-    def test_drop_all(self):
+    def test_drop_all(self) -> None:
         """Tests drop_all() method."""
         helper.drop_all(self.client)
 
@@ -40,23 +44,23 @@ class TestAlter(helper.ClientIntegrationTestCase):
         query = '{alice(func: eq(name, "Alice")) { name email age }}'
         resp = self.client.run_dql(query, read_only=True)
         result = json.loads(resp.json)
-        self.assertEqual(len(result.get("alice", [])), 1)
-        self.assertEqual(result["alice"][0]["name"], "Alice")
+        assert len(result.get("alice", [])) == 1
+        assert result["alice"][0]["name"] == "Alice"
 
         # Drop all
         self.client.drop_all()
         import grpc
 
-        with self.assertRaises(grpc.RpcError) as cm:
+        with pytest.raises(grpc.RpcError) as cm:
             self.client.run_dql(query, read_only=True)
-        self.assertIn("Schema not defined for predicate", str(cm.exception))
+        assert "Schema not defined for predicate" in str(cm.value)
 
         schema_query = "schema(pred: [name, email, age]) {type}"
         resp = self.client.run_dql(schema_query, read_only=True)
         result = json.loads(resp.json)
-        self.assertEqual(len(result.get("schema", [])), 0)
+        assert len(result.get("schema", [])) == 0
 
-    def test_drop_data(self):
+    def test_drop_data(self) -> None:
         """Tests drop_data() method preserves schema but removes data."""
         helper.drop_all(self.client)
 
@@ -83,7 +87,7 @@ class TestAlter(helper.ClientIntegrationTestCase):
         query = '{alice(func: eq(name, "Alice")) { name email age }}'
         resp = self.client.run_dql(query, read_only=True)
         result = json.loads(resp.json)
-        self.assertEqual(len(result.get("alice", [])), 1)
+        assert len(result.get("alice", [])) == 1
 
         # Drop data (but keep schema)
         self.client.drop_data()
@@ -91,13 +95,13 @@ class TestAlter(helper.ClientIntegrationTestCase):
         # Verify data is gone
         resp = self.client.run_dql(query, read_only=True)
         result = json.loads(resp.json)
-        self.assertEqual(len(result.get("alice", [])), 0)
+        assert len(result.get("alice", [])) == 0
 
         # Verify schema is still there
         schema_query = "schema(pred: [name, email, age]) {type}"
         resp = self.client.run_dql(schema_query, read_only=True)
         result = json.loads(resp.json)
-        self.assertGreater(len(result.get("schema", [])), 0)
+        assert len(result.get("schema", [])) > 0
 
         # Verify we can still add data with the same schema
         txn = self.client.txn()
@@ -113,10 +117,10 @@ class TestAlter(helper.ClientIntegrationTestCase):
         query = '{bob(func: eq(name, "Bob")) { name email age }}'
         resp = self.client.run_dql(query, read_only=True)
         result = json.loads(resp.json)
-        self.assertEqual(len(result.get("bob", [])), 1)
-        self.assertEqual(result["bob"][0]["name"], "Bob")
+        assert len(result.get("bob", [])) == 1
+        assert result["bob"][0]["name"] == "Bob"
 
-    def test_drop_predicate(self):
+    def test_drop_predicate(self) -> None:
         """Tests drop_predicate() method."""
         helper.drop_all(self.client)
 
@@ -143,10 +147,10 @@ class TestAlter(helper.ClientIntegrationTestCase):
         query = '{alice(func: eq(name, "Alice")) { name email age }}'
         resp = self.client.run_dql(query, read_only=True)
         result = json.loads(resp.json)
-        self.assertEqual(len(result.get("alice", [])), 1)
-        self.assertIn("name", result["alice"][0])
-        self.assertIn("email", result["alice"][0])
-        self.assertIn("age", result["alice"][0])
+        assert len(result.get("alice", [])) == 1
+        assert "name" in result["alice"][0]
+        assert "email" in result["alice"][0]
+        assert "age" in result["alice"][0]
 
         # Drop the age predicate
         self.client.drop_predicate("age")
@@ -154,27 +158,26 @@ class TestAlter(helper.ClientIntegrationTestCase):
         # Verify age is gone but name and email remain
         resp = self.client.run_dql(query, read_only=True)
         result = json.loads(resp.json)
-        self.assertEqual(len(result.get("alice", [])), 1)
-        self.assertIn("name", result["alice"][0])
-        self.assertIn("email", result["alice"][0])
-        self.assertNotIn("age", result["alice"][0])
+        assert len(result.get("alice", [])) == 1
+        assert "name" in result["alice"][0]
+        assert "email" in result["alice"][0]
+        assert "age" not in result["alice"][0]
 
         # Verify schema no longer has age
         schema_query = "schema(pred: [name, email, age]) {type}"
         resp = self.client.run_dql(schema_query, read_only=True)
         result = json.loads(resp.json)
         schema_preds = [p["predicate"] for p in result.get("schema", [])]
-        self.assertIn("name", schema_preds)
-        self.assertIn("email", schema_preds)
-        self.assertNotIn("age", schema_preds)
+        assert "name" in schema_preds
+        assert "email" in schema_preds
+        assert "age" not in schema_preds
 
-    def test_drop_predicate_empty_string(self):
+    def test_drop_predicate_empty_string(self) -> None:
         """Tests that drop_predicate() raises error for empty predicate."""
-        with self.assertRaises(ValueError) as context:
+        with pytest.raises(ValueError, match="predicate cannot be empty"):
             self.client.drop_predicate("")
-        self.assertIn("predicate cannot be empty", str(context.exception))
 
-    def test_drop_type(self):
+    def test_drop_type(self) -> None:
         """Tests drop_type() method."""
         helper.drop_all(self.client)
 
@@ -196,7 +199,7 @@ class TestAlter(helper.ClientIntegrationTestCase):
         type_query = "schema(type: Person) {type}"
         resp = self.client.run_dql(type_query, read_only=True)
         result = json.loads(resp.json)
-        self.assertGreater(len(result.get("types", [])), 0)
+        assert len(result.get("types", [])) > 0
 
         # Drop the type
         self.client.drop_type("Person")
@@ -204,21 +207,20 @@ class TestAlter(helper.ClientIntegrationTestCase):
         # Verify type is gone from schema
         resp = self.client.run_dql(type_query, read_only=True)
         result = json.loads(resp.json)
-        self.assertEqual(len(result.get("types", [])), 0)
+        assert len(result.get("types", [])) == 0
 
         # Verify predicates still exist (drop_type doesn't drop predicates)
         schema_query = "schema(pred: [name, email, age]) {type}"
         resp = self.client.run_dql(schema_query, read_only=True)
         result = json.loads(resp.json)
-        self.assertGreater(len(result.get("schema", [])), 0)
+        assert len(result.get("schema", [])) > 0
 
-    def test_drop_type_empty_string(self):
+    def test_drop_type_empty_string(self) -> None:
         """Tests that drop_type() raises error for empty type_name."""
-        with self.assertRaises(ValueError) as context:
+        with pytest.raises(ValueError, match="type_name cannot be empty"):
             self.client.drop_type("")
-        self.assertIn("type_name cannot be empty", str(context.exception))
 
-    def test_set_schema(self):
+    def test_set_schema(self) -> None:
         """Tests set_schema() method."""
         helper.drop_all(self.client)
 
@@ -233,7 +235,7 @@ class TestAlter(helper.ClientIntegrationTestCase):
         schema_query = "schema(pred: [name, email]) {type}"
         resp = self.client.run_dql(schema_query, read_only=True)
         result = json.loads(resp.json)
-        self.assertEqual(len(result.get("schema", [])), 2)
+        assert len(result.get("schema", [])) == 2
 
         # Update schema with additional predicate
         schema2 = """
@@ -247,16 +249,15 @@ class TestAlter(helper.ClientIntegrationTestCase):
         schema_query = "schema(pred: [name, email, age]) {type}"
         resp = self.client.run_dql(schema_query, read_only=True)
         result = json.loads(resp.json)
-        self.assertEqual(len(result.get("schema", [])), 3)
+        assert len(result.get("schema", [])) == 3
 
-    def test_set_schema_empty_string(self):
+    def test_set_schema_empty_string(self) -> None:
         """Tests that set_schema() raises error for empty schema."""
-        with self.assertRaises(ValueError) as context:
+        with pytest.raises(ValueError, match="schema cannot be empty"):
             self.client.set_schema("")
-        self.assertIn("schema cannot be empty", str(context.exception))
 
 
-def suite():
+def suite() -> unittest.TestSuite:
     """Returns a test suite object."""
     suite_obj = unittest.TestSuite()
     suite_obj.addTest(unittest.makeSuite(TestAlter))

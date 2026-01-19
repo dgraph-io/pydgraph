@@ -6,18 +6,20 @@
 import asyncio
 import json
 import os
+from collections.abc import AsyncGenerator
 
 import pytest
 
 import pydgraph
 from pydgraph import AsyncDgraphClient, AsyncDgraphClientStub, async_open
+from pydgraph.proto import api_pb2 as api
 
 # Get test server address from environment
 TEST_SERVER_ADDR = os.getenv("TEST_SERVER_ADDR", "localhost:9180")
 
 
 @pytest.fixture
-async def async_client():
+async def async_client() -> AsyncGenerator[AsyncDgraphClient, None]:
     """Fixture providing an async client with login."""
     client_stub = AsyncDgraphClientStub(TEST_SERVER_ADDR)
     client = AsyncDgraphClient(client_stub)
@@ -32,7 +34,7 @@ async def async_client():
             if "user not found" in str(e):
                 # User not found means auth is working but user doesn't exist yet
                 # This shouldn't happen with groot, so treat as error
-                raise e
+                raise
             # Server might not be ready, wait and retry
             await asyncio.sleep(0.1)
 
@@ -41,24 +43,24 @@ async def async_client():
 
 
 @pytest.fixture
-async def async_client_clean(async_client):
+async def async_client_clean(async_client: AsyncDgraphClient) -> AsyncDgraphClient:
     """Fixture providing an async client with clean database."""
     await async_client.alter(pydgraph.Operation(drop_all=True))
-    yield async_client
+    return async_client
 
 
 class TestAsyncClient:
     """Test suite for async client basic operations."""
 
     @pytest.mark.asyncio
-    async def test_check_version(self, async_client):
+    async def test_check_version(self, async_client: AsyncDgraphClient) -> None:
         """Test async version check."""
         version = await async_client.check_version()
         assert version is not None
         assert isinstance(version, str)
 
     @pytest.mark.asyncio
-    async def test_alter_schema(self, async_client):
+    async def test_alter_schema(self, async_client: AsyncDgraphClient) -> None:
         """Test async alter operation."""
         # Drop all first
         await async_client.alter(pydgraph.Operation(drop_all=True))
@@ -70,7 +72,7 @@ class TestAsyncClient:
         assert response is not None
 
     @pytest.mark.asyncio
-    async def test_mutation_and_query(self, async_client_clean):
+    async def test_mutation_and_query(self, async_client_clean: AsyncDgraphClient) -> None:
         """Test async mutation and query operations."""
         # Set schema
         await async_client_clean.alter(
@@ -99,7 +101,7 @@ class TestAsyncClient:
         assert result["me"][0]["name"] == "Alice"
 
     @pytest.mark.asyncio
-    async def test_mutation_with_json(self, async_client_clean):
+    async def test_mutation_with_json(self, async_client_clean: AsyncDgraphClient) -> None:
         """Test mutation with JSON object."""
         await async_client_clean.alter(
             pydgraph.Operation(schema="name: string @index(term) .")
@@ -112,7 +114,7 @@ class TestAsyncClient:
 
         # Get the UID
         uid = None
-        for _, val in response.uids.items():
+        for val in response.uids.values():
             uid = val
             break
 
@@ -130,7 +132,7 @@ class TestAsyncClient:
         assert result["me"][0]["name"] == "Bob"
 
     @pytest.mark.asyncio
-    async def test_transaction_commit(self, async_client_clean):
+    async def test_transaction_commit(self, async_client_clean: AsyncDgraphClient) -> None:
         """Test explicit transaction commit."""
         await async_client_clean.alter(
             pydgraph.Operation(schema="name: string @index(term) .")
@@ -158,7 +160,7 @@ class TestAsyncClient:
         assert result["me"][0]["name"] == "Charlie"
 
     @pytest.mark.asyncio
-    async def test_transaction_discard(self, async_client_clean):
+    async def test_transaction_discard(self, async_client_clean: AsyncDgraphClient) -> None:
         """Test transaction discard."""
         await async_client_clean.alter(
             pydgraph.Operation(schema="name: string @index(term) .")
@@ -184,7 +186,7 @@ class TestAsyncClient:
         assert len(result.get("me", [])) == 0
 
     @pytest.mark.asyncio
-    async def test_read_only_transaction(self, async_client_clean):
+    async def test_read_only_transaction(self, async_client_clean: AsyncDgraphClient) -> None:
         """Test read-only transactions."""
         await async_client_clean.alter(
             pydgraph.Operation(schema="name: string @index(term) .")
@@ -212,7 +214,7 @@ class TestAsyncClient:
             await txn.mutate(set_obj={"name": "Frank"})
 
     @pytest.mark.asyncio
-    async def test_query_with_variables(self, async_client_clean):
+    async def test_query_with_variables(self, async_client_clean: AsyncDgraphClient) -> None:
         """Test query with variables."""
         await async_client_clean.alter(
             pydgraph.Operation(schema="name: string @index(term) .")
@@ -240,7 +242,7 @@ class TestAsyncContextManager:
     """Test suite for async context managers."""
 
     @pytest.mark.asyncio
-    async def test_client_context_manager(self):
+    async def test_client_context_manager(self) -> None:
         """Test async client context manager."""
         async with await async_open(
             f"dgraph://groot:password@{TEST_SERVER_ADDR}"
@@ -250,7 +252,7 @@ class TestAsyncContextManager:
         # Client should be closed automatically
 
     @pytest.mark.asyncio
-    async def test_transaction_context_manager(self, async_client_clean):
+    async def test_transaction_context_manager(self, async_client_clean: AsyncDgraphClient) -> None:
         """Test async transaction context manager."""
         await async_client_clean.alter(
             pydgraph.Operation(schema="name: string @index(term) .")
@@ -279,7 +281,7 @@ class TestAsyncConcurrent:
     """Test suite for concurrent async operations."""
 
     @pytest.mark.asyncio
-    async def test_concurrent_queries(self, async_client_clean):
+    async def test_concurrent_queries(self, async_client_clean: AsyncDgraphClient) -> None:
         """Test multiple concurrent queries."""
         await async_client_clean.alter(
             pydgraph.Operation(schema="name: string @index(term) .")
@@ -296,7 +298,7 @@ class TestAsyncConcurrent:
             }
         }"""
 
-        async def run_query():
+        async def run_query() -> api.Response:
             txn = async_client_clean.txn(read_only=True)
             return await txn.query(query)
 
@@ -312,14 +314,14 @@ class TestAsyncConcurrent:
             assert result["me"][0]["name"] == "Concurrent Test"
 
     @pytest.mark.asyncio
-    async def test_concurrent_mutations(self, async_client_clean):
+    async def test_concurrent_mutations(self, async_client_clean: AsyncDgraphClient) -> None:
         """Test multiple concurrent mutations."""
         await async_client_clean.alter(
             pydgraph.Operation(schema="name: string @index(term) .")
         )
 
         # Run multiple mutations concurrently
-        async def run_mutation(name):
+        async def run_mutation(name: str) -> api.Response:
             txn = async_client_clean.txn()
             return await txn.mutate(set_obj={"name": name}, commit_now=True)
 
@@ -350,14 +352,14 @@ class TestAsyncConnectionString:
     """Test suite for async_open connection string parsing."""
 
     @pytest.mark.asyncio
-    async def test_simple_connection_string(self):
+    async def test_simple_connection_string(self) -> None:
         """Test simple connection string without auth."""
         async with await async_open(f"dgraph://{TEST_SERVER_ADDR}") as client:
             version = await client.check_version()
             assert version is not None
 
     @pytest.mark.asyncio
-    async def test_connection_string_with_auth(self):
+    async def test_connection_string_with_auth(self) -> None:
         """Test connection string with username and password."""
         async with await async_open(
             f"dgraph://groot:password@{TEST_SERVER_ADDR}"
@@ -366,15 +368,15 @@ class TestAsyncConnectionString:
             assert version is not None
 
     @pytest.mark.asyncio
-    async def test_invalid_connection_string(self):
+    async def test_invalid_connection_string(self) -> None:
         """Test invalid connection string raises error."""
-        with pytest.raises(ValueError):
+        with pytest.raises(ValueError, match="scheme must be 'dgraph'"):
             await async_open("invalid://localhost:9080")
 
-        with pytest.raises(ValueError):
+        with pytest.raises(ValueError, match="port required"):
             await async_open("dgraph://localhost")  # Missing port
 
-        with pytest.raises(ValueError):
+        with pytest.raises(ValueError, match="password required when username is provided"):
             await async_open(
                 "dgraph://groot@localhost:9080"
             )  # Username without password

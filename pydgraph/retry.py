@@ -33,13 +33,14 @@ Example usage:
             txn.mutate(set_obj={"name": name})
             txn.commit()
 """
-
 import asyncio
 import functools
 import logging
 import random
 import time
-from typing import Any, Callable, TypeVar
+from collections.abc import AsyncGenerator, Callable, Generator
+from types import TracebackType
+from typing import Any, Optional, TypeVar
 
 from pydgraph import errors
 from pydgraph.meta import VERSION
@@ -84,13 +85,13 @@ def _calculate_delay(
 
     # Add jitter to prevent thundering herd
     if jitter > 0:
-        jitter_amount = delay * jitter * random.random()  # nosec B311
+        jitter_amount = delay * jitter * random.random()  # noqa: S311  # nosec B311
         delay = delay + jitter_amount
 
     return delay
 
 
-def _is_retriable(error: Exception) -> bool:
+def _is_retriable(error: Optional[BaseException]) -> bool:
     """Check if an error is retriable.
 
     Args:
@@ -140,17 +141,22 @@ class RetryAttempt:
                 txn.commit()
     """
 
-    def __init__(self):
+    def __init__(self) -> None:
         self.failed = False
-        self.error: Exception | None = None
+        self.error: Optional[Exception] = None
 
-    def __enter__(self):
+    def __enter__(self) -> "RetryAttempt":
         return self
 
-    def __exit__(self, exc_type, exc_val, exc_tb):
+    def __exit__(
+        self,
+        exc_type: Optional[type[BaseException]],
+        exc_val: Optional[BaseException],
+        exc_tb: Optional[TracebackType],
+    ) -> bool:
         if exc_type is not None and _is_retriable(exc_val):
             self.failed = True
-            self.error = exc_val
+            self.error = exc_val  # type: ignore[assignment]
             return True  # Suppress the exception
         return False
 
@@ -165,17 +171,22 @@ class AsyncRetryAttempt:
                 await txn.commit()
     """
 
-    def __init__(self):
+    def __init__(self) -> None:
         self.failed = False
-        self.error: Exception | None = None
+        self.error: Optional[Exception] = None
 
-    def __enter__(self):
+    def __enter__(self) -> "AsyncRetryAttempt":
         return self
 
-    def __exit__(self, exc_type, exc_val, exc_tb):
+    def __exit__(
+        self,
+        exc_type: Optional[type[BaseException]],
+        exc_val: Optional[BaseException],
+        exc_tb: Optional[TracebackType],
+    ) -> bool:
         if exc_type is not None and _is_retriable(exc_val):
             self.failed = True
-            self.error = exc_val
+            self.error = exc_val  # type: ignore[assignment]
             return True  # Suppress the exception
         return False
 
@@ -185,7 +196,7 @@ def retry(
     base_delay: float = DEFAULT_BASE_DELAY,
     max_delay: float = DEFAULT_MAX_DELAY,
     jitter: float = DEFAULT_JITTER,
-):
+) -> Generator[RetryAttempt, None, None]:
     """Generator for sync transaction retry with exponential backoff.
 
     Yields RetryAttempt context managers. Use in a for loop:
@@ -240,7 +251,7 @@ async def retry_async(
     base_delay: float = DEFAULT_BASE_DELAY,
     max_delay: float = DEFAULT_MAX_DELAY,
     jitter: float = DEFAULT_JITTER,
-):
+) -> AsyncGenerator[AsyncRetryAttempt, None]:
     """Async generator for transaction retry with exponential backoff.
 
     Yields AsyncRetryAttempt context managers. Use in an async for loop:
@@ -323,13 +334,13 @@ def with_retry(
 
     def decorator(func: F) -> F:
         @functools.wraps(func)
-        def wrapper(*args, **kwargs):
-            last_error: Exception | None = None
+        def wrapper(*args: Any, **kwargs: Any) -> Any:
+            last_error: Optional[Exception] = None
 
             for attempt_num in range(max_retries + 1):
                 try:
                     return func(*args, **kwargs)
-                except (errors.AbortedError, errors.RetriableError) as e:
+                except (errors.AbortedError, errors.RetriableError) as e:  # noqa: PERF203
                     last_error = e
 
                     if attempt_num < max_retries:
@@ -354,7 +365,7 @@ def with_retry(
             )
             raise last_error or errors.AbortedError()
 
-        return wrapper  # type: ignore
+        return wrapper  # type: ignore[return-value]
 
     return decorator
 
@@ -392,13 +403,13 @@ def with_retry_async(
 
     def decorator(func: F) -> F:
         @functools.wraps(func)
-        async def wrapper(*args, **kwargs):
-            last_error: Exception | None = None
+        async def wrapper(*args: Any, **kwargs: Any) -> Any:
+            last_error: Optional[Exception] = None
 
             for attempt_num in range(max_retries + 1):
                 try:
                     return await func(*args, **kwargs)
-                except (errors.AbortedError, errors.RetriableError) as e:
+                except (errors.AbortedError, errors.RetriableError) as e:  # noqa: PERF203
                     last_error = e
 
                     if attempt_num < max_retries:
@@ -423,21 +434,21 @@ def with_retry_async(
             )
             raise last_error or errors.AbortedError()
 
-        return wrapper  # type: ignore
+        return wrapper  # type: ignore[return-value]
 
     return decorator
 
 
 def run_transaction(
-    client,
-    operation: Callable,
+    client: Any,
+    operation: Callable[..., Any],
     max_retries: int = DEFAULT_MAX_RETRIES,
     base_delay: float = DEFAULT_BASE_DELAY,
     max_delay: float = DEFAULT_MAX_DELAY,
     jitter: float = DEFAULT_JITTER,
     read_only: bool = False,
     best_effort: bool = False,
-):
+) -> Any:
     """Run a transaction with automatic retry on conflict.
 
     Executes the operation function with a fresh transaction on each attempt.
@@ -470,13 +481,12 @@ def run_transaction(
     """
     _validate_retry_params(max_retries, base_delay, max_delay, jitter)
 
-    last_error: Exception | None = None
+    last_error: Optional[Exception] = None
 
     for attempt_num in range(max_retries + 1):
         txn = client.txn(read_only=read_only, best_effort=best_effort)
         try:
             result = operation(txn)
-            return result
         except (errors.AbortedError, errors.RetriableError) as e:
             last_error = e
             if attempt_num < max_retries:
@@ -488,6 +498,8 @@ def run_transaction(
                     delay,
                 )
                 time.sleep(delay)
+        else:
+            return result
         finally:
             try:
                 txn.discard()
@@ -500,15 +512,15 @@ def run_transaction(
 
 
 async def run_transaction_async(
-    client,
-    operation: Callable,
+    client: Any,
+    operation: Callable[..., Any],
     max_retries: int = DEFAULT_MAX_RETRIES,
     base_delay: float = DEFAULT_BASE_DELAY,
     max_delay: float = DEFAULT_MAX_DELAY,
     jitter: float = DEFAULT_JITTER,
     read_only: bool = False,
     best_effort: bool = False,
-):
+) -> Any:
     """Run an async transaction with automatic retry on conflict.
 
     Executes the operation function with a fresh transaction on each attempt.
@@ -541,13 +553,12 @@ async def run_transaction_async(
     """
     _validate_retry_params(max_retries, base_delay, max_delay, jitter)
 
-    last_error: Exception | None = None
+    last_error: Optional[Exception] = None
 
     for attempt_num in range(max_retries + 1):
         txn = client.txn(read_only=read_only, best_effort=best_effort)
         try:
             result = await operation(txn)
-            return result
         except (errors.AbortedError, errors.RetriableError) as e:
             last_error = e
             if attempt_num < max_retries:
@@ -559,6 +570,8 @@ async def run_transaction_async(
                     delay,
                 )
                 await asyncio.sleep(delay)
+        else:
+            return result
         finally:
             try:
                 await txn.discard()

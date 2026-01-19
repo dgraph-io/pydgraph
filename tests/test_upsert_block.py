@@ -1,39 +1,44 @@
-# SPDX-FileCopyrightText: © 2017-2025 Istari Digital, Inc.
+# SPDX-FileCopyrightText: © 2017-2026 Istari Digital, Inc.
 # SPDX-License-Identifier: Apache-2.0
 
 """Tests to verify upsert block."""
-__author__ = "Animesh Pathak <animesh@dgrpah.io>"
-__maintainer__ = "Animesh Pathak <animesh@dgrpah.io>"
+
+from __future__ import annotations
 
 import json
 import logging
 import unittest
 
-from tests import helper
+import pytest
+
+from . import helper
+
+__author__ = "Animesh Pathak <animesh@dgrpah.io>"
+__maintainer__ = "Istari Digital <contact@istaridigital.com>"
 
 
 class TestUpsertBlock(helper.ClientIntegrationTestCase):
     """Tests for Upsert Block"""
 
-    def setUp(self):
-        super(TestUpsertBlock, self).setUp()
+    def setUp(self) -> None:
+        super().setUp()
         helper.drop_all(self.client)
         helper.set_schema(self.client, "name: string @index(term) @upsert .")
 
-    def test_upsert_block_one_mutation(self):
+    def test_upsert_block_one_mutation(self) -> None:
         txn = self.client.txn()
         mutation = txn.create_mutation(set_nquads='_:animesh <name> "Animesh" .')
         request = txn.create_request(mutations=[mutation], commit_now=True)
         txn.do_request(request)
 
-    def test_upsert_block_multiple_mutation(self):
+    def test_upsert_block_multiple_mutation(self) -> None:
         txn = self.client.txn()
         mutation1 = txn.create_mutation(set_nquads='_:animesh <name> "Animesh" .')
         mutation2 = txn.create_mutation(set_nquads='_:aman <name> "Aman" .')
         request = txn.create_request(mutations=[mutation1, mutation2], commit_now=True)
         txn.do_request(request)
 
-    def test_one_mutation_one_query(self):
+    def test_one_mutation_one_query(self) -> None:
         txn = self.client.txn()
         mutation = txn.create_mutation(set_nquads='uid(u) <name> "Animesh" .')
 
@@ -48,7 +53,7 @@ class TestUpsertBlock(helper.ClientIntegrationTestCase):
         request = txn.create_request(mutations=[mutation], query=query, commit_now=True)
         txn.do_request(request)
 
-    def test_one_query(self):
+    def test_one_query(self) -> None:
         self.insert_sample_data()
         txn = self.client.txn()
 
@@ -67,17 +72,14 @@ class TestUpsertBlock(helper.ClientIntegrationTestCase):
         if len(data["me"]) <= 0:
             self.fail("Upsert block test failed: No data found in query")
 
-    def test_no_query_no_mutation(self):
+    def test_no_query_no_mutation(self) -> None:
         txn = self.client.txn()
         request = txn.create_request()
-        try:
+        with pytest.raises(Exception, match="empty request"):
             txn.do_request(request)
-            self.fail("Upsert block test failed: Empty query succeeded")
-        except Exception as e:
-            txn.discard()
-            self.assertTrue("empty request" in str(e))
+        txn.discard()
 
-    def test_conditional_upsert(self):
+    def test_conditional_upsert(self) -> None:
         self.insert_sample_data()
         txn = self.client.txn()
 
@@ -94,7 +96,7 @@ class TestUpsertBlock(helper.ClientIntegrationTestCase):
         txn.do_request(request)
         self.was_upsert_successful()
 
-    def test_bulk_set(self):
+    def test_bulk_set(self) -> None:
         rdfs = """
                    _:animesh <name> "Animesh" .
                    _:aman <name> "Aman" .
@@ -131,16 +133,16 @@ class TestUpsertBlock(helper.ClientIntegrationTestCase):
         if len(data) > 0:
             self.fail("Upsert block test failed: Couldn't do bulk set")
 
-    def test_json(self):
+    def test_json(self) -> None:
         txn = self.client.txn()
         data = {"uid": "_:animesh", "name": "Pathak"}
         txn.mutate(set_obj=data, commit_now=True)
 
-    def insert_sample_data(self):
+    def insert_sample_data(self) -> None:
         txn = self.client.txn()
         txn.mutate(set_nquads='_:animesh <name> "Animesh" .', commit_now=True)
 
-    def was_upsert_successful(self):
+    def was_upsert_successful(self) -> None:
         query = """
                 {
                   me(func: eq(name, "Animesh")) {
@@ -170,7 +172,7 @@ class TestUpsertBlock(helper.ClientIntegrationTestCase):
             self.fail("Upsert block test failed: Couldn't update data.")
 
 
-def suite():
+def suite() -> unittest.TestSuite:
     suite_obj = unittest.TestSuite()
     suite_obj.addTest(TestUpsertBlock())
     return suite_obj

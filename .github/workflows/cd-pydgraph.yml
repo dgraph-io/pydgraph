@@ -1,5 +1,4 @@
 name: cd-pydgraph
-
 on:
   workflow_dispatch:
     inputs:
@@ -7,37 +6,38 @@ on:
         description: releasetag
         required: true
         type: string
-
 permissions:
   contents: read
-
 jobs:
   pydgraph-build:
+    name: Release
     runs-on: ubuntu-latest
     steps:
       - uses: actions/checkout@v5
         with:
           ref: "${{ github.event.inputs.releasetag }}"
-      - name: Set up Python
-        uses: actions/setup-python@v6
+      - name: Setup python runtime
+        uses: ./.github/actions/setup-python-and-tooling
         with:
-          python-version: "3.12"
-      - name: Install dependencies
+          python-version: "3.13"
+      - name: Setup project dependencies
+        run: INSTALL_MISSING_TOOLS=true make setup
+      - name: Sync python virtualenv
+        run: make sync
+      - name: Check generated protobufs are current
         run: |
-          python -m pip install --upgrade pip
-          python -m pip install .[dev]
-          # use twine to upload to pypi
-          python -m pip install twine
-      - name: Verify that protobufs are checked in
-        run: |
-          python scripts/protogen.py
+          make protogen
           git diff --exit-code -- .
-      - name: Build pydgraph
-        run: |
-          rm -rf dist
-          # build binary wheel and a source tarball
-          python -m build
-      - name: Upload to PyPi
-        run:
-          twine upload --username ${{ secrets.DGRAPH_PYPI_USERNAME }} --password ${{
-          secrets.DGRAPH_PYPI_PASSWORD }} dist/*
+      - name: Check code quality
+        run: make check
+      - name: Run tests
+        run: make test
+      - name: Set version
+        run: uv version ${{ github.event.inputs.releasetag }}
+      - name: Build release
+        run: make clean build
+      - name: Publish release
+        env:
+          UV_PUBLISH_USERNAME: ${{ secrets.DGRAPH_PYPI_USERNAME }}
+          UV_PUBLISH_PASSWORD: ${{ secrets.DGRAPH_PYPI_PASSWORD }}
+        run: make publish

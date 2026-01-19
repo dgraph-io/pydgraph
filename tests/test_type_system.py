@@ -1,9 +1,9 @@
-# SPDX-FileCopyrightText: © 2017-2025 Istari Digital, Inc.
+# SPDX-FileCopyrightText: © 2017-2026 Istari Digital, Inc.
 # SPDX-License-Identifier: Apache-2.0
 
 """Tests to verify type system."""
-__author__ = "Animesh Pathak <animesh@dgrpah.io>"
-__maintainer__ = "Animesh Pathak <animesh@dgrpah.io>"
+
+from __future__ import annotations
 
 import json
 import logging
@@ -11,10 +11,13 @@ import unittest
 
 from tests import helper
 
+__author__ = "Animesh Pathak <animesh@dgrpah.io>"
+__maintainer__ = "Istari Digital <contact@istaridigital.com>"
+
 
 class TestTypeSystem(helper.ClientIntegrationTestCase):
-    def setUp(self):
-        super(TestTypeSystem, self).setUp()
+    def setUp(self) -> None:
+        super().setUp()
         helper.drop_all(self.client)
 
         schema = """
@@ -28,7 +31,7 @@ class TestTypeSystem(helper.ClientIntegrationTestCase):
 
         helper.set_schema(self.client, schema)
 
-    def test_type_deletion_failure(self):
+    def test_type_deletion_failure(self) -> None:
         """It tries to delete all predicates of a node without having any type"""
 
         rdfs = """
@@ -38,8 +41,7 @@ class TestTypeSystem(helper.ClientIntegrationTestCase):
 
         self.insert_delete_and_check(rdfs, 1)
 
-    def test_type_deletion(self):
-
+    def test_type_deletion(self) -> None:
         rdfs = """
                    _:animesh <name> "Animesh" .
                    _:animesh <age> "24" .
@@ -48,7 +50,9 @@ class TestTypeSystem(helper.ClientIntegrationTestCase):
 
         self.insert_delete_and_check(rdfs, 0)
 
-    def insert_delete_and_check(self, rdfs, expected_result_count=0):
+    def insert_delete_and_check(
+        self, rdfs: str, expected_result_count: int = 0
+    ) -> None:
         txn = self.client.txn()
         txn.mutate(set_nquads=rdfs, commit_now=True)
 
@@ -78,7 +82,7 @@ class TestTypeSystem(helper.ClientIntegrationTestCase):
             self.fail("Type system test failed: Error while deleting predicates.")
 
 
-def suite():
+def suite() -> unittest.TestSuite:
     suite_obj = unittest.TestSuite()
     suite_obj.addTest(TestTypeSystem())
     return suite_obj

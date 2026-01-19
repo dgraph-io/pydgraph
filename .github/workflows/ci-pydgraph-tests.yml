@@ -1,5 +1,4 @@
 name: ci-pydgraph-tests
-
 on:
   push:
     branches:
@@ -14,52 +13,75 @@ on:
       - main
   schedule:
     - cron: 1 0 * * * # run workflow daily
-
 permissions:
   contents: read
-
 jobs:
-  pydgraph-tests:
+  test-pydgraph-dgraph-latest:
+    name: Test (Python ${{ matrix.python-version }} / DGraph Latest)
     runs-on: ubuntu-latest
     strategy:
       matrix:
-        python-version: ["3.9", "3.10", "3.11", "3.12", "3.13"]
+        python-version: ["3.9", "3.10", "3.11", "3.12", "3.13", "3.14"]
     steps:
-      - name: Checkout pydgraph repo
+      - name: Checkout pydgraph
         uses: actions/checkout@v5
         with:
-          path: pydgraph
           repository: dgraph-io/pydgraph
           ref: ${{ github.ref }}
-      - name: Set up Python ${{ matrix.python-version }}
-        uses: actions/setup-python@v6
+      - name: Setup python runtime and tooling
+        uses: ./.github/actions/setup-python-and-tooling
         with:
           python-version: ${{ matrix.python-version }}
-      - name: Install dependencies
-        run: |
-          cd pydgraph
-          python -m pip install --upgrade pip
-          python -m pip install .[dev]
-      - name: Verify that updated protobufs are checked in
-        if: ${{ matrix.python-version == '3.9' || matrix.python-version == '3.10' ||
-          matrix.python-version == '3.11' || matrix.python-version == '3.12' }} # Skip for Python 3.13+ due to grpcio-tools compatibility
-        run: |
-          cd pydgraph
-          python scripts/protogen.py
-          git diff --exit-code -- .
-      - name: Checkout Dgraph repo # needed for acl tests
+      - name: Pin python version
+        run: uv python pin ${{ matrix.python-version }}
+      - name: Setup project dependencies
+        run: INSTALL_MISSING_TOOLS=true make setup
+      - name: Sync python virtualenv
+        run: make sync
+      - name: Run tests
+        run: make test
+  test-pydgraph-dgraph-head:
+    name: Test Pydgraph (Python ${{ matrix.python-version }} / DGraph HEAD)
+    runs-on: ubuntu-latest
+    strategy:
+      matrix:
+        python-version: ["3.9", "3.10", "3.11", "3.12", "3.13", "3.14"]
+    steps:
+      - name: Checkout Dgraph main latest
         uses: actions/checkout@v5
         with:
           path: dgraph
           repository: dgraph-io/dgraph
           ref: main
-      - name: Set up Go
+      - name: Setup Go
         uses: actions/setup-go@v6
         with:
           go-version-file: dgraph/go.mod
       - name: Build dgraph binary
-        run: cd dgraph && make docker-image # also builds dgraph binary
-      - name: Move dgraph binary to gopath
-        run: cd dgraph && mv dgraph/dgraph ~/go/bin/dgraph
+        working-directory: ./dgraph
+        run: make docker-image # also builds dgraph binary
+      - name: Install dgraph binary
+        working-directory: ./dgraph
+        run: mv dgraph/dgraph ~/go/bin/dgraph
+      - name: Checkout pydgraph
+        uses: actions/checkout@v5
+        with:
+          path: pydgraph
+          repository: dgraph-io/pydgraph
+          ref: ${{ github.ref }}
+      - name: Setup python runtime and tooling
+        uses: ./pydgraph/.github/actions/setup-python-and-tooling
+        with:
+          python-version: ${{ matrix.python-version }}
+      - name: Pin python version
+        working-directory: ./pydgraph
+        run: uv python pin ${{ matrix.python-version }}
+      - name: Setup project dependencies
+        working-directory: ./pydgraph
+        run: INSTALL_MISSING_TOOLS=true make setup
+      - name: Sync python virtualenv
+        working-directory: ./pydgraph
+        run: make sync
       - name: Run tests
-        run: cd pydgraph && DGRAPH_IMAGE_TAG=local bash scripts/local-test.sh
+        working-directory: ./pydgraph
+        run: DGRAPH_IMAGE_TAG=local make test
