@@ -5,6 +5,51 @@ All notable changes to this project will be documented in this file.
 The format is based on [Keep a Changelog](http://keepachangelog.com/en/1.0.0/) and this project
 adheres to [Semantic Versioning](http://semver.org/spec/v2.0.0.html).
 
+## [v25.1.0] - 2026-01-19
+
+**Added**
+
+- Context manager support for `Txn` and `DgraphClientStub` by @shaunpatterson in
+  [#279](https://github.com/dgraph-io/pydgraph/pull/279)
+- Transaction retry utilities with configurable exponential backoff, submitted by @shaunpatterson in
+  [#286](https://github.com/dgraph-io/pydgraph/pull/286), merged in
+  [#288](https://github.com/dgraph-io/pydgraph/pull/288)
+- Comprehensive type annotations across all client modules with strict type checking enabled
+- Python 3.14 support with matrix testing for Python 3.9-3.14
+- gRPC readiness check with exponential backoff for improved connection reliability
+- Flexible protobuf version support (4.x-6.x) for broader compatibility
+- Contributor documentation with comprehensive CONTRIBUTING.md and CODE_OF_CONDUCT.md
+- `uv` workflow support for modern Python project management
+- Pre-commit hooks for code quality: ruff linting, mypy and ty type checking, shellcheck, trunk
+  formatting, and pygrep checks (no blanket noqa/type-ignore, no eval, type annotations)
+
+**Fixed**
+
+- gRPC error detection now uses duck typing for compatibility with grpcio 1.76+, submitted by
+  @shaunpatterson in [#286](https://github.com/dgraph-io/pydgraph/pull/286), merged in
+  [#287](https://github.com/dgraph-io/pydgraph/pull/287)
+- Improved exception handling patterns in transaction module
+- Context manager exception handling in transactions
+
+**Deprecated**
+
+- `DgraphClientStub.from_cloud()` and `AsyncDgraphClientStub.from_cloud()` methods (removal planned
+  for 26.0.0)
+  - Dgraph Cloud service has been discontinued
+  - Use standard `DgraphClientStub` constructor with `grpc.ssl_channel_credentials()` instead
+- `DgraphClientStub.parse_host()` and `AsyncDgraphClientStub.parse_host()` methods (removal planned
+  for 26.0.0)
+  - Use standard gRPC hostname handling instead
+
+**Chore**
+
+- Modernized CI/CD workflows with consolidated GitHub Actions and dedicated code quality checks
+- Updated license to SPDX format
+- Removed Python 2 compatibility code
+- Regenerated protobuf files with updated formatting
+- Updated maintainer to Istari Digital across all Python files
+- Updated copyright year to 2026
+
 ## [v25.0.0] - 2025-12-18
 
 **Added**
@@ -29,17 +74,6 @@ adheres to [Semantic Versioning](http://semver.org/spec/v2.0.0.html).
   - `drop_type()` - Drops a specific type
   - `set_schema()` - Sets the DQL schema
 - Updated proto definitions to support Dgraph v25 API
-
-**Deprecated**
-
-- `DgraphClientStub.from_cloud()` and `AsyncDgraphClientStub.from_cloud()` methods (deprecated in
-  25.1.0, removal planned for 26.0.0)
-  - Dgraph Cloud service has been discontinued
-  - Use standard `DgraphClientStub` constructor with `grpc.ssl_channel_credentials()` instead
-  - Docstrings include migration examples
-- `DgraphClientStub.parse_host()` and `AsyncDgraphClientStub.parse_host()` methods (deprecated in
-  25.1.0, removal planned for 26.0.0)
-  - Use standard gRPC hostname handling instead
 
 **Chore**
 
