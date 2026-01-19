@@ -94,8 +94,8 @@ jobs:
       matrix:
         python-version: ["3.9", "3.14"]
         protobuf-version:
-          - "protobuf>=4.23.0,<5.0.0"
-          - "protobuf>=5.0.0,<6.0.0"
+          - protobuf>=4.23.0,<5.0.0
+          - protobuf>=5.0.0,<6.0.0
     steps:
       - name: Checkout pydgraph
         uses: actions/checkout@v5
