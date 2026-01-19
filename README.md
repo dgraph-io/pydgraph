@@ -65,6 +65,8 @@ pip install pydgraph "protobuf>=4.23.0,<5.0.0"
 pip install pydgraph "protobuf>=5.0.0,<6.0.0"
 ```
 
+All supported protobuf versions are tested in CI against both Dgraph latest and Dgraph HEAD.
+
 ## Supported Versions
 
 Depending on the version of Dgraph that you are connecting to, you should use a different version of
