@@ -27,8 +27,8 @@ function restartCluster() {
 	DockerCompose up --detach --force-recreate
 	# shellcheck disable=SC2312
 	alphaHttpPort=$(DockerCompose port alpha1 8080 | awk -F: '{print $2}')
+	# shellcheck disable=SC2312
 	alphaGrpcPort=$(DockerCompose port alpha1 9080 | awk -F: '{print $2}')
-
 	# Wait for HTTP health endpoint
 	wait-for-healthy 127.0.0.1:"${alphaHttpPort}"/health
 }
