@@ -32,8 +32,6 @@ jobs:
         run: SKIP=no-commit-to-branch make check
       - name: Run tests
         run: make test
-      - name: Set version
-        run: uv version ${{ github.event.inputs.releasetag }}
       - name: Build release
         run: make clean build
       - name: Publish release
