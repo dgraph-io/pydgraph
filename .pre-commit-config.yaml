@@ -17,6 +17,11 @@ repos:
     rev: v0.10.0.1
     hooks:
       - id: shellcheck
+  - repo: https://github.com/adrienverge/yamllint
+    rev: v1.37.1
+    hooks:
+      - id: yamllint
+        args: [-c, .trunk/configs/.yamllint.yaml]
   - repo: https://github.com/pre-commit/pygrep-hooks
     rev: v1.10.0
     hooks:
