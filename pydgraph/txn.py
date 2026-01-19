@@ -1,13 +1,23 @@
-# SPDX-FileCopyrightText: © 2017-2025 Istari Digital, Inc.
+# SPDX-FileCopyrightText: © 2017-2026 Istari Digital, Inc.
 # SPDX-License-Identifier: Apache-2.0
 
 """Dgraph atomic transaction support."""
 
+from __future__ import annotations
+
+import contextlib
 import json
+from typing import TYPE_CHECKING, Any
+
+import grpc
 
 from pydgraph import errors, util
 from pydgraph.meta import VERSION
 from pydgraph.proto import api_pb2 as api
+
+if TYPE_CHECKING:
+    from pydgraph.client import DgraphClient
+    from pydgraph.client_stub import DgraphClientStub
 
 __author__ = "Shailesh Kochhar <shailesh.kochhar@gmail.com>"
 __maintainer__ = "Istari Digital, Inc. <dgraph-admin@istaridigital.com>"
@@ -15,7 +25,7 @@ __version__ = VERSION
 __status__ = "development"
 
 
-class Txn(object):
+class Txn:
     """Txn is a single atomic transaction.
 
     A transaction lifecycle is as follows:
@@ -32,37 +42,39 @@ class Txn(object):
 
     def __init__(
         self,
-        client,
-        read_only=False,
-        best_effort=False,
-        timeout=None,
-        metadata=None,
-        credentials=None,
-    ):
+        client: DgraphClient,
+        read_only: bool = False,
+        best_effort: bool = False,
+        timeout: float | None = None,
+        metadata: list[tuple[str, str]] | None = None,
+        credentials: grpc.CallCredentials | None = None,
+    ) -> None:
         if not read_only and best_effort:
-            raise Exception(
+            # FIXME: Should use errors.TransactionError for better exception handling
+            # but changing exception type could break existing code that catches Exception
+            raise Exception(  # noqa: TRY002
                 "Best effort transactions are only compatible with "
                 "read-only transactions"
             )
 
-        self._dg = client
-        self._dc = client.any_client()
-        self._ctx = api.TxnContext()
+        self._dg: DgraphClient = client
+        self._dc: DgraphClientStub = client.any_client()
+        self._ctx: api.TxnContext = api.TxnContext()
 
-        self._finished = False
-        self._mutated = False
-        self._read_only = read_only
-        self._best_effort = best_effort
-        self._commit_kwargs = {
+        self._finished: bool = False
+        self._mutated: bool = False
+        self._read_only: bool = read_only
+        self._best_effort: bool = best_effort
+        self._commit_kwargs: dict[str, Any] = {
             "timeout": timeout,
             "metadata": metadata,
             "credentials": credentials,
         }
 
-    def __enter__(self):
+    def __enter__(self) -> Txn:
         return self
 
-    def __exit__(self, exc_type, exc_val, exc_tb):
+    def __exit__(self, exc_type: Any, exc_val: Any, exc_tb: Any) -> None:
         if exc_type is not None:
             self.discard(**self._commit_kwargs)
             raise exc_val
@@ -73,13 +85,13 @@ class Txn(object):
 
     def query(
         self,
-        query,
-        variables=None,
-        timeout=None,
-        metadata=None,
-        credentials=None,
-        resp_format="JSON",
-    ):
+        query: str,
+        variables: dict[str, str] | None = None,
+        timeout: float | None = None,
+        metadata: list[tuple[str, str]] | None = None,
+        credentials: grpc.CallCredentials | None = None,
+        resp_format: str = "JSON",
+    ) -> api.Response:
         """Executes a query operation."""
         req = self.create_request(
             query=query, variables=variables, resp_format=resp_format
@@ -90,13 +102,13 @@ class Txn(object):
 
     def async_query(
         self,
-        query,
-        variables=None,
-        timeout=None,
-        metadata=None,
-        credentials=None,
-        resp_format="JSON",
-    ):
+        query: str,
+        variables: dict[str, str] | None = None,
+        timeout: float | None = None,
+        metadata: list[tuple[str, str]] | None = None,
+        credentials: grpc.CallCredentials | None = None,
+        resp_format: str = "JSON",
+    ) -> grpc.Future:
         """Async version of query."""
         req = self.create_request(
             query=query, variables=variables, resp_format=resp_format
@@ -107,17 +119,17 @@ class Txn(object):
 
     def mutate(
         self,
-        mutation=None,
-        set_obj=None,
-        del_obj=None,
-        set_nquads=None,
-        del_nquads=None,
-        cond=None,
-        commit_now=None,
-        timeout=None,
-        metadata=None,
-        credentials=None,
-    ):
+        mutation: api.Mutation | None = None,
+        set_obj: dict[str, Any] | None = None,
+        del_obj: dict[str, Any] | None = None,
+        set_nquads: str | None = None,
+        del_nquads: str | None = None,
+        cond: str | None = None,
+        commit_now: bool | None = None,
+        timeout: float | None = None,
+        metadata: list[tuple[str, str]] | None = None,
+        credentials: grpc.CallCredentials | None = None,
+    ) -> api.Response:
         """Executes a mutate operation."""
         mutation = self.create_mutation(
             mutation, set_obj, del_obj, set_nquads, del_nquads, cond
@@ -130,17 +142,17 @@ class Txn(object):
 
     def async_mutate(
         self,
-        mutation=None,
-        set_obj=None,
-        del_obj=None,
-        set_nquads=None,
-        del_nquads=None,
-        cond=None,
-        commit_now=None,
-        timeout=None,
-        metadata=None,
-        credentials=None,
-    ):
+        mutation: api.Mutation | None = None,
+        set_obj: dict[str, Any] | None = None,
+        del_obj: dict[str, Any] | None = None,
+        set_nquads: str | None = None,
+        del_nquads: str | None = None,
+        cond: str | None = None,
+        commit_now: bool | None = None,
+        timeout: float | None = None,
+        metadata: list[tuple[str, str]] | None = None,
+        credentials: grpc.CallCredentials | None = None,
+    ) -> grpc.Future:
         """Async version of mutate."""
         mutation = self.create_mutation(
             mutation, set_obj, del_obj, set_nquads, del_nquads, cond
@@ -151,7 +163,13 @@ class Txn(object):
             req, timeout=timeout, metadata=metadata, credentials=credentials
         )
 
-    def do_request(self, request, timeout=None, metadata=None, credentials=None):
+    def do_request(
+        self,
+        request: api.Request,
+        timeout: float | None = None,
+        metadata: list[tuple[str, str]] | None = None,
+        credentials: grpc.CallCredentials | None = None,
+    ) -> api.Response:
         """Executes a query/mutate operation on the server."""
         if self._finished:
             raise errors.TransactionError(
@@ -183,19 +201,17 @@ class Txn(object):
                         metadata=new_metadata,
                         credentials=credentials,
                     )
-                except Exception as error:
-                    query_error = error
+                except Exception as retry_error:
+                    query_error = retry_error
             else:
                 query_error = error
 
         if query_error is not None:
-            try:
+            # Ignore error during discard - user should see the original error
+            with contextlib.suppress(Exception):
                 self.discard(
                     timeout=timeout, metadata=metadata, credentials=credentials
                 )
-            except Exception:
-                # Ignore error - user should see the original error.
-                pass
 
             self._common_except_mutate(query_error)
 
@@ -205,14 +221,22 @@ class Txn(object):
         self.merge_context(response.txn)
         return response
 
-    def async_do_request(self, request, timeout=None, metadata=None, credentials=None):
+    def async_do_request(
+        self,
+        request: api.Request,
+        timeout: float | None = None,
+        metadata: list[tuple[str, str]] | None = None,
+        credentials: grpc.CallCredentials | None = None,
+    ) -> grpc.Future:
         """Async version of do_request."""
         if self._finished:
-            raise Exception("Transaction has already been committed or discarded")
+            # FIXME: Should use errors.TransactionError for better exception handling
+            raise Exception("Transaction has already been committed or discarded")  # noqa: TRY002
 
         if len(request.mutations) > 0:
             if self._read_only:
-                raise Exception("Readonly transaction cannot run mutations")
+                # FIXME: Should use errors.TransactionError for better exception handling
+                raise Exception("Readonly transaction cannot run mutations")  # noqa: TRY002
             self._mutated = True
 
         new_metadata = self._dg.add_login_metadata(metadata)
@@ -221,7 +245,7 @@ class Txn(object):
         )
 
     @staticmethod
-    def handle_query_future(future):
+    def handle_query_future(future: grpc.Future) -> api.Response:
         """Method to call when getting the result of a future returned by async_query"""
         try:
             response = future.result()
@@ -231,16 +255,16 @@ class Txn(object):
         return response
 
     @staticmethod
-    def handle_mutate_future(txn, future, commit_now):
+    def handle_mutate_future(
+        txn: Txn, future: grpc.Future, commit_now: bool
+    ) -> api.Response:
         """Method to call when getting the result of a future returned by async_mutate"""
         try:
             response = future.result()
         except Exception as error:
-            try:
+            # Ignore error during discard - user should see the original error
+            with contextlib.suppress(Exception):
                 txn.discard(**txn._commit_kwargs)
-            except Exception:
-                # Ignore error - user should see the original error.
-                pass
             Txn._common_except_mutate(error)
 
         if commit_now:
@@ -251,13 +275,13 @@ class Txn(object):
 
     def create_mutation(
         self,
-        mutation=None,
-        set_obj=None,
-        del_obj=None,
-        set_nquads=None,
-        del_nquads=None,
-        cond=None,
-    ):
+        mutation: api.Mutation | None = None,
+        set_obj: dict[str, Any] | None = None,
+        del_obj: dict[str, Any] | None = None,
+        set_nquads: str | None = None,
+        del_nquads: str | None = None,
+        cond: str | None = None,
+    ) -> api.Mutation:
         if not mutation:
             mutation = api.Mutation()
         if set_obj:
@@ -269,33 +293,33 @@ class Txn(object):
         if del_nquads:
             mutation.del_nquads = del_nquads.encode("utf8")
         if cond:
-            mutation.cond = cond.encode("utf8")
+            mutation.cond = cond
         return mutation
 
     def create_request(
         self,
-        query=None,
-        variables=None,
-        mutations=None,
-        commit_now=None,
-        resp_format="JSON",
-    ):
+        query: str | None = None,
+        variables: dict[str, str] | None = None,
+        mutations: list[api.Mutation] | None = None,
+        commit_now: bool | None = None,
+        resp_format: str = "JSON",
+    ) -> api.Request:
+        """Creates a request object"""
         if resp_format == "JSON":
-            resp_format = api.Request.RespFormat.JSON
+            format_value = api.Request.RespFormat.JSON
         elif resp_format == "RDF":
-            resp_format = api.Request.RespFormat.RDF
+            format_value = api.Request.RespFormat.RDF
         else:
             raise errors.TransactionError(
                 "Response format should be either RDF or JSON"
             )
 
-        """Creates a request object"""
         request = api.Request(
             start_ts=self._ctx.start_ts,
-            commit_now=commit_now,
+            commit_now=commit_now if commit_now is not None else False,
             read_only=self._read_only,
             best_effort=self._best_effort,
-            resp_format=resp_format,
+            resp_format=format_value,
         )
 
         if variables is not None:
@@ -307,15 +331,15 @@ class Txn(object):
                         "Values and keys in variable map must be strings"
                     )
         if query:
-            request.query = query.encode("utf8")
+            request.query = query
         if mutations:
             request.mutations.extend(mutations)
         return request
 
     @staticmethod
-    def _common_except_mutate(error):
+    def _common_except_mutate(error: Exception) -> None:
         if util.is_aborted_error(error):
-            raise errors.AbortedError()
+            raise errors.AbortedError
 
         if util.is_retriable_error(error):
             raise errors.RetriableError(error)
@@ -325,10 +349,15 @@ class Txn(object):
 
         raise error
 
-    def commit(self, timeout=None, metadata=None, credentials=None):
+    def commit(
+        self,
+        timeout: float | None = None,
+        metadata: list[tuple[str, str]] | None = None,
+        credentials: grpc.CallCredentials | None = None,
+    ) -> api.TxnContext | None:
         """Commits the transaction."""
         if not self._common_commit():
-            return
+            return None
 
         new_metadata = self._dg.add_login_metadata(metadata)
         try:
@@ -343,38 +372,43 @@ class Txn(object):
                 self._dg.retry_login()
                 new_metadata = self._dg.add_login_metadata(metadata)
                 try:
-                    self._dc.commit_or_abort(
+                    return self._dc.commit_or_abort(
                         self._ctx,
                         timeout=timeout,
                         metadata=new_metadata,
                         credentials=credentials,
                     )
-                except Exception as error:
-                    return self._common_except_commit(error)
+                except Exception as retry_error:
+                    self._common_except_commit(retry_error)
+                    raise  # This should never be reached due to _common_except_commit raising
 
             self._common_except_commit(error)
+            raise  # This should never be reached due to _common_except_commit raising
 
-    def _common_commit(self):
-        if self._read_only:
-            raise errors.TransactionError(
-                "Readonly transaction cannot run mutations or be committed"
-            )
+    def _common_commit(self) -> bool:
         if self._finished:
             raise errors.TransactionError(
                 "Transaction has already been committed or discarded"
             )
+        if self._read_only:
+            raise errors.TransactionError("Readonly transaction cannot run mutations")
 
         self._finished = True
         return self._mutated
 
     @staticmethod
-    def _common_except_commit(error):
+    def _common_except_commit(error: Exception) -> None:
         if util.is_aborted_error(error):
-            raise errors.AbortedError()
+            raise errors.AbortedError
 
         raise error
 
-    def discard(self, timeout=None, metadata=None, credentials=None):
+    def discard(
+        self,
+        timeout: float | None = None,
+        metadata: list[tuple[str, str]] | None = None,
+        credentials: grpc.CallCredentials | None = None,
+    ) -> None:
         """Discards the transaction."""
         if not self._common_discard():
             return
@@ -398,9 +432,9 @@ class Txn(object):
                     credentials=credentials,
                 )
             else:
-                raise error
+                raise
 
-    def _common_discard(self):
+    def _common_discard(self) -> bool:
         if self._finished:
             return False
 
@@ -411,7 +445,7 @@ class Txn(object):
         self._ctx.aborted = True
         return True
 
-    def merge_context(self, src=None):
+    def merge_context(self, src: api.TxnContext | None = None) -> None:
         """Merges context from this instance with src."""
         if src is None:
             # This condition will be true only if the server doesn't return a
@@ -427,5 +461,5 @@ class Txn(object):
         self._ctx.keys.extend(src.keys)
         self._ctx.preds.extend(src.preds)
 
-    def retry_login(self):
+    def retry_login(self) -> None:
         self._dg.retry_login()

@@ -1,24 +1,33 @@
-# SPDX-FileCopyrightText: © 2017-2025 Istari Digital, Inc.
+# SPDX-FileCopyrightText: © 2017-2026 Istari Digital, Inc.
 # SPDX-License-Identifier: Apache-2.0
 
 """Utilities used by tests."""
 
-__author__ = "Garvit Pahal"
-__maintainer__ = "Istari Digital, Inc. <dgraph-admin@istaridigital.com>"
+from __future__ import annotations
 
 import os
 import re
 import time
 import unittest
 
+import grpc
 from packaging import version
 
 import pydgraph
+import pydgraph.proto.api_pb2
+
+__author__ = "Garvit Pahal"
+__maintainer__ = "Istari Digital, Inc. <dgraph-admin@istaridigital.com>"
 
 SERVER_ADDR = "localhost:9180"
 
 
-def create_client(addr=SERVER_ADDR, username=None, password=None, namespace=None):
+def create_client(
+    addr: str = SERVER_ADDR,
+    username: str | None = None,
+    password: str | None = None,
+    namespace: int | None = None,
+) -> pydgraph.DgraphClient:
     """Creates a new client object using the given address.
 
     If username/password are provided, uses pydgraph.open() with login.
@@ -34,24 +43,80 @@ def create_client(addr=SERVER_ADDR, username=None, password=None, namespace=None
     return pydgraph.DgraphClient(pydgraph.DgraphClientStub(addr))
 
 
-def set_schema(client, schema):
-    """Sets the schema in the given client."""
-    return client.alter(pydgraph.Operation(schema=schema))
+def set_schema(
+    client: pydgraph.DgraphClient, schema: str
+) -> pydgraph.proto.api_pb2.Payload:
+    """Sets the schema in the given client.
+
+    Retries on connection errors as the cluster may not be fully ready
+    for heavy operations immediately after startup.
+    """
+    max_retries = 10
+    retry_delay = 0.5
+
+    for attempt in range(max_retries):
+        try:
+            return client.alter(pydgraph.Operation(schema=schema))
+        except Exception as e:
+            # Check if it's a gRPC error with UNAVAILABLE status
+            if hasattr(e, "code") and callable(e.code):
+                try:
+                    if (
+                        e.code() == grpc.StatusCode.UNAVAILABLE  # type: ignore[operator]
+                        and attempt < max_retries - 1
+                    ):
+                        time.sleep(retry_delay)
+                        continue
+                except Exception:
+                    pass
+            # For other errors or last attempt, raise
+            raise
+
+    # Should never reach here, but satisfy type checker
+    raise RuntimeError("Unexpected: all retries exhausted without success or error")
 
 
-def drop_all(client):
-    """Drops all data in the given client."""
-    return client.alter(pydgraph.Operation(drop_all=True))
+def drop_all(client: pydgraph.DgraphClient) -> pydgraph.proto.api_pb2.Payload:
+    """Drops all data in the given client.
+
+    Retries on connection errors as the cluster may not be fully ready
+    for heavy operations immediately after startup.
+    """
+    max_retries = 10
+    retry_delay = 0.5
+
+    for attempt in range(max_retries):
+        try:
+            return client.alter(pydgraph.Operation(drop_all=True))
+        except Exception as e:
+            # Check if it's a gRPC error with UNAVAILABLE status
+            if hasattr(e, "code") and callable(e.code):
+                try:
+                    if (
+                        e.code() == grpc.StatusCode.UNAVAILABLE  # type: ignore[operator]
+                        and attempt < max_retries - 1
+                    ):
+                        time.sleep(retry_delay)
+                        continue
+                except Exception:
+                    pass
+            # For other errors or last attempt, raise
+            raise
+
+    # Should never reach here, but satisfy type checker
+    raise RuntimeError("Unexpected: all retries exhausted without success or error")
 
 
-def setup():
+def setup() -> pydgraph.DgraphClient:
     """Creates a new client and drops all existing data."""
     client = create_client()
     drop_all(client)
     return client
 
 
-def check_dgraph_version(client, min_version):
+def check_dgraph_version(
+    client: pydgraph.DgraphClient, min_version: str
+) -> tuple[bool, str | None, str | None]:
     """Check if Dgraph version meets minimum requirement.
 
     Args:
@@ -76,12 +141,15 @@ def check_dgraph_version(client, min_version):
             clean_version = version_str
 
         is_compatible = version.parse(clean_version) >= version.parse(min_version)
-        return is_compatible, dgraph_version, None
     except Exception as e:
         return False, None, str(e)
+    else:
+        return is_compatible, dgraph_version, None
 
 
-def skip_if_dgraph_version_below(client, min_version, test_case):
+def skip_if_dgraph_version_below(
+    client: pydgraph.DgraphClient, min_version: str, test_case: unittest.TestCase
+) -> None:
     """Skip test if Dgraph version is below minimum requirement.
 
     Args:
@@ -107,7 +175,7 @@ class ClientIntegrationTestCase(unittest.TestCase):
 
     TEST_SERVER_ADDR = os.getenv("TEST_SERVER_ADDR", SERVER_ADDR)
 
-    def setUp(self):
+    def setUp(self) -> None:
         """Sets up the client."""
 
         self.client = create_client(self.TEST_SERVER_ADDR)
@@ -116,6 +184,8 @@ class ClientIntegrationTestCase(unittest.TestCase):
                 self.client.login("groot", "password")
                 break
             except Exception as e:
-                if "user not found" not in str(e):
-                    raise e
+                error_str = str(e)
+                # Retry for ACL initialization errors
+                if "user not found" not in error_str and "invalid username or password" not in error_str:
+                    raise
             time.sleep(0.1)

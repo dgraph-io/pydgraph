@@ -1,12 +1,18 @@
-# SPDX-FileCopyrightText: © 2017-2025 Istari Digital, Inc.
+# SPDX-FileCopyrightText: © 2017-2026 Istari Digital, Inc.
 # SPDX-License-Identifier: Apache-2.0
 
 """Functions to transform data."""
 
+from __future__ import annotations
 
-def extract_dict(
-    nodes: dict, edges: list, data: dict, parent: dict = None, name: str = None
-):
+
+def extract_dict(  # noqa: C901
+    nodes: dict,
+    edges: list,
+    data: dict,
+    parent: dict | None = None,
+    name: str | None = None,
+) -> None:
     """Recursively extract nodes and edges from a dict created from the result of a Dgraph query.
 
     Nodes (vertices) from the query must have an ``id`` field in order to be recognized
@@ -20,7 +26,7 @@ def extract_dict(
     Note: this code is experimental and may change in the future.
     """
 
-    def update_node(nodes: dict, key: str, value: dict):
+    def update_node(nodes: dict, key: str, value: dict) -> None:
         if key not in nodes:
             nodes[key] = {}
         for k, v in value.items():

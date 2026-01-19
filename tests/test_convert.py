@@ -1,7 +1,9 @@
-# SPDX-FileCopyrightText: © 2017-2025 Istari Digital, Inc.
+# SPDX-FileCopyrightText: © 2017-2026 Istari Digital, Inc.
 # SPDX-License-Identifier: Apache-2.0
 
 """Tests conversion functions."""
+
+from __future__ import annotations
 
 import json
 import unittest
@@ -12,15 +14,15 @@ from pydgraph import convert
 class TestConvert(unittest.TestCase):
     """Tests conversion functions."""
 
-    def test_extract_nodes_edges(self):
+    def test_extract_nodes_edges(self) -> None:
         # no ids, no extraction
-        nodes = {}
-        edges = []
+        nodes: dict[str, dict[str, object]] = {}
+        edges: list[dict[str, object]] = []
         convert.extract_dict(
             nodes=nodes, edges=edges, data=json.loads(sample_json_empty_result)
         )
-        self.assertEqual(len(nodes), 0)
-        self.assertEqual(len(edges), 0)
+        assert len(nodes) == 0
+        assert len(edges) == 0
 
         # graphQL result extraction
         nodes = {}
@@ -28,10 +30,10 @@ class TestConvert(unittest.TestCase):
         convert.extract_dict(
             nodes=nodes, edges=edges, data=json.loads(sample_json_graphql_result)
         )
-        self.assertEqual(len(nodes), 3)
-        self.assertEqual(len(edges), 3)
-        self.assertEqual((nodes["100600993"]["countries"]), ["USA", "UK"])
-        self.assertEqual((nodes["100600993"]["foo"]), "bar")
+        assert len(nodes) == 3
+        assert len(edges) == 3
+        assert nodes["100600993"]["countries"] == ["USA", "UK"]
+        assert nodes["100600993"]["foo"] == "bar"
 
         # complex extraction with replicated entities
         nodes = {}
@@ -39,16 +41,16 @@ class TestConvert(unittest.TestCase):
         convert.extract_dict(
             nodes=nodes, edges=edges, data=json.loads(sample_json_dql_result)
         )
-        self.assertEqual(len(nodes), 61)
-        self.assertEqual(len(edges), 109)
+        assert len(nodes) == 61
+        assert len(edges) == 109
         donation = nodes["0x156900"]["amount"]
-        self.assertEqual(donation, 100)
+        assert donation == 100
         edge = edges[0]
-        self.assertEqual(edge["src"], "0x4b")
-        self.assertEqual(edge["type"], "donations")
+        assert edge["src"] == "0x4b"
+        assert edge["type"] == "donations"
 
 
-def suite():
+def suite() -> unittest.TestSuite:
     """Returns a test suite object."""
     suite_obj = unittest.TestSuite()
     suite_obj.addTest(TestConvert())

@@ -1,11 +1,13 @@
 #!/usr/bin/env python3
 
+from __future__ import annotations
+
 import grpc
 
 import pydgraph
 
 
-def create_client(addr="localhost:9080"):
+def create_client(addr: str = "localhost:9080") -> pydgraph.DgraphClient:
     # Read certs
     with open("./tls/ca.crt", "rb") as f:
         root_ca_cert = f.read()
@@ -24,7 +26,7 @@ def create_client(addr="localhost:9080"):
     return pydgraph.DgraphClient(client_stub)
 
 
-def main():
+def main() -> None:
     client = create_client("localhost:9080")
     client.login("groot", "password")
 
