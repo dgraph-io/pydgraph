@@ -86,8 +86,7 @@ jobs:
         working-directory: ./pydgraph
         run: DGRAPH_IMAGE_TAG=local make test
   test-pydgraph-protobuf-compat:
-    name:
-      Test Protobuf Compat (Python ${{ matrix.python-version }} / ${{ matrix.protobuf-version }})
+    name: Test Pydgraph (Python ${{ matrix.python-version }} / ${{ matrix.protobuf-version }})
     runs-on: ubuntu-latest
     strategy:
       matrix:
