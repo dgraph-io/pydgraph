@@ -87,8 +87,7 @@ jobs:
         run: DGRAPH_IMAGE_TAG=local make test
   test-pydgraph-protobuf-compat:
     name:
-      Test Protobuf Backwards Compat (Python ${{ matrix.python-version }} / ${{
-      matrix.protobuf-version }})
+      Test Protobuf Compat (Python ${{ matrix.python-version }} / ${{ matrix.protobuf-version }})
     runs-on: ubuntu-latest
     strategy:
       matrix:
