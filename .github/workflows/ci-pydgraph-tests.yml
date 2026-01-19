@@ -86,7 +86,9 @@ jobs:
         working-directory: ./pydgraph
         run: DGRAPH_IMAGE_TAG=local make test
   test-pydgraph-protobuf-compat:
-    name: Test (Python ${{ matrix.python-version }} / Protobuf ${{ matrix.protobuf-version }})
+    name:
+      Backwards Compat (Python ${{ matrix.python-version }} / Protobuf ${{ matrix.protobuf-version
+      }})
     runs-on: ubuntu-latest
     strategy:
       matrix:
@@ -94,7 +96,6 @@ jobs:
         protobuf-version:
           - "protobuf>=4.23.0,<5.0.0"
           - "protobuf>=5.0.0,<6.0.0"
-          - "protobuf>=6.0.0"
     steps:
       - name: Checkout pydgraph
         uses: actions/checkout@v5
