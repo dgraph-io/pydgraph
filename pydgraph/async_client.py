@@ -335,9 +335,7 @@ class AsyncDgraphClient:
         """
         return self
 
-    async def __aexit__(
-        self, exc_type: Any, exc_val: Any, exc_tb: Any
-    ) -> bool:
+    async def __aexit__(self, exc_type: Any, exc_val: Any, exc_tb: Any) -> bool:
         """Async context manager exit.
 
         Automatically closes all client connections.
