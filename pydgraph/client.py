@@ -2,6 +2,7 @@
 # SPDX-License-Identifier: Apache-2.0
 
 """Dgraph python client."""
+
 from __future__ import annotations
 
 import contextlib
