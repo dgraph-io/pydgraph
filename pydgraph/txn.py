@@ -410,7 +410,7 @@ class Txn:
         credentials: grpc.CallCredentials | None = None,
     ) -> None:
         """Discards the transaction."""
-        if not self._common_discard():
+        if not self._prepare_discard():
             return
 
         new_metadata = self._dg.add_login_metadata(metadata)
@@ -434,7 +434,7 @@ class Txn:
             else:
                 raise
 
-    def _common_discard(self) -> bool:
+    def _prepare_discard(self) -> bool:
         if self._finished:
             return False
 
