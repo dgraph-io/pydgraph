@@ -217,10 +217,10 @@ class AsyncTxn:
 
             if query_error is not None:
                 # Try to discard the transaction on error.
-                # Note: We use _discard_internal() here because we already hold self._lock,
+                # Note: We use _locked_discard() here because we already hold self._lock,
                 # and asyncio.Lock is not reentrant. Calling self.discard() would deadlock.
                 try:
-                    await self._discard_internal(
+                    await self._locked_discard(
                         timeout=timeout, metadata=metadata, credentials=credentials
                     )
                 except asyncio.CancelledError:
@@ -460,11 +460,11 @@ class AsyncTxn:
             Various gRPC errors on failure
         """
         async with self._lock:
-            await self._discard_internal(
+            await self._locked_discard(
                 timeout=timeout, metadata=metadata, credentials=credentials
             )
 
-    async def _discard_internal(
+    async def _locked_discard(
         self,
         timeout: float | None = None,
         metadata: list[tuple[str, str]] | None = None,
@@ -481,15 +481,16 @@ class AsyncTxn:
             credentials: Call credentials
 
         Raises:
-            AssertionError: If called without holding self._lock
+            RuntimeError: If called without holding self._lock
             Various gRPC errors on failure
         """
         # Defensive check: ensure caller holds the lock to prevent misuse
-        assert self._lock.locked(), (
-            "_discard_internal must only be called while holding self._lock"
-        )
+        if not self._lock.locked():
+            raise RuntimeError(
+                "_locked_discard must only be called while holding self._lock"
+            )
 
-        if not self._common_discard():
+        if not self._prepare_discard():
             return
 
         new_metadata = self._dg.add_login_metadata(metadata)
@@ -516,7 +517,7 @@ class AsyncTxn:
             else:
                 raise
 
-    def _common_discard(self) -> bool:
+    def _prepare_discard(self) -> bool:
         """Validates and prepares for discard.
 
         Returns:
