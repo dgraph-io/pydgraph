@@ -229,6 +229,32 @@ Run a single test:
 bash scripts/local-test.sh -v tests/test_connect.py::TestOpen::test_connection_with_auth
 ```
 
+### Stress Tests
+
+The project includes comprehensive stress tests that verify concurrent operations, transaction
+conflicts, deadlock prevention, and retry mechanisms for both sync and async clients.
+
+**Quick mode** (default, ~12 seconds):
+
+```sh
+bash scripts/local-test.sh tests/test_stress_sync.py tests/test_stress_async.py -v
+```
+
+**Full mode** (10x more iterations, includes movie dataset tests, ~60+ seconds):
+
+```sh
+STRESS_TEST_MODE=full bash scripts/local-test.sh tests/test_stress_sync.py tests/test_stress_async.py -v
+```
+
+The stress tests cover:
+
+- **Sync tests**: Run with both `ThreadPoolExecutor` and `ProcessPoolExecutor` to catch different
+  classes of bugs (race conditions vs pickling issues)
+- **Async tests**: Use pure `asyncio.gather()` concurrency (no `concurrent.futures` mixing)
+- **Retry utilities**: Tests for `retry_async()`, `with_retry_async()`, and
+  `run_transaction_async()`
+- **Deadlock regression**: Validates the asyncio.Lock deadlock fix from PR #293
+
 ### Test Infrastructure
 
 The test script requires Docker and Docker Compose to be installed on your machine.
