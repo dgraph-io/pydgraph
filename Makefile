@@ -2,6 +2,12 @@
 SHELL := /bin/bash
 export PATH := $(HOME)/.local/bin:$(HOME)/.cargo/bin:$(PATH)
 
+# Export test configuration variables so they're available to child processes
+# Usage: make test STRESS_TEST_MODE=moderate PYTEST_ARGS="-v"
+export STRESS_TEST_MODE
+export DGRAPH_IMAGE_TAG
+export PYTEST_ARGS
+
 # Source venv if it exists and isn't already active
 PROJECT_VENV := $(CURDIR)/.venv
 ACTIVATE := $(wildcard .venv/bin/activate)

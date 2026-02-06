@@ -244,14 +244,14 @@ make test PYTEST_ARGS="tests/test_stress_sync.py tests/test_stress_async.py -v"
 iterations:
 
 ```sh
-STRESS_TEST_MODE=moderate make test PYTEST_ARGS="tests/test_stress_sync.py tests/test_stress_async.py -v"
+make test STRESS_TEST_MODE=moderate PYTEST_ARGS="tests/test_stress_sync.py tests/test_stress_async.py -v"
 ```
 
 **Full mode** (10x moderate, maximum stress, ~10+ minutes) - 2000 workers, 5000 ops, 1000
 iterations:
 
 ```sh
-STRESS_TEST_MODE=full make test PYTEST_ARGS="tests/test_stress_sync.py tests/test_stress_async.py -v"
+make test STRESS_TEST_MODE=full PYTEST_ARGS="tests/test_stress_sync.py tests/test_stress_async.py -v"
 ```
 
 The stress tests cover:
