@@ -1,52 +1,23 @@
 # SPDX-FileCopyrightText: © Hypermode Inc. <hello@hypermode.com>
 # SPDX-License-Identifier: Apache-2.0
 
-"""Integration tests for async client."""
+"""Integration tests for async client.
+
+Note: async_client and async_client_clean fixtures are defined in conftest.py
+"""
 
 import asyncio
 import json
 import os
-from collections.abc import AsyncGenerator
 
 import pytest
 
 import pydgraph
-from pydgraph import AsyncDgraphClient, AsyncDgraphClientStub, async_open
+from pydgraph import AsyncDgraphClient, async_open
 from pydgraph.proto import api_pb2 as api
 
-# Get test server address from environment
+# Get test server address from environment (also defined in conftest.py)
 TEST_SERVER_ADDR = os.getenv("TEST_SERVER_ADDR", "localhost:9180")
-
-
-@pytest.fixture
-async def async_client() -> AsyncGenerator[AsyncDgraphClient, None]:
-    """Fixture providing an async client with login."""
-    client_stub = AsyncDgraphClientStub(TEST_SERVER_ADDR)
-    client = AsyncDgraphClient(client_stub)
-
-    # Retry login until server is ready
-    max_retries = 30
-    for _ in range(max_retries):
-        try:
-            await client.login("groot", "password")
-            break
-        except Exception as e:
-            if "user not found" in str(e):
-                # User not found means auth is working but user doesn't exist yet
-                # This shouldn't happen with groot, so treat as error
-                raise
-            # Server might not be ready, wait and retry
-            await asyncio.sleep(0.1)
-
-    yield client
-    await client.close()
-
-
-@pytest.fixture
-async def async_client_clean(async_client: AsyncDgraphClient) -> AsyncDgraphClient:
-    """Fixture providing an async client with clean database."""
-    await async_client.alter(pydgraph.Operation(drop_all=True))
-    return async_client
 
 
 class TestAsyncClient:
