@@ -6,10 +6,14 @@
 from __future__ import annotations
 
 import asyncio
+import gzip
 import os
+import shutil
+import tempfile
 import time
 from collections.abc import AsyncGenerator, Generator
 from concurrent.futures import ThreadPoolExecutor
+from pathlib import Path
 from typing import Any
 
 import pytest
@@ -22,7 +26,7 @@ from pydgraph import (
     DgraphClientStub,
 )
 
-from .helpers import SYNTHETIC_SCHEMA, TEST_SERVER_ADDR
+from .helpers import SYNTHETIC_SCHEMA, TEST_RESOURCES, TEST_SERVER_ADDR
 
 # =============================================================================
 # Stress Test Configuration
@@ -64,6 +68,38 @@ def stress_config() -> dict[str, Any]:
         "load_movies": os.environ.get("STRESS_TEST_LOAD_MOVIES", "").lower()
         in ("1", "true"),
     }
+
+
+# =============================================================================
+# Movie Dataset Fixtures
+# =============================================================================
+
+
+@pytest.fixture(scope="session")
+def movies_schema() -> Path:
+    """Path to the 1million movie schema file."""
+    return TEST_RESOURCES / "1million.schema"
+
+
+@pytest.fixture(scope="session")
+def movies_rdf_gz() -> Path:
+    """Path to the compressed 1million movie RDF data file."""
+    return TEST_RESOURCES / "1million.rdf.gz"
+
+
+@pytest.fixture(scope="session")
+def movies_rdf(movies_rdf_gz: Path) -> Generator[Path, None, None]:
+    """Path to the uncompressed 1million movie RDF data file.
+
+    Decompresses the gzipped RDF file to a temporary directory that is
+    automatically cleaned up at the end of the test session.
+    """
+    with tempfile.TemporaryDirectory() as tempdir:
+        output_path = Path(tempdir) / "1million.rdf"
+        with gzip.open(movies_rdf_gz, "rb") as f_in:
+            with open(output_path, "wb") as f_out:
+                shutil.copyfileobj(f_in, f_out)
+        yield output_path
 
 
 # =============================================================================
