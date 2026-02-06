@@ -45,3 +45,7 @@ examples/notebook/RAG/.env
 
 # Git worktrees
 .worktrees/
+
+# Benchmark outputs
+benchmark-results.json
+benchmark-histogram.svg
