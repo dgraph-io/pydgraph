@@ -256,8 +256,7 @@ make test STRESS_TEST_MODE=full PYTEST_ARGS="tests/test_stress_sync.py tests/tes
 
 The stress tests cover:
 
-- **Sync tests**: Run with both `ThreadPoolExecutor` and `ProcessPoolExecutor` to catch different
-  classes of bugs (race conditions vs pickling issues)
+- **Sync tests**: Run with `ThreadPoolExecutor` to test concurrent operations
 - **Async tests**: Use pure `asyncio.gather()` concurrency (no `concurrent.futures` mixing)
 - **Retry utilities**: Tests for `retry_async()`, `with_retry_async()`, and
   `run_transaction_async()`
