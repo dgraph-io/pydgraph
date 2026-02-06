@@ -15,7 +15,7 @@ else
   RUN :=
 endif
 
-.PHONY: help setup sync deps deps-uv deps-trunk deps-docker test check protogen clean build publish
+.PHONY: help setup sync deps deps-uv deps-trunk deps-docker test benchmark check protogen clean build publish
 
 .DEFAULT_GOAL := help
 
@@ -53,6 +53,13 @@ build: deps-uv sync protogen ## Builds release package
 
 test: deps-uv sync ## Run tests
 	bash scripts/local-test.sh
+
+benchmark: deps-uv sync ## Run benchmarks
+	STRESS_TEST_MODE=moderate $(RUN) uv run pytest tests/ \
+		--benchmark-only \
+		--benchmark-json=benchmark-results.json \
+		--benchmark-histogram=benchmark-histogram \
+		-v
 
 publish: clean build  ## Publish a new release to PyPi (requires UV_PUBLISH_USERNAME and UV_PUBLISH_PASSWORD to be set)
 	$(RUN) uv publish
