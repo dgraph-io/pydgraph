@@ -56,22 +56,17 @@ def _generate_person(index: int) -> dict[str, Any]:
 class TestAsyncClientStress:
     """Stress tests for asynchronous Dgraph client using pure asyncio."""
 
-    @pytest.mark.asyncio
-    async def test_concurrent_async_queries(
+    def test_concurrent_async_queries(
         self,
-        async_client_with_schema: AsyncDgraphClient,
+        async_client_with_schema_for_benchmark: tuple[
+            AsyncDgraphClient, asyncio.AbstractEventLoop
+        ],
         stress_config: dict[str, Any],
         benchmark: BenchmarkFixture,
     ) -> None:
         """Test many concurrent read-only queries using asyncio.gather."""
-        client = async_client_with_schema
+        client, loop = async_client_with_schema_for_benchmark
         num_ops = stress_config["ops"]
-
-        # Insert some test data first (outside benchmark)
-        txn = client.txn()
-        for i in range(100):
-            await txn.mutate(set_obj=_generate_person(i))
-        await txn.commit()
 
         query = """query {
             people(func: has(name), first: 10) {
@@ -81,13 +76,21 @@ class TestAsyncClientStress:
             }
         }"""
 
+        # Setup: Insert test data once before benchmarking (using same loop)
+        async def setup_data() -> None:
+            txn = client.txn()
+            for i in range(100):
+                await txn.mutate(set_obj=_generate_person(i))
+            await txn.commit()
+
+        loop.run_until_complete(setup_data())
+
         async def run_query() -> api.Response:
             txn = client.txn(read_only=True)
             return await txn.query(query)
 
-        # Wrap async execution in sync function for benchmark
+        # Wrap async execution in sync function for benchmark (using same loop)
         def run_benchmark() -> list[api.Response | BaseException]:
-            loop = asyncio.get_event_loop()
             return loop.run_until_complete(
                 asyncio.gather(
                     *[run_query() for _ in range(num_ops)],
@@ -101,15 +104,16 @@ class TestAsyncClientStress:
         assert len(exc_list) == 0, f"Got {len(exc_list)} errors: {exc_list[:5]}"
         assert len(results) == num_ops
 
-    @pytest.mark.asyncio
-    async def test_concurrent_async_mutations(
+    def test_concurrent_async_mutations(
         self,
-        async_client_with_schema: AsyncDgraphClient,
+        async_client_with_schema_for_benchmark: tuple[
+            AsyncDgraphClient, asyncio.AbstractEventLoop
+        ],
         stress_config: dict[str, Any],
         benchmark: BenchmarkFixture,
     ) -> None:
         """Test concurrent mutations in separate transactions using asyncio.gather."""
-        client = async_client_with_schema
+        client, loop = async_client_with_schema_for_benchmark
         num_ops = stress_config["workers"] * 10
 
         async def run_mutation(index: int) -> bool:
@@ -121,7 +125,6 @@ class TestAsyncClientStress:
                 return False
 
         def run_benchmark() -> list[bool | BaseException]:
-            loop = asyncio.get_event_loop()
             return loop.run_until_complete(
                 asyncio.gather(
                     *[run_mutation(i) for i in range(num_ops)],
@@ -137,22 +140,26 @@ class TestAsyncClientStress:
         assert len(exc_list) == 0, f"Unexpected errors: {exc_list[:5]}"
         assert successes > num_ops * 0.5, f"Too few successes: {successes}/{num_ops}"
 
-    @pytest.mark.asyncio
-    async def test_mixed_async_workload(
+    def test_mixed_async_workload(
         self,
-        async_client_with_schema: AsyncDgraphClient,
+        async_client_with_schema_for_benchmark: tuple[
+            AsyncDgraphClient, asyncio.AbstractEventLoop
+        ],
         stress_config: dict[str, Any],
         benchmark: BenchmarkFixture,
     ) -> None:
         """Test mix of queries, mutations, commits, and discards concurrently."""
-        client = async_client_with_schema
+        client, loop = async_client_with_schema_for_benchmark
         num_ops = stress_config["workers"] * 20
 
-        # Seed some data (outside benchmark)
-        txn = client.txn()
-        for i in range(50):
-            await txn.mutate(set_obj=_generate_person(i))
-        await txn.commit()
+        # Setup: Seed some data once before benchmarking (using same loop)
+        async def setup_data() -> None:
+            txn = client.txn()
+            for i in range(50):
+                await txn.mutate(set_obj=_generate_person(i))
+            await txn.commit()
+
+        loop.run_until_complete(setup_data())
 
         async def random_operation(op_id: int) -> str:
             op_type = op_id % 4
@@ -182,7 +189,6 @@ class TestAsyncClientStress:
                 return "aborted"
 
         def run_benchmark() -> list[str | BaseException]:
-            loop = asyncio.get_event_loop()
             return loop.run_until_complete(
                 asyncio.gather(
                     *[random_operation(i) for i in range(num_ops)],
@@ -204,15 +210,16 @@ class TestAsyncClientStress:
 class TestAsyncTransactionStress:
     """Stress tests for async transaction conflict handling."""
 
-    @pytest.mark.asyncio
-    async def test_async_transaction_conflicts(
+    def test_async_transaction_conflicts(
         self,
-        async_client_with_schema: AsyncDgraphClient,
+        async_client_with_schema_for_benchmark: tuple[
+            AsyncDgraphClient, asyncio.AbstractEventLoop
+        ],
         stress_config: dict[str, Any],
         benchmark: BenchmarkFixture,
     ) -> None:
         """Test concurrent upserts on the same key detect conflicts properly."""
-        client = async_client_with_schema
+        client, loop = async_client_with_schema_for_benchmark
         target_email = "async_conflict@test.com"
         num_workers = stress_config["workers"]
 
@@ -239,7 +246,6 @@ class TestAsyncTransactionStress:
                 return "aborted"
 
         def run_benchmark() -> list[str | BaseException]:
-            loop = asyncio.get_event_loop()
             return loop.run_until_complete(
                 asyncio.gather(
                     *[run_upsert(i) for i in range(num_workers)],
@@ -366,15 +372,16 @@ class TestAsyncTransactionStress:
 class TestAsyncRetryStress:
     """Stress tests for async retry utilities."""
 
-    @pytest.mark.asyncio
-    async def test_retry_async_under_conflicts(
+    def test_retry_async_under_conflicts(
         self,
-        async_client_with_schema: AsyncDgraphClient,
+        async_client_with_schema_for_benchmark: tuple[
+            AsyncDgraphClient, asyncio.AbstractEventLoop
+        ],
         stress_config: dict[str, Any],
         benchmark: BenchmarkFixture,
     ) -> None:
         """Test retry_async() generator handles conflicts correctly under load."""
-        client = async_client_with_schema
+        client, loop = async_client_with_schema_for_benchmark
         iterations = stress_config["iterations"]
         num_workers = min(stress_config["workers"], 20)
 
@@ -392,7 +399,6 @@ class TestAsyncRetryStress:
             return successes
 
         def run_benchmark() -> list[int | BaseException]:
-            loop = asyncio.get_event_loop()
             return loop.run_until_complete(
                 asyncio.gather(
                     *[retry_work(i) for i in range(num_workers)],
@@ -408,15 +414,16 @@ class TestAsyncRetryStress:
         assert len(exc_list) == 0, f"Errors: {exc_list[:5]}"
         assert total_successes >= num_workers * iterations
 
-    @pytest.mark.asyncio
-    async def test_with_retry_async_decorator(
+    def test_with_retry_async_decorator(
         self,
-        async_client_with_schema: AsyncDgraphClient,
+        async_client_with_schema_for_benchmark: tuple[
+            AsyncDgraphClient, asyncio.AbstractEventLoop
+        ],
         stress_config: dict[str, Any],
         benchmark: BenchmarkFixture,
     ) -> None:
         """Test @with_retry_async decorator handles conflicts correctly."""
-        client = async_client_with_schema
+        client, loop = async_client_with_schema_for_benchmark
         num_workers = min(stress_config["workers"], 10)
 
         @with_retry_async()
@@ -429,7 +436,6 @@ class TestAsyncRetryStress:
             return next(iter(response.uids.values()), "")
 
         def run_benchmark() -> list[str | BaseException]:
-            loop = asyncio.get_event_loop()
             return loop.run_until_complete(
                 asyncio.gather(
                     *[create_person(i) for i in range(num_workers)],
@@ -445,15 +451,16 @@ class TestAsyncRetryStress:
         assert len(exc_list) == 0, f"Errors: {exc_list[:5]}"
         assert len(successes) == num_workers
 
-    @pytest.mark.asyncio
-    async def test_run_transaction_async(
+    def test_run_transaction_async(
         self,
-        async_client_with_schema: AsyncDgraphClient,
+        async_client_with_schema_for_benchmark: tuple[
+            AsyncDgraphClient, asyncio.AbstractEventLoop
+        ],
         stress_config: dict[str, Any],
         benchmark: BenchmarkFixture,
     ) -> None:
         """Test run_transaction_async() helper handles conflicts correctly."""
-        client = async_client_with_schema
+        client, loop = async_client_with_schema_for_benchmark
         num_workers = min(stress_config["workers"], 10)
 
         async def work(worker_id: int) -> str:
@@ -470,7 +477,6 @@ class TestAsyncRetryStress:
             return await run_transaction_async(client, txn_func)
 
         def run_benchmark() -> list[str | BaseException]:
-            loop = asyncio.get_event_loop()
             return loop.run_until_complete(
                 asyncio.gather(
                     *[work(i) for i in range(num_workers)],
