@@ -31,10 +31,8 @@ created: datetime @index(hour) .
 friends: [uid] @count @reverse .
 """
 
-# Path to movie dataset (local to test resources)
+# Path to test resources directory
 TEST_RESOURCES = Path(__file__).parent / "resources"
-MOVIE_SCHEMA_PATH = TEST_RESOURCES / "1million.schema"
-MOVIE_DATA_PATH = TEST_RESOURCES / "1million.rdf.gz"
 
 
 # =============================================================================
