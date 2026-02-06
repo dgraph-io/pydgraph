@@ -4,8 +4,7 @@
 """Shared test helpers, constants, and utility functions.
 
 This module contains constants and helper functions used across multiple test files.
-It's separate from conftest.py to allow ProcessPoolExecutor workers to import it
-without triggering pytest fixture discovery issues.
+It's separate from conftest.py to keep fixture definitions isolated from shared utilities.
 """
 
 from __future__ import annotations

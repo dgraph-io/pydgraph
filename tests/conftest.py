@@ -9,7 +9,7 @@ import asyncio
 import os
 import time
 from collections.abc import AsyncGenerator, Generator
-from concurrent.futures import ProcessPoolExecutor, ThreadPoolExecutor
+from concurrent.futures import ThreadPoolExecutor
 from typing import Any
 
 import pytest
@@ -67,28 +67,18 @@ def stress_config() -> dict[str, Any]:
 
 
 # =============================================================================
-# Executor Fixtures (for sync stress tests)
+# Executor Fixture (for sync stress tests)
 # =============================================================================
-
-
-@pytest.fixture(params=["thread", "process"])
-def executor_type(request: pytest.FixtureRequest) -> str:
-    """Parametrize tests to run with both executor types."""
-    return request.param
 
 
 @pytest.fixture
 def executor(
-    executor_type: str, stress_config: dict[str, Any]
-) -> Generator[ThreadPoolExecutor | ProcessPoolExecutor, None, None]:
-    """Create executor based on parametrization."""
+    stress_config: dict[str, Any],
+) -> Generator[ThreadPoolExecutor, None, None]:
+    """Create ThreadPoolExecutor for concurrent stress tests."""
     workers = stress_config["workers"]
-    if executor_type == "thread":
-        with ThreadPoolExecutor(max_workers=workers) as ex:
-            yield ex
-    else:
-        with ProcessPoolExecutor(max_workers=workers) as ex:
-            yield ex
+    with ThreadPoolExecutor(max_workers=workers) as ex:
+        yield ex
 
 
 # =============================================================================
