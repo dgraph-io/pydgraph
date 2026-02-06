@@ -31,12 +31,26 @@ from .helpers import SYNTHETIC_SCHEMA, TEST_SERVER_ADDR
 
 @pytest.fixture(scope="session")
 def stress_config() -> dict[str, Any]:
-    """Configuration for stress tests based on STRESS_TEST_MODE env var."""
+    """Configuration for stress tests based on STRESS_TEST_MODE env var.
+
+    Modes:
+        quick: Fast sanity check (default) - 20 workers, 50 ops, 10 iterations
+        moderate: Meaningful stress test - 200 workers, 500 ops, 100 iterations
+        full: Maximum stress test - 2000 workers, 5000 ops, 1000 iterations
+    """
     mode = os.environ.get("STRESS_TEST_MODE", "quick")
 
     if mode == "full":
         return {
             "mode": "full",
+            "workers": 2000,
+            "ops": 5000,
+            "iterations": 1000,
+            "load_movies": True,
+        }
+    if mode == "moderate":
+        return {
+            "mode": "moderate",
             "workers": 200,
             "ops": 500,
             "iterations": 100,
