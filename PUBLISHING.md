@@ -14,7 +14,7 @@ This document contains instructions to create a new pydgraph release and publish
    with earlier Dgraph versions
 
    ```sh
-   DGRAPH_IMAGE_TAG=vX.X.X make test
+   make test DGRAPH_IMAGE_TAG=vX.X.X
    ```
 
 1. If you happen to have the testpypi access token, try a test upload to testpypi:
