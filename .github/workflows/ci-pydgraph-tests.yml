@@ -118,3 +118,30 @@ jobs:
       - name: Run tests
         working-directory: ./pydgraph
         run: DGRAPH_IMAGE_TAG=local make test
+  benchmarks:
+    name: Benchmarks
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v5
+      - name: Setup python runtime and tooling
+        uses: ./.github/actions/setup-python-and-tooling
+        with:
+          python-version: "3.13"
+      - name: Setup project dependencies
+        run: INSTALL_MISSING_TOOLS=true make setup
+      - name: Sync python virtualenv
+        run: make sync
+      - name: Run benchmarks
+        run: |
+          STRESS_TEST_MODE=moderate uv run pytest tests/ \
+            --benchmark-only \
+            --benchmark-json=benchmark-results.json \
+            --benchmark-histogram=benchmark-histogram \
+            -v
+      - name: Upload benchmark results
+        uses: actions/upload-artifact@v4
+        with:
+          name: benchmark-results
+          path: |
+            benchmark-results.json
+            benchmark-histogram.svg
