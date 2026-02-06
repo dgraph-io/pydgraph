@@ -31,10 +31,10 @@ created: datetime @index(hour) .
 friends: [uid] @count @reverse .
 """
 
-# Path to movie dataset (relative to pydgraph repo)
-TOUR_RESOURCES = Path(__file__).parent.parent.parent / "tour" / "resources"
-MOVIE_SCHEMA_PATH = TOUR_RESOURCES / "1million.schema"
-MOVIE_DATA_PATH = TOUR_RESOURCES / "1million.rdf.gz"
+# Path to movie dataset (local to test resources)
+TEST_RESOURCES = Path(__file__).parent / "resources"
+MOVIE_SCHEMA_PATH = TEST_RESOURCES / "1million.schema"
+MOVIE_DATA_PATH = TEST_RESOURCES / "1million.rdf.gz"
 
 
 # =============================================================================

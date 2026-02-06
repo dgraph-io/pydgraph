@@ -1,0 +1,14 @@
+director.film        : [uid] @reverse @count .
+actor.film           : [uid] @count .
+genre                : [uid] @reverse @count .
+initial_release_date : datetime @index(year) .
+rating               : [uid] @reverse .
+country              : [uid] @reverse .
+loc                  : geo @index(geo) .
+name                 : string @index(hash, exact, term, trigram, fulltext) @lang .
+starring             : [uid] @count .
+performance.character_note : string @lang .
+tagline              : string @lang .
+cut.note             : string @lang .
+rated                : [uid] @reverse .
+email                : string @index(exact) @upsert .
