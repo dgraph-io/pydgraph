@@ -1,0 +1,37 @@
+name: ci-pydgraph-benchmarks
+on:
+  push:
+    tags:
+      - "v[0-9]+.[0-9]+.[0-9]+*"
+
+permissions:
+  contents: read
+
+jobs:
+  benchmarks:
+    name: Release Benchmarks
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v5
+      - name: Setup python runtime and tooling
+        uses: ./.github/actions/setup-python-and-tooling
+        with:
+          python-version: "3.13"
+      - name: Setup project dependencies
+        run: INSTALL_MISSING_TOOLS=true make setup
+      - name: Sync python virtualenv
+        run: make sync
+      - name: Run benchmarks
+        run: |
+          STRESS_TEST_MODE=moderate uv run pytest tests/ \
+            --benchmark-only \
+            --benchmark-json=benchmark-results.json \
+            --benchmark-histogram=benchmark-histogram \
+            -v
+      - name: Upload benchmark results
+        uses: actions/upload-artifact@v4
+        with:
+          name: benchmark-results-${{ github.ref_name }}
+          path: |
+            benchmark-results.json
+            benchmark-histogram.svg
