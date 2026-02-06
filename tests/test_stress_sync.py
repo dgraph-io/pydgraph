@@ -21,9 +21,12 @@ from __future__ import annotations
 import json
 import time
 from concurrent.futures import Executor, Future, ThreadPoolExecutor, wait
-from typing import Any
+from typing import TYPE_CHECKING, Any
 
 import pytest
+
+if TYPE_CHECKING:
+    from pytest_benchmark.fixture import BenchmarkFixture  # type: ignore[import-not-found]
 
 import pydgraph
 from pydgraph import DgraphClient, DgraphClientStub, errors, retry, run_transaction
@@ -197,12 +200,13 @@ class TestSyncClientStress:
         executor: Executor,
         executor_type: str,
         stress_config: dict[str, Any],
+        benchmark: BenchmarkFixture,
     ) -> None:
         """Test many concurrent read-only queries don't cause issues."""
         client = sync_client_with_schema
         num_ops = stress_config["ops"]
 
-        # Insert some test data first
+        # Insert some test data first (outside benchmark)
         txn = client.txn()
         for i in range(100):
             txn.mutate(set_obj=generate_person(i))
@@ -229,18 +233,32 @@ class TestSyncClientStress:
                 except Exception as e:
                     exc_list.append(e)
 
-            futures = [executor.submit(run_query) for _ in range(num_ops)]
-            wait(futures)
+            def run_all_queries() -> int:
+                futures = [executor.submit(run_query) for _ in range(num_ops)]
+                wait(futures)
+                return len(results)
+
+            result_count = benchmark(run_all_queries)
 
             assert len(exc_list) == 0, f"Got {len(exc_list)} errors: {exc_list[:5]}"
-            assert len(results) == num_ops
+            assert result_count == num_ops
         else:
             # ProcessPoolExecutor needs module-level function
+            def run_all_process_queries() -> int:
+                query_futures: list[Future[api.Response | Exception]] = [
+                    executor.submit(_worker_query, query) for _ in range(num_ops)
+                ]
+                wait(query_futures)
+                results_list = [f.result() for f in query_futures]
+                return len([r for r in results_list if not isinstance(r, Exception)])
+
+            result_count = benchmark(run_all_process_queries)
+
+            # Re-run outside benchmark to get error details for assertion
             query_futures: list[Future[api.Response | Exception]] = [
                 executor.submit(_worker_query, query) for _ in range(num_ops)
             ]
             wait(query_futures)
-
             results_list = [f.result() for f in query_futures]
             exc_list = [r for r in results_list if isinstance(r, Exception)]
             assert len(exc_list) == 0, f"Got {len(exc_list)} errors: {exc_list[:5]}"
@@ -251,6 +269,7 @@ class TestSyncClientStress:
         executor: Executor,
         executor_type: str,
         stress_config: dict[str, Any],
+        benchmark: BenchmarkFixture,
     ) -> None:
         """Test concurrent mutations in separate transactions."""
         client = sync_client_with_schema
@@ -271,21 +290,34 @@ class TestSyncClientStress:
                 except Exception as e:
                     exc_list.append(e)
 
-            futures = [executor.submit(run_mutation, i) for i in range(num_ops)]
-            wait(futures)
+            def run_all_mutations() -> int:
+                futures = [executor.submit(run_mutation, i) for i in range(num_ops)]
+                wait(futures)
+                return success_count
+
+            result_count = benchmark(run_all_mutations)
 
             # Some AbortedErrors are expected
             assert len(exc_list) == 0, f"Unexpected errors: {exc_list[:5]}"
-            assert success_count > num_ops * 0.5
+            assert result_count > num_ops * 0.5
         else:
             # ProcessPoolExecutor
+            def run_all_process_mutations() -> int:
+                mutation_futures: list[Future[tuple[bool, str]]] = [
+                    executor.submit(_worker_mutation, i) for i in range(num_ops)
+                ]
+                wait(mutation_futures)
+                mutation_results = [f.result() for f in mutation_futures]
+                return sum(1 for ok, _ in mutation_results if ok)
+
+            successes = benchmark(run_all_process_mutations)
+
+            # Re-run outside benchmark to get error details for assertion
             mutation_futures: list[Future[tuple[bool, str]]] = [
                 executor.submit(_worker_mutation, i) for i in range(num_ops)
             ]
             wait(mutation_futures)
-
             mutation_results = [f.result() for f in mutation_futures]
-            successes = sum(1 for ok, _ in mutation_results if ok)
             errors_list = [
                 msg for ok, msg in mutation_results if not ok and msg != "aborted"
             ]
@@ -303,6 +335,7 @@ class TestSyncTransactionStress:
         executor: Executor,
         executor_type: str,
         stress_config: dict[str, Any],
+        benchmark: BenchmarkFixture,
     ) -> None:
         """Test concurrent upserts on the same key detect conflicts properly."""
         client = sync_client_with_schema
@@ -339,21 +372,35 @@ class TestSyncTransactionStress:
                 except Exception as e:
                     exc_list.append(e)
 
-            futures = [executor.submit(run_upsert, i) for i in range(num_workers)]
-            wait(futures)
+            def run_all_upserts() -> int:
+                futures = [executor.submit(run_upsert, i) for i in range(num_workers)]
+                wait(futures)
+                return success_count
+
+            result_count = benchmark(run_all_upserts)
 
             assert len(exc_list) == 0, f"Unexpected errors: {exc_list}"
-            assert success_count >= 1, "No upserts succeeded"
+            assert result_count >= 1, "No upserts succeeded"
         else:
             # ProcessPoolExecutor
+            def run_all_process_upserts() -> int:
+                upsert_futures: list[Future[tuple[str, str]]] = [
+                    executor.submit(_worker_upsert, i, target_email)
+                    for i in range(num_workers)
+                ]
+                wait(upsert_futures)
+                upsert_results = [f.result() for f in upsert_futures]
+                return sum(1 for status, _ in upsert_results if status == "success")
+
+            successes = benchmark(run_all_process_upserts)
+
+            # Re-run outside benchmark to get error details for assertion
             upsert_futures: list[Future[tuple[str, str]]] = [
                 executor.submit(_worker_upsert, i, target_email)
                 for i in range(num_workers)
             ]
             wait(upsert_futures)
-
             upsert_results = [f.result() for f in upsert_futures]
-            successes = sum(1 for status, _ in upsert_results if status == "success")
             errors_list = [msg for status, msg in upsert_results if status == "error"]
 
             assert len(errors_list) == 0, f"Unexpected errors: {errors_list}"
@@ -437,6 +484,7 @@ class TestSyncRetryStress:
         executor: Executor,
         executor_type: str,
         stress_config: dict[str, Any],
+        benchmark: BenchmarkFixture,
     ) -> None:
         """Test retry() generator handles conflicts correctly under load."""
         iterations = stress_config["iterations"]
@@ -444,11 +492,10 @@ class TestSyncRetryStress:
 
         if executor_type == "thread":
             total_successes = 0
-            total_aborts = 0
             all_errors: list[str] = []
 
             def retry_work() -> None:
-                nonlocal total_successes, total_aborts
+                nonlocal total_successes
                 for attempt in retry():
                     with attempt:
                         txn = sync_client_with_schema.txn()
@@ -458,31 +505,46 @@ class TestSyncRetryStress:
                         )
                         total_successes += 1
 
-            futures = [executor.submit(retry_work) for _ in range(num_workers)]
-            wait(futures)
+            def run_all_retry_work() -> int:
+                futures = [executor.submit(retry_work) for _ in range(num_workers)]
+                wait(futures)
+                # Check for exceptions
+                for f in futures:
+                    try:
+                        f.result()
+                    except Exception as e:
+                        all_errors.append(str(e))
+                return total_successes
 
-            # Check for exceptions
-            for f in futures:
-                try:
-                    f.result()
-                except Exception as e:
-                    all_errors.append(str(e))
+            result_count = benchmark(run_all_retry_work)
 
             assert len(all_errors) == 0, f"Errors: {all_errors[:5]}"
-            assert total_successes >= num_workers
+            assert result_count >= num_workers
         else:
             # ProcessPoolExecutor
+            def run_all_process_retry() -> int:
+                retry_futures: list[Future[tuple[int, int, list[str]]]] = [
+                    executor.submit(_worker_retry_mutation, iterations)
+                    for _ in range(num_workers)
+                ]
+                wait(retry_futures)
+                total = 0
+                for rf in retry_futures:
+                    successes, _, _ = rf.result()
+                    total += successes
+                return total
+
+            total_successes = benchmark(run_all_process_retry)
+
+            # Re-run outside benchmark to get error details for assertion
             retry_futures: list[Future[tuple[int, int, list[str]]]] = [
                 executor.submit(_worker_retry_mutation, iterations)
                 for _ in range(num_workers)
             ]
             wait(retry_futures)
-
-            total_successes = 0
             proc_errors: list[str] = []
             for rf in retry_futures:
-                successes, _, errs = rf.result()  # Ignore aborts count
-                total_successes += successes
+                _, _, errs = rf.result()
                 proc_errors.extend(errs)
 
             assert len(proc_errors) == 0, f"Errors: {proc_errors[:5]}"
@@ -494,6 +556,7 @@ class TestSyncRetryStress:
         executor: Executor,
         executor_type: str,
         stress_config: dict[str, Any],
+        benchmark: BenchmarkFixture,
     ) -> None:
         """Test run_transaction() helper handles conflicts correctly."""
         num_workers = min(stress_config["workers"], 10)
@@ -520,20 +583,34 @@ class TestSyncRetryStress:
                 except Exception as e:
                     exc_list.append(e)
 
-            futures = [executor.submit(work, i) for i in range(num_workers)]
-            wait(futures)
+            def run_all_transactions() -> int:
+                futures = [executor.submit(work, i) for i in range(num_workers)]
+                wait(futures)
+                return len(results)
+
+            result_count = benchmark(run_all_transactions)
 
             assert len(exc_list) == 0, f"Errors: {exc_list[:5]}"
-            assert len(results) == num_workers
+            assert result_count == num_workers
         else:
             # ProcessPoolExecutor
+            def run_all_process_transactions() -> int:
+                txn_futures: list[Future[tuple[str, str]]] = [
+                    executor.submit(_worker_run_transaction, i)
+                    for i in range(num_workers)
+                ]
+                wait(txn_futures)
+                txn_results = [f.result() for f in txn_futures]
+                return sum(1 for status, _ in txn_results if status == "success")
+
+            successes = benchmark(run_all_process_transactions)
+
+            # Re-run outside benchmark to get error details for assertion
             txn_futures: list[Future[tuple[str, str]]] = [
                 executor.submit(_worker_run_transaction, i) for i in range(num_workers)
             ]
             wait(txn_futures)
-
             txn_results = [f.result() for f in txn_futures]
-            successes = sum(1 for status, _ in txn_results if status == "success")
             errors_list = [msg for status, msg in txn_results if status == "error"]
 
             assert len(errors_list) == 0, f"Errors: {errors_list[:5]}"

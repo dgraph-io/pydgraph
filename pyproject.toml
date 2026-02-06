@@ -193,6 +193,10 @@ module = "pytest.*"
 ignore_missing_imports = true
 
 [[tool.mypy.overrides]]
+module = "pytest_benchmark.*"
+ignore_missing_imports = true
+
+[[tool.mypy.overrides]]
 module = "grpc.*"
 ignore_missing_imports = true
 
