@@ -65,6 +65,7 @@ repos:
         pass_filenames: false
         additional_dependencies:
           - pytest>=8.3.3
+          - pytest-benchmark>=4.0.0
           - grpcio>=1.65.1
           - protobuf>=4.23.0
   - repo: https://github.com/pre-commit/mirrors-mypy

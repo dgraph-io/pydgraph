@@ -34,9 +34,7 @@ from pydgraph import (
 from pydgraph.proto import api_pb2 as api
 
 if TYPE_CHECKING:
-    from pytest_benchmark.fixture import (
-        BenchmarkFixture,  # type: ignore[import-not-found]
-    )
+    from pytest_benchmark.fixture import BenchmarkFixture
 
 
 def _generate_person(index: int) -> dict[str, Any]:

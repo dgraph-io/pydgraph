@@ -26,7 +26,7 @@ from typing import TYPE_CHECKING, Any
 import pytest
 
 if TYPE_CHECKING:
-    from pytest_benchmark.fixture import BenchmarkFixture  # type: ignore[import-not-found]
+    from pytest_benchmark.fixture import BenchmarkFixture
 
 import pydgraph
 from pydgraph import DgraphClient, DgraphClientStub, errors, retry, run_transaction
