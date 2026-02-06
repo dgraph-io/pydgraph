@@ -19,7 +19,7 @@ from __future__ import annotations
 
 import asyncio
 import random
-from typing import Any
+from typing import TYPE_CHECKING, Any
 
 import pytest
 
@@ -32,6 +32,11 @@ from pydgraph import (
     with_retry_async,
 )
 from pydgraph.proto import api_pb2 as api
+
+if TYPE_CHECKING:
+    from pytest_benchmark.fixture import (
+        BenchmarkFixture,  # type: ignore[import-not-found]
+    )
 
 
 def _generate_person(index: int) -> dict[str, Any]:
@@ -58,12 +63,13 @@ class TestAsyncClientStress:
         self,
         async_client_with_schema: AsyncDgraphClient,
         stress_config: dict[str, Any],
+        benchmark: BenchmarkFixture,
     ) -> None:
         """Test many concurrent read-only queries using asyncio.gather."""
         client = async_client_with_schema
         num_ops = stress_config["ops"]
 
-        # Insert some test data first
+        # Insert some test data first (outside benchmark)
         txn = client.txn()
         for i in range(100):
             await txn.mutate(set_obj=_generate_person(i))
@@ -81,11 +87,17 @@ class TestAsyncClientStress:
             txn = client.txn(read_only=True)
             return await txn.query(query)
 
-        # Pure asyncio concurrency
-        results = await asyncio.gather(
-            *[run_query() for _ in range(num_ops)],
-            return_exceptions=True,
-        )
+        # Wrap async execution in sync function for benchmark
+        def run_benchmark() -> list[api.Response | BaseException]:
+            loop = asyncio.get_event_loop()
+            return loop.run_until_complete(
+                asyncio.gather(
+                    *[run_query() for _ in range(num_ops)],
+                    return_exceptions=True,
+                )
+            )
+
+        results = benchmark(run_benchmark)
 
         exc_list = [r for r in results if isinstance(r, Exception)]
         assert len(exc_list) == 0, f"Got {len(exc_list)} errors: {exc_list[:5]}"
@@ -96,6 +108,7 @@ class TestAsyncClientStress:
         self,
         async_client_with_schema: AsyncDgraphClient,
         stress_config: dict[str, Any],
+        benchmark: BenchmarkFixture,
     ) -> None:
         """Test concurrent mutations in separate transactions using asyncio.gather."""
         client = async_client_with_schema
@@ -109,11 +122,16 @@ class TestAsyncClientStress:
             except errors.AbortedError:
                 return False
 
-        # Pure asyncio concurrency
-        results = await asyncio.gather(
-            *[run_mutation(i) for i in range(num_ops)],
-            return_exceptions=True,
-        )
+        def run_benchmark() -> list[bool | BaseException]:
+            loop = asyncio.get_event_loop()
+            return loop.run_until_complete(
+                asyncio.gather(
+                    *[run_mutation(i) for i in range(num_ops)],
+                    return_exceptions=True,
+                )
+            )
+
+        results = benchmark(run_benchmark)
 
         exc_list = [r for r in results if isinstance(r, Exception)]
         successes = sum(1 for r in results if r is True)
@@ -126,12 +144,13 @@ class TestAsyncClientStress:
         self,
         async_client_with_schema: AsyncDgraphClient,
         stress_config: dict[str, Any],
+        benchmark: BenchmarkFixture,
     ) -> None:
         """Test mix of queries, mutations, commits, and discards concurrently."""
         client = async_client_with_schema
         num_ops = stress_config["workers"] * 20
 
-        # Seed some data
+        # Seed some data (outside benchmark)
         txn = client.txn()
         for i in range(50):
             await txn.mutate(set_obj=_generate_person(i))
@@ -164,11 +183,16 @@ class TestAsyncClientStress:
             except errors.AbortedError:
                 return "aborted"
 
-        # Pure asyncio concurrency
-        results = await asyncio.gather(
-            *[random_operation(i) for i in range(num_ops)],
-            return_exceptions=True,
-        )
+        def run_benchmark() -> list[str | BaseException]:
+            loop = asyncio.get_event_loop()
+            return loop.run_until_complete(
+                asyncio.gather(
+                    *[random_operation(i) for i in range(num_ops)],
+                    return_exceptions=True,
+                )
+            )
+
+        results = benchmark(run_benchmark)
 
         exc_list = [r for r in results if isinstance(r, Exception)]
         assert len(exc_list) == 0, f"Unexpected errors: {exc_list[:5]}"
@@ -187,6 +211,7 @@ class TestAsyncTransactionStress:
         self,
         async_client_with_schema: AsyncDgraphClient,
         stress_config: dict[str, Any],
+        benchmark: BenchmarkFixture,
     ) -> None:
         """Test concurrent upserts on the same key detect conflicts properly."""
         client = async_client_with_schema
@@ -215,11 +240,16 @@ class TestAsyncTransactionStress:
             except errors.AbortedError:
                 return "aborted"
 
-        # Pure asyncio concurrency
-        results = await asyncio.gather(
-            *[run_upsert(i) for i in range(num_workers)],
-            return_exceptions=True,
-        )
+        def run_benchmark() -> list[str | BaseException]:
+            loop = asyncio.get_event_loop()
+            return loop.run_until_complete(
+                asyncio.gather(
+                    *[run_upsert(i) for i in range(num_workers)],
+                    return_exceptions=True,
+                )
+            )
+
+        results = benchmark(run_benchmark)
 
         exc_list = [r for r in results if isinstance(r, Exception)]
         successes = sum(1 for r in results if r == "success")
@@ -343,6 +373,7 @@ class TestAsyncRetryStress:
         self,
         async_client_with_schema: AsyncDgraphClient,
         stress_config: dict[str, Any],
+        benchmark: BenchmarkFixture,
     ) -> None:
         """Test retry_async() generator handles conflicts correctly under load."""
         client = async_client_with_schema
@@ -362,11 +393,16 @@ class TestAsyncRetryStress:
                         successes += 1
             return successes
 
-        # Pure asyncio concurrency
-        results = await asyncio.gather(
-            *[retry_work(i) for i in range(num_workers)],
-            return_exceptions=True,
-        )
+        def run_benchmark() -> list[int | BaseException]:
+            loop = asyncio.get_event_loop()
+            return loop.run_until_complete(
+                asyncio.gather(
+                    *[retry_work(i) for i in range(num_workers)],
+                    return_exceptions=True,
+                )
+            )
+
+        results = benchmark(run_benchmark)
 
         exc_list = [r for r in results if isinstance(r, Exception)]
         total_successes = sum(r for r in results if isinstance(r, int))
@@ -379,6 +415,7 @@ class TestAsyncRetryStress:
         self,
         async_client_with_schema: AsyncDgraphClient,
         stress_config: dict[str, Any],
+        benchmark: BenchmarkFixture,
     ) -> None:
         """Test @with_retry_async decorator handles conflicts correctly."""
         client = async_client_with_schema
@@ -393,11 +430,16 @@ class TestAsyncRetryStress:
             )
             return next(iter(response.uids.values()), "")
 
-        # Pure asyncio concurrency
-        results = await asyncio.gather(
-            *[create_person(i) for i in range(num_workers)],
-            return_exceptions=True,
-        )
+        def run_benchmark() -> list[str | BaseException]:
+            loop = asyncio.get_event_loop()
+            return loop.run_until_complete(
+                asyncio.gather(
+                    *[create_person(i) for i in range(num_workers)],
+                    return_exceptions=True,
+                )
+            )
+
+        results = benchmark(run_benchmark)
 
         exc_list = [r for r in results if isinstance(r, Exception)]
         successes = [r for r in results if isinstance(r, str) and r]
@@ -410,6 +452,7 @@ class TestAsyncRetryStress:
         self,
         async_client_with_schema: AsyncDgraphClient,
         stress_config: dict[str, Any],
+        benchmark: BenchmarkFixture,
     ) -> None:
         """Test run_transaction_async() helper handles conflicts correctly."""
         client = async_client_with_schema
@@ -428,11 +471,16 @@ class TestAsyncRetryStress:
 
             return await run_transaction_async(client, txn_func)
 
-        # Pure asyncio concurrency
-        results = await asyncio.gather(
-            *[work(i) for i in range(num_workers)],
-            return_exceptions=True,
-        )
+        def run_benchmark() -> list[str | BaseException]:
+            loop = asyncio.get_event_loop()
+            return loop.run_until_complete(
+                asyncio.gather(
+                    *[work(i) for i in range(num_workers)],
+                    return_exceptions=True,
+                )
+            )
+
+        results = benchmark(run_benchmark)
 
         exc_list = [r for r in results if isinstance(r, Exception)]
         successes = [r for r in results if isinstance(r, str) and r]
