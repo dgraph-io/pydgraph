@@ -167,3 +167,44 @@ async def async_client_with_schema(
     """Async client with synthetic test schema."""
     await async_client_clean.alter(pydgraph.Operation(schema=SYNTHETIC_SCHEMA))
     return async_client_clean
+
+
+# =============================================================================
+# Sync-wrapped Async Client Fixtures (for benchmark tests)
+# =============================================================================
+# These fixtures create async clients using their own event loop, avoiding
+# conflicts with pytest-asyncio's event loop when using benchmark fixtures.
+# The event loop is stored alongside the client so it can be reused.
+
+
+@pytest.fixture
+def async_client_with_schema_for_benchmark() -> (
+    Generator[tuple[AsyncDgraphClient, asyncio.AbstractEventLoop], None, None]
+):
+    """Async client with schema and its event loop for benchmarking.
+
+    Returns a tuple of (client, loop) so tests can run async operations
+    using the same event loop the client was created with.
+    """
+    loop = asyncio.new_event_loop()
+    asyncio.set_event_loop(loop)
+
+    async def setup() -> AsyncDgraphClient:
+        client_stub = AsyncDgraphClientStub(TEST_SERVER_ADDR)
+        client = AsyncDgraphClient(client_stub)
+        for _ in range(30):
+            try:
+                await client.login("groot", "password")
+                break
+            except Exception as e:
+                if "user not found" in str(e):
+                    raise
+                await asyncio.sleep(0.1)
+        await client.alter(pydgraph.Operation(drop_all=True))
+        await client.alter(pydgraph.Operation(schema=SYNTHETIC_SCHEMA))
+        return client
+
+    client = loop.run_until_complete(setup())
+    yield (client, loop)
+    loop.run_until_complete(client.close())
+    loop.close()
