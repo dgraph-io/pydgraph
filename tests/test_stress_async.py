@@ -56,7 +56,7 @@ def _generate_person(index: int) -> dict[str, Any]:
 class TestAsyncClientStress:
     """Stress tests for asynchronous Dgraph client using pure asyncio."""
 
-    def test_concurrent_async_queries(
+    def test_concurrent_read_queries_async(
         self,
         async_client_with_schema_for_benchmark: tuple[
             AsyncDgraphClient, asyncio.AbstractEventLoop
@@ -104,7 +104,7 @@ class TestAsyncClientStress:
         assert len(exc_list) == 0, f"Got {len(exc_list)} errors: {exc_list[:5]}"
         assert len(results) == num_ops
 
-    def test_concurrent_async_mutations(
+    def test_concurrent_mutations_async(
         self,
         async_client_with_schema_for_benchmark: tuple[
             AsyncDgraphClient, asyncio.AbstractEventLoop
@@ -140,7 +140,7 @@ class TestAsyncClientStress:
         assert len(exc_list) == 0, f"Unexpected errors: {exc_list[:5]}"
         assert successes > num_ops * 0.5, f"Too few successes: {successes}/{num_ops}"
 
-    def test_mixed_async_workload(
+    def test_mixed_workload_async(
         self,
         async_client_with_schema_for_benchmark: tuple[
             AsyncDgraphClient, asyncio.AbstractEventLoop
@@ -210,7 +210,7 @@ class TestAsyncClientStress:
 class TestAsyncTransactionStress:
     """Stress tests for async transaction conflict handling."""
 
-    def test_async_transaction_conflicts(
+    def test_upsert_conflicts_async(
         self,
         async_client_with_schema_for_benchmark: tuple[
             AsyncDgraphClient, asyncio.AbstractEventLoop
@@ -262,7 +262,7 @@ class TestAsyncTransactionStress:
         assert successes >= 1, "No upserts succeeded"
 
     @pytest.mark.asyncio
-    async def test_async_deadlock_regression(
+    async def test_deadlock_regression_async(
         self,
         async_client_with_schema: AsyncDgraphClient,
         stress_config: dict[str, Any],
@@ -294,7 +294,7 @@ class TestAsyncTransactionStress:
             pytest.fail("Deadlock detected - asyncio.Lock not released properly")
 
     @pytest.mark.asyncio
-    async def test_lock_released_after_mutation_error(
+    async def test_lock_released_after_mutation_error_async(
         self,
         async_client_with_schema: AsyncDgraphClient,
     ) -> None:
@@ -314,7 +314,7 @@ class TestAsyncTransactionStress:
         assert len(response.uids) == 1
 
     @pytest.mark.asyncio
-    async def test_context_manager_cleanup(
+    async def test_context_manager_cleanup_async(
         self,
         async_client_with_schema: AsyncDgraphClient,
         stress_config: dict[str, Any],
@@ -341,7 +341,7 @@ class TestAsyncTransactionStress:
             assert response is not None
 
     @pytest.mark.asyncio
-    async def test_rapid_txn_create_discard(
+    async def test_rapid_txn_create_discard_async(
         self,
         async_client_with_schema: AsyncDgraphClient,
         stress_config: dict[str, Any],
@@ -372,7 +372,7 @@ class TestAsyncTransactionStress:
 class TestAsyncRetryStress:
     """Stress tests for async retry utilities."""
 
-    def test_retry_async_under_conflicts(
+    def test_retry_under_conflicts_async(
         self,
         async_client_with_schema_for_benchmark: tuple[
             AsyncDgraphClient, asyncio.AbstractEventLoop
@@ -414,7 +414,7 @@ class TestAsyncRetryStress:
         assert len(exc_list) == 0, f"Errors: {exc_list[:5]}"
         assert total_successes >= num_workers * iterations
 
-    def test_with_retry_async_decorator(
+    def test_with_retry_decorator_async(
         self,
         async_client_with_schema_for_benchmark: tuple[
             AsyncDgraphClient, asyncio.AbstractEventLoop
@@ -502,7 +502,7 @@ class TestAsyncTransactionEdgeCases:
     """Tests for async transaction edge cases and error handling."""
 
     @pytest.mark.asyncio
-    async def test_double_commit_error(
+    async def test_double_commit_error_async(
         self,
         async_client_with_schema: AsyncDgraphClient,
     ) -> None:
@@ -517,7 +517,7 @@ class TestAsyncTransactionEdgeCases:
             await txn.commit()
 
     @pytest.mark.asyncio
-    async def test_use_after_commit_error(
+    async def test_use_after_commit_error_async(
         self,
         async_client_with_schema: AsyncDgraphClient,
     ) -> None:
@@ -531,7 +531,7 @@ class TestAsyncTransactionEdgeCases:
             await txn.query("{ q(func: has(name)) { name } }")
 
     @pytest.mark.asyncio
-    async def test_read_only_mutation_error(
+    async def test_read_only_mutation_error_async(
         self,
         async_client_with_schema: AsyncDgraphClient,
     ) -> None:
@@ -544,7 +544,7 @@ class TestAsyncTransactionEdgeCases:
             await txn.mutate(set_obj={"name": "ReadOnlyMutation"})
 
     @pytest.mark.asyncio
-    async def test_best_effort_requires_read_only(
+    async def test_best_effort_requires_read_only_async(
         self,
         async_client_with_schema: AsyncDgraphClient,
     ) -> None:
@@ -555,7 +555,7 @@ class TestAsyncTransactionEdgeCases:
             client.txn(read_only=False, best_effort=True)
 
     @pytest.mark.asyncio
-    async def test_async_double_discard_is_safe(
+    async def test_double_discard_is_safe_async(
         self,
         async_client_with_schema: AsyncDgraphClient,
     ) -> None:

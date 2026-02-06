@@ -40,7 +40,7 @@ from .helpers import generate_person
 class TestSyncClientStress:
     """Stress tests for synchronous Dgraph client."""
 
-    def test_concurrent_read_queries(
+    def test_concurrent_read_queries_sync(
         self,
         sync_client_with_schema: DgraphClient,
         executor: ThreadPoolExecutor,
@@ -88,7 +88,7 @@ class TestSyncClientStress:
 
         assert result_count == num_ops
 
-    def test_concurrent_mutations_separate_txns(
+    def test_concurrent_mutations_sync(
         self,
         sync_client_with_schema: DgraphClient,
         executor: ThreadPoolExecutor,
@@ -127,11 +127,74 @@ class TestSyncClientStress:
         # Some AbortedErrors are expected
         assert result_count > num_ops * 0.5
 
+    def test_mixed_workload_sync(
+        self,
+        sync_client_with_schema: DgraphClient,
+        executor: ThreadPoolExecutor,
+        stress_config: dict[str, Any],
+        benchmark: BenchmarkFixture,
+    ) -> None:
+        """Test mix of queries, mutations, commits, and discards concurrently."""
+        client = sync_client_with_schema
+        num_ops = stress_config["workers"] * 20
+
+        # Setup: Seed some data once before benchmarking
+        txn = client.txn()
+        for i in range(50):
+            txn.mutate(set_obj=generate_person(i))
+        txn.commit()
+
+        results: list[str] = []
+        exc_list: list[Exception] = []
+
+        def random_operation(op_id: int) -> None:
+            op_type = op_id % 4
+            try:
+                if op_type == 0:
+                    # Read query
+                    txn = client.txn(read_only=True)
+                    txn.query("{ q(func: has(name), first: 5) { name } }")
+                    results.append("query")
+                elif op_type == 1:
+                    # Mutation with commit_now
+                    txn = client.txn()
+                    txn.mutate(set_obj=generate_person(op_id), commit_now=True)
+                    results.append("mutation")
+                elif op_type == 2:
+                    # Mutation with explicit commit
+                    txn = client.txn()
+                    txn.mutate(set_obj=generate_person(op_id))
+                    txn.commit()
+                    results.append("commit")
+                else:
+                    # Mutation with discard
+                    txn = client.txn()
+                    txn.mutate(set_obj=generate_person(op_id))
+                    txn.discard()
+                    results.append("discard")
+            except errors.AbortedError:
+                results.append("aborted")
+            except Exception as e:
+                exc_list.append(e)
+
+        def run_all_operations() -> int:
+            # Clear state at start of each benchmark iteration
+            results.clear()
+            exc_list.clear()
+            futures = [executor.submit(random_operation, i) for i in range(num_ops)]
+            wait(futures)
+            return len(results)
+
+        result_count = benchmark(run_all_operations)
+
+        assert len(exc_list) == 0, f"Unexpected errors: {exc_list[:5]}"
+        assert result_count == num_ops
+
 
 class TestSyncTransactionStress:
     """Stress tests for sync transaction conflict handling."""
 
-    def test_concurrent_upsert_conflicts(
+    def test_upsert_conflicts_sync(
         self,
         sync_client_with_schema: DgraphClient,
         executor: ThreadPoolExecutor,
@@ -186,7 +249,7 @@ class TestSyncTransactionStress:
 
         assert result_count >= 1, "No upserts succeeded"
 
-    def test_transaction_isolation(
+    def test_transaction_isolation_sync(
         self,
         sync_client_with_schema: DgraphClient,
         stress_config: dict[str, Any],
@@ -250,7 +313,7 @@ class TestSyncTransactionStress:
 class TestSyncRetryStress:
     """Stress tests for sync retry utilities."""
 
-    def test_retry_under_conflicts(
+    def test_retry_under_conflicts_sync(
         self,
         sync_client_with_schema: DgraphClient,
         executor: ThreadPoolExecutor,
@@ -293,7 +356,7 @@ class TestSyncRetryStress:
 
         assert result_count >= num_workers
 
-    def test_run_transaction_conflicts(
+    def test_run_transaction_sync(
         self,
         sync_client_with_schema: DgraphClient,
         executor: ThreadPoolExecutor,
@@ -340,7 +403,7 @@ class TestSyncRetryStress:
 class TestSyncDeadlockPrevention:
     """Tests for deadlock prevention in sync client."""
 
-    def test_no_deadlock_on_error(
+    def test_no_deadlock_on_error_sync(
         self,
         sync_client_with_schema: DgraphClient,
         stress_config: dict[str, Any],
