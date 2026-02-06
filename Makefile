@@ -51,8 +51,8 @@ clean: ## Cleans build artifacts
 build: deps-uv sync protogen ## Builds release package
 	$(RUN) uv build
 
-test: deps-uv sync ## Run tests
-	bash scripts/local-test.sh
+test: deps-uv sync ## Run tests (use PYTEST_ARGS to pass options, e.g., make test PYTEST_ARGS="-v tests/test_connect.py")
+	bash scripts/local-test.sh $(PYTEST_ARGS)
 
 benchmark: deps-uv sync ## Run benchmarks
 	STRESS_TEST_MODE=moderate $(RUN) uv run pytest tests/ \

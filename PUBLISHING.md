@@ -9,12 +9,12 @@ This document contains instructions to create a new pydgraph release and publish
 1. Create a new branch (prepare-for-release-vXX.X.X, for instance)
 1. Update the VERSION in pydgraph/meta.py
 1. Build pydgraph locally, see the [README](README.md#build-from-source)
-1. Run the tests (`bash scripts/local-test.sh`) to ensure everything works
+1. Run the tests (`make test`) to ensure everything works
 1. If you're concerned about incompatibilities with earlier Dgraph versions, invoke the test suite
    with earlier Dgraph versions
 
    ```sh
-   DGRAPH_IMAGE_TAG=vX.X.X bash scripts/local-test.sh
+   DGRAPH_IMAGE_TAG=vX.X.X make test
    ```
 
 1. If you happen to have the testpypi access token, try a test upload to testpypi:
