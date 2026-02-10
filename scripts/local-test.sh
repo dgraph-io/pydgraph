@@ -43,6 +43,7 @@ fi
 if [[ ! -d "${SRCDIR}/../scripts" ]]; then
 	echo "No scripts directory found at \"${SRCDIR}/../scripts\""
 	echo "Trying alternate locations for SRCDIR..."
+	# shellcheck disable=SC2043
 	for dir in "./scripts"; do
 		echo -n "Trying \"${dir}\"... "
 		if [[ -d ${dir} ]]; then
@@ -68,6 +69,7 @@ VENV_ACTIVATE="${SRCDIR_VENV}/bin/activate"
 if [[ ${VIRTUAL_ENV} != "${SRCDIR_VENV}" ]]; then
 	if [[ -e ${VENV_ACTIVATE} ]]; then
 		echo "Ensuring use of SRCDIR virtual env using \"${VENV_ACTIVATE}\""
+		# shellcheck disable=SC1090
 		source "${VENV_ACTIVATE}"
 	else
 		echo "WARNING: Can't activate SRCDIR virtual env, no activate script found at \"${VENV_ACTIVATE}\""
