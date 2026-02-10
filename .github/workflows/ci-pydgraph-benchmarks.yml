@@ -22,12 +22,7 @@ jobs:
       - name: Sync python virtualenv
         run: make sync
       - name: Run benchmarks
-        run: |
-          STRESS_TEST_MODE=moderate uv run pytest tests/ \
-            --benchmark-only \
-            --benchmark-json=benchmark-results.json \
-            --benchmark-histogram=benchmark-histogram \
-            -v
+        run: make benchmark
       - name: Upload benchmark results
         uses: actions/upload-artifact@v4
         with:
