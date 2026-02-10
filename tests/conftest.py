@@ -96,9 +96,8 @@ def movies_rdf(movies_rdf_gz: Path) -> Generator[Path, None, None]:
     """
     with tempfile.TemporaryDirectory() as tempdir:
         output_path = Path(tempdir) / "1million.rdf"
-        with gzip.open(movies_rdf_gz, "rb") as f_in:
-            with open(output_path, "wb") as f_out:
-                shutil.copyfileobj(f_in, f_out)
+        with gzip.open(movies_rdf_gz, "rb") as f_in, open(output_path, "wb") as f_out:
+            shutil.copyfileobj(f_in, f_out)
         yield output_path
 
 

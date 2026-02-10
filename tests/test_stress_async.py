@@ -120,9 +120,10 @@ class TestAsyncClientStress:
             try:
                 txn = client.txn()
                 await txn.mutate(set_obj=_generate_person(index), commit_now=True)
-                return True
             except errors.AbortedError:
                 return False
+            else:
+                return True
 
         def run_benchmark() -> list[bool | BaseException]:
             return loop.run_until_complete(
@@ -163,30 +164,33 @@ class TestAsyncClientStress:
 
         async def random_operation(op_id: int) -> str:
             op_type = op_id % 4
+            result = "unknown"
             try:
                 if op_type == 0:
                     # Read query
                     txn = client.txn(read_only=True)
                     await txn.query("{ q(func: has(name), first: 5) { name } }")
-                    return "query"
-                if op_type == 1:
+                    result = "query"
+                elif op_type == 1:
                     # Mutation with commit_now
                     txn = client.txn()
                     await txn.mutate(set_obj=_generate_person(op_id), commit_now=True)
-                    return "mutation"
-                if op_type == 2:
+                    result = "mutation"
+                elif op_type == 2:
                     # Mutation with explicit commit
                     txn = client.txn()
                     await txn.mutate(set_obj=_generate_person(op_id))
                     await txn.commit()
-                    return "commit"
-                # Mutation with discard
-                txn = client.txn()
-                await txn.mutate(set_obj=_generate_person(op_id))
-                await txn.discard()
-                return "discard"
+                    result = "commit"
+                else:
+                    # Mutation with discard
+                    txn = client.txn()
+                    await txn.mutate(set_obj=_generate_person(op_id))
+                    await txn.discard()
+                    result = "discard"
             except errors.AbortedError:
                 return "aborted"
+            return result
 
         def run_benchmark() -> list[str | BaseException]:
             return loop.run_until_complete(
@@ -241,9 +245,10 @@ class TestAsyncTransactionStress:
                     commit_now=True,
                 )
                 await txn.do_request(request)
-                return "success"
             except errors.AbortedError:
                 return "aborted"
+            else:
+                return "success"
 
         def run_benchmark() -> list[str | BaseException]:
             return loop.run_until_complete(

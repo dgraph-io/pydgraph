@@ -37,15 +37,15 @@ function stopCluster() {
 	DockerCompose down -t 5 -v
 }
 
-if [ -z "${SRCDIR}" ]; then
+if [[ -z ${SRCDIR} ]]; then
 	SRCDIR=$(readlink -f "${BASH_SOURCE[0]%/*}")
 fi
-if [ ! -d "${SRCDIR}/../scripts" ]; then
+if [[ ! -d "${SRCDIR}/../scripts" ]]; then
 	echo "No scripts directory found at \"${SRCDIR}/../scripts\""
 	echo "Trying alternate locations for SRCDIR..."
 	for dir in "./scripts"; do
 		echo -n "Trying \"${dir}\"... "
-		if [ -d "${dir}" ]; then
+		if [[ -d ${dir} ]]; then
 			echo "found: ${dir}"
 			SRCDIR="${dir}"
 			echo "Setting SRCDIR=\"${dir}\""
@@ -53,7 +53,7 @@ if [ ! -d "${SRCDIR}/../scripts" ]; then
 		else
 			echo "not found: ${dir}"
 		fi
-		if [ ! -d "${SRCDIR}"]; then
+		if [[ ! -d ${SRCDIR} ]]; then
 			echo "Unable to determine script SRCDIR."
 			echo "Please re-run with SRCDIR set to correct project root."
 			exit 1
@@ -65,8 +65,8 @@ readonly SRCDIR
 
 SRCDIR_VENV="${SRCDIR}/../.venv"
 VENV_ACTIVATE="${SRCDIR_VENV}/bin/activate"
-if [ "${VIRTUAL_ENV}" != "${SRCDIR_VENV}" ]; then
-	if [ -e "${VENV_ACTIVATE}" ]; then
+if [[ ${VIRTUAL_ENV} != "${SRCDIR_VENV}" ]]; then
+	if [[ -e ${VENV_ACTIVATE} ]]; then
 		echo "Ensuring use of SRCDIR virtual env using \"${VENV_ACTIVATE}\""
 		source "${VENV_ACTIVATE}"
 	else

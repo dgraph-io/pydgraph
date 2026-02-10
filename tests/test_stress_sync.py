@@ -20,8 +20,6 @@ import json
 from concurrent.futures import ThreadPoolExecutor, wait
 from typing import TYPE_CHECKING, Any
 
-import pytest
-
 if TYPE_CHECKING:
     from pytest_benchmark.fixture import BenchmarkFixture
 
@@ -30,7 +28,6 @@ from pydgraph import DgraphClient, errors, retry, run_transaction
 from pydgraph.proto import api_pb2 as api
 
 from .helpers import generate_person
-
 
 # =============================================================================
 # Sync Client Stress Tests
@@ -249,7 +246,7 @@ class TestSyncTransactionStress:
 
         assert result_count >= 1, "No upserts succeeded"
 
-    def test_transaction_isolation_sync(
+    def test_transaction_isolation_sync(  # noqa: C901
         self,
         sync_client_with_schema: DgraphClient,
         stress_config: dict[str, Any],
