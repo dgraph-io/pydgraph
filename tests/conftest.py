@@ -138,7 +138,7 @@ def movies_rdf(movies_rdf_gz: Path) -> Generator[Path, None, None]:
 
 
 @pytest.fixture(scope="session")
-def session_sync_client() -> Generator[DgraphClient, None, None]:
+def sync_client() -> Generator[DgraphClient, None, None]:
     """Session-scoped sync client with login."""
     client_stub = DgraphClientStub(TEST_SERVER_ADDR)
     client = DgraphClient(client_stub)
@@ -173,7 +173,7 @@ def movies_data_loaded(
         return False
 
     # Lazy evaluation: only instantiate session-scoped fixtures when actually needed
-    client: DgraphClient = request.getfixturevalue("session_sync_client")
+    client: DgraphClient = request.getfixturevalue("sync_client")
     movies_rdf_path: Path = request.getfixturevalue("movies_rdf")
     schema_content: str = request.getfixturevalue("movies_schema_content")
 
@@ -248,8 +248,8 @@ def executor(
 
 
 @pytest.fixture
-def sync_client() -> Generator[DgraphClient, None, None]:
-    """Sync client with login."""
+def _sync_client() -> Generator[DgraphClient, None, None]:
+    """Function-scoped sync client with login (internal use)."""
     client_stub = DgraphClientStub(TEST_SERVER_ADDR)
     client = DgraphClient(client_stub)
 
@@ -267,10 +267,10 @@ def sync_client() -> Generator[DgraphClient, None, None]:
 
 
 @pytest.fixture
-def sync_client_clean(sync_client: DgraphClient) -> DgraphClient:
-    """Sync client with clean database."""
-    sync_client.alter(pydgraph.Operation(drop_all=True))
-    return sync_client
+def _sync_client_clean(_sync_client: DgraphClient) -> DgraphClient:
+    """Function-scoped sync client with clean database (internal use)."""
+    _sync_client.alter(pydgraph.Operation(drop_all=True))
+    return _sync_client
 
 
 @pytest.fixture(scope="session")
@@ -280,12 +280,12 @@ def movies_schema_content(movies_schema: Path) -> str:
 
 
 @pytest.fixture
-def sync_client_with_movies_schema(
-    sync_client_clean: DgraphClient, movies_schema_content: str
+def stress_test_sync_client(
+    _sync_client_clean: DgraphClient, movies_schema_content: str
 ) -> DgraphClient:
-    """Sync client with movies test schema."""
-    sync_client_clean.alter(pydgraph.Operation(schema=movies_schema_content))
-    return sync_client_clean
+    """Sync client with movies test schema for stress tests."""
+    _sync_client_clean.alter(pydgraph.Operation(schema=movies_schema_content))
+    return _sync_client_clean
 
 
 # =============================================================================
@@ -320,11 +320,11 @@ async def async_client_clean(async_client: AsyncDgraphClient) -> AsyncDgraphClie
 
 
 @pytest.fixture
-async def async_client_with_movies_schema(
+async def stress_test_async_client(
     async_client_clean: AsyncDgraphClient,
     movies_schema_content: str,
 ) -> AsyncDgraphClient:
-    """Async client with movies test schema."""
+    """Async client with movies test schema for stress tests."""
     await async_client_clean.alter(pydgraph.Operation(schema=movies_schema_content))
     return async_client_clean
 
@@ -338,7 +338,7 @@ async def async_client_with_movies_schema(
 
 
 @pytest.fixture
-def async_client_with_movies_schema_for_benchmark(
+def stress_test_async_client_for_benchmark(
     movies_schema_content: str,
 ) -> Generator[tuple[AsyncDgraphClient, asyncio.AbstractEventLoop], None, None]:
     """Async client with schema and its event loop for benchmarking.

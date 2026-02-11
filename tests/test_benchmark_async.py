@@ -38,11 +38,11 @@ class TestAsyncQueryBenchmarks:
 
     def test_benchmark_query_async(
         self,
-        async_client_with_movies_schema_for_benchmark,
+        stress_test_async_client_for_benchmark,
         benchmark: BenchmarkFixture,
     ) -> None:
         """Benchmark a simple async read query."""
-        client, loop = async_client_with_movies_schema_for_benchmark
+        client, loop = stress_test_async_client_for_benchmark
 
         # Setup: seed data outside benchmark
         async def setup() -> None:
@@ -70,11 +70,11 @@ class TestAsyncQueryBenchmarks:
 
     def test_benchmark_query_with_vars_async(
         self,
-        async_client_with_movies_schema_for_benchmark,
+        stress_test_async_client_for_benchmark,
         benchmark: BenchmarkFixture,
     ) -> None:
         """Benchmark an async query with variables."""
-        client, loop = async_client_with_movies_schema_for_benchmark
+        client, loop = stress_test_async_client_for_benchmark
 
         # Setup
         async def setup() -> None:
@@ -104,11 +104,11 @@ class TestAsyncQueryBenchmarks:
 
     def test_benchmark_query_best_effort_async(
         self,
-        async_client_with_movies_schema_for_benchmark,
+        stress_test_async_client_for_benchmark,
         benchmark: BenchmarkFixture,
     ) -> None:
         """Benchmark a best-effort async read query."""
-        client, loop = async_client_with_movies_schema_for_benchmark
+        client, loop = stress_test_async_client_for_benchmark
 
         # Setup
         async def setup() -> None:
@@ -139,11 +139,11 @@ class TestAsyncMutationBenchmarks:
 
     def test_benchmark_mutation_commit_now_async(
         self,
-        async_client_with_movies_schema_for_benchmark,
+        stress_test_async_client_for_benchmark,
         benchmark: BenchmarkFixture,
     ) -> None:
         """Benchmark async mutation with commit_now."""
-        client, loop = async_client_with_movies_schema_for_benchmark
+        client, loop = stress_test_async_client_for_benchmark
         counter = [0]
 
         async def run_mutation() -> api.Response:
@@ -158,11 +158,11 @@ class TestAsyncMutationBenchmarks:
 
     def test_benchmark_mutation_explicit_commit_async(
         self,
-        async_client_with_movies_schema_for_benchmark,
+        stress_test_async_client_for_benchmark,
         benchmark: BenchmarkFixture,
     ) -> None:
         """Benchmark async mutation with explicit commit."""
-        client, loop = async_client_with_movies_schema_for_benchmark
+        client, loop = stress_test_async_client_for_benchmark
         counter = [0]
 
         async def run_mutation() -> api.TxnContext | None:
@@ -178,11 +178,11 @@ class TestAsyncMutationBenchmarks:
 
     def test_benchmark_discard_async(
         self,
-        async_client_with_movies_schema_for_benchmark,
+        stress_test_async_client_for_benchmark,
         benchmark: BenchmarkFixture,
     ) -> None:
         """Benchmark async mutation followed by discard."""
-        client, loop = async_client_with_movies_schema_for_benchmark
+        client, loop = stress_test_async_client_for_benchmark
         counter = [0]
 
         async def run_mutation() -> None:
@@ -198,11 +198,11 @@ class TestAsyncMutationBenchmarks:
 
     def test_benchmark_mutation_nquads_async(
         self,
-        async_client_with_movies_schema_for_benchmark,
+        stress_test_async_client_for_benchmark,
         benchmark: BenchmarkFixture,
     ) -> None:
         """Benchmark async N-Quads mutation."""
-        client, loop = async_client_with_movies_schema_for_benchmark
+        client, loop = stress_test_async_client_for_benchmark
         counter = [0]
 
         async def run_mutation() -> api.Response:
@@ -222,11 +222,11 @@ class TestAsyncMutationBenchmarks:
 
     def test_benchmark_delete_async(
         self,
-        async_client_with_movies_schema_for_benchmark,
+        stress_test_async_client_for_benchmark,
         benchmark: BenchmarkFixture,
     ) -> None:
         """Benchmark async delete mutation."""
-        client, loop = async_client_with_movies_schema_for_benchmark
+        client, loop = stress_test_async_client_for_benchmark
 
         # Pre-create nodes to delete
         async def setup() -> list[str]:
@@ -262,11 +262,11 @@ class TestAsyncTransactionBenchmarks:
 
     def test_benchmark_upsert_async(
         self,
-        async_client_with_movies_schema_for_benchmark,
+        stress_test_async_client_for_benchmark,
         benchmark: BenchmarkFixture,
     ) -> None:
         """Benchmark async upsert operation."""
-        client, loop = async_client_with_movies_schema_for_benchmark
+        client, loop = stress_test_async_client_for_benchmark
         counter = [0]
 
         async def run_upsert() -> api.Response:
@@ -295,11 +295,11 @@ class TestAsyncTransactionBenchmarks:
 
     def test_benchmark_batch_mutations_async(
         self,
-        async_client_with_movies_schema_for_benchmark,
+        stress_test_async_client_for_benchmark,
         benchmark: BenchmarkFixture,
     ) -> None:
         """Benchmark multiple async mutations in one transaction."""
-        client, loop = async_client_with_movies_schema_for_benchmark
+        client, loop = stress_test_async_client_for_benchmark
         counter = [0]
         batch_size = 10
 
@@ -317,11 +317,11 @@ class TestAsyncTransactionBenchmarks:
 
     def test_benchmark_run_transaction_async(
         self,
-        async_client_with_movies_schema_for_benchmark,
+        stress_test_async_client_for_benchmark,
         benchmark: BenchmarkFixture,
     ) -> None:
         """Benchmark run_transaction_async helper overhead."""
-        client, loop = async_client_with_movies_schema_for_benchmark
+        client, loop = stress_test_async_client_for_benchmark
         counter = [0]
 
         async def txn_func(txn: pydgraph.AsyncTxn) -> str:
@@ -350,11 +350,11 @@ class TestAsyncClientBenchmarks:
 
     def test_benchmark_check_version_async(
         self,
-        async_client_with_movies_schema_for_benchmark,
+        stress_test_async_client_for_benchmark,
         benchmark: BenchmarkFixture,
     ) -> None:
         """Benchmark async check_version."""
-        client, loop = async_client_with_movies_schema_for_benchmark
+        client, loop = stress_test_async_client_for_benchmark
 
         async def run_check() -> str:
             return await client.check_version()
@@ -366,11 +366,11 @@ class TestAsyncClientBenchmarks:
 
     def test_benchmark_alter_schema_async(
         self,
-        async_client_with_movies_schema_for_benchmark,
+        stress_test_async_client_for_benchmark,
         benchmark: BenchmarkFixture,
     ) -> None:
         """Benchmark async schema alter operation."""
-        client, loop = async_client_with_movies_schema_for_benchmark
+        client, loop = stress_test_async_client_for_benchmark
         counter = [0]
 
         async def run_alter() -> api.Payload:

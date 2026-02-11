@@ -49,12 +49,12 @@ class TestAsyncClientStress:
 
     def test_concurrent_read_queries_async(
         self,
-        async_client_with_movies_schema_for_benchmark,
+        stress_test_async_client_for_benchmark,
         stress_config: dict[str, Any],
         benchmark: BenchmarkFixture,
     ) -> None:
         """Test many concurrent read-only queries using asyncio.gather."""
-        client, loop = async_client_with_movies_schema_for_benchmark
+        client, loop = stress_test_async_client_for_benchmark
         num_ops = stress_config["ops"]
 
         query = """query {
@@ -95,12 +95,12 @@ class TestAsyncClientStress:
 
     def test_concurrent_mutations_async(
         self,
-        async_client_with_movies_schema_for_benchmark,
+        stress_test_async_client_for_benchmark,
         stress_config: dict[str, Any],
         benchmark: BenchmarkFixture,
     ) -> None:
         """Test concurrent mutations in separate transactions using asyncio.gather."""
-        client, loop = async_client_with_movies_schema_for_benchmark
+        client, loop = stress_test_async_client_for_benchmark
         num_ops = stress_config["workers"] * 10
 
         async def run_mutation(index: int) -> bool:
@@ -130,12 +130,12 @@ class TestAsyncClientStress:
 
     def test_mixed_workload_async(
         self,
-        async_client_with_movies_schema_for_benchmark,
+        stress_test_async_client_for_benchmark,
         stress_config: dict[str, Any],
         benchmark: BenchmarkFixture,
     ) -> None:
         """Test mix of queries, mutations, commits, and discards concurrently."""
-        client, loop = async_client_with_movies_schema_for_benchmark
+        client, loop = stress_test_async_client_for_benchmark
         num_ops = stress_config["workers"] * 20
 
         # Setup: Seed some data once before benchmarking (using same loop)
@@ -202,12 +202,12 @@ class TestAsyncTransactionStress:
 
     def test_upsert_conflicts_async(
         self,
-        async_client_with_movies_schema_for_benchmark,
+        stress_test_async_client_for_benchmark,
         stress_config: dict[str, Any],
         benchmark: BenchmarkFixture,
     ) -> None:
         """Test concurrent upserts on the same key detect conflicts properly."""
-        client, loop = async_client_with_movies_schema_for_benchmark
+        client, loop = stress_test_async_client_for_benchmark
         target_email = "async_conflict@test.com"
         num_workers = stress_config["workers"]
 
@@ -253,7 +253,7 @@ class TestAsyncTransactionStress:
     @pytest.mark.asyncio
     async def test_deadlock_regression_async(
         self,
-        async_client_with_schema: AsyncDgraphClient,
+        stress_test_async_client: AsyncDgraphClient,
         stress_config: dict[str, Any],
     ) -> None:
         """Regression test for PR #293 asyncio.Lock deadlock fix.
@@ -262,7 +262,7 @@ class TestAsyncTransactionStress:
         is properly cleaned up without causing deadlocks due to the non-reentrant
         asyncio.Lock trying to be acquired twice.
         """
-        client = async_client_with_schema
+        client = stress_test_async_client
         num_ops = stress_config["ops"]
 
         async def cause_error() -> None:
@@ -285,10 +285,10 @@ class TestAsyncTransactionStress:
     @pytest.mark.asyncio
     async def test_lock_released_after_mutation_error_async(
         self,
-        async_client_with_schema: AsyncDgraphClient,
+        stress_test_async_client: AsyncDgraphClient,
     ) -> None:
         """Test that lock is released after mutation errors allowing reuse."""
-        client = async_client_with_schema
+        client = stress_test_async_client
 
         # Create a transaction and force an error
         txn = client.txn()
@@ -305,11 +305,11 @@ class TestAsyncTransactionStress:
     @pytest.mark.asyncio
     async def test_context_manager_cleanup_async(
         self,
-        async_client_with_schema: AsyncDgraphClient,
+        stress_test_async_client: AsyncDgraphClient,
         stress_config: dict[str, Any],
     ) -> None:
         """Test that context managers properly clean up even on errors."""
-        client = async_client_with_schema
+        client = stress_test_async_client
         iterations = stress_config["iterations"]
 
         async def use_txn_with_error() -> None:
@@ -332,11 +332,11 @@ class TestAsyncTransactionStress:
     @pytest.mark.asyncio
     async def test_rapid_txn_create_discard_async(
         self,
-        async_client_with_schema: AsyncDgraphClient,
+        stress_test_async_client: AsyncDgraphClient,
         stress_config: dict[str, Any],
     ) -> None:
         """Test rapidly creating and discarding transactions."""
-        client = async_client_with_schema
+        client = stress_test_async_client
         num_ops = stress_config["ops"]
 
         async def create_and_discard() -> None:
@@ -364,12 +364,12 @@ class TestAsyncRetryStress:
 
     def test_retry_under_conflicts_async(
         self,
-        async_client_with_movies_schema_for_benchmark,
+        stress_test_async_client_for_benchmark,
         stress_config: dict[str, Any],
         benchmark: BenchmarkFixture,
     ) -> None:
         """Test retry_async() generator handles conflicts correctly under load."""
-        client, loop = async_client_with_movies_schema_for_benchmark
+        client, loop = stress_test_async_client_for_benchmark
         iterations = stress_config["iterations"]
         num_workers = min(stress_config["workers"], 20)
 
@@ -404,12 +404,12 @@ class TestAsyncRetryStress:
 
     def test_with_retry_decorator_async(
         self,
-        async_client_with_movies_schema_for_benchmark,
+        stress_test_async_client_for_benchmark,
         stress_config: dict[str, Any],
         benchmark: BenchmarkFixture,
     ) -> None:
         """Test @with_retry_async decorator handles conflicts correctly."""
-        client, loop = async_client_with_movies_schema_for_benchmark
+        client, loop = stress_test_async_client_for_benchmark
         num_workers = min(stress_config["workers"], 10)
 
         @with_retry_async()
@@ -439,12 +439,12 @@ class TestAsyncRetryStress:
 
     def test_run_transaction_async(
         self,
-        async_client_with_movies_schema_for_benchmark,
+        stress_test_async_client_for_benchmark,
         stress_config: dict[str, Any],
         benchmark: BenchmarkFixture,
     ) -> None:
         """Test run_transaction_async() helper handles conflicts correctly."""
-        client, loop = async_client_with_movies_schema_for_benchmark
+        client, loop = stress_test_async_client_for_benchmark
         num_workers = min(stress_config["workers"], 10)
 
         async def work(worker_id: int) -> str:
@@ -489,10 +489,10 @@ class TestAsyncTransactionEdgeCases:
     @pytest.mark.asyncio
     async def test_double_commit_error_async(
         self,
-        async_client_with_schema: AsyncDgraphClient,
+        stress_test_async_client: AsyncDgraphClient,
     ) -> None:
         """Test that double commit raises appropriate error."""
-        client = async_client_with_schema
+        client = stress_test_async_client
 
         txn = client.txn()
         await txn.mutate(set_obj={"name": "DoubleCommit"})
@@ -504,10 +504,10 @@ class TestAsyncTransactionEdgeCases:
     @pytest.mark.asyncio
     async def test_use_after_commit_error_async(
         self,
-        async_client_with_schema: AsyncDgraphClient,
+        stress_test_async_client: AsyncDgraphClient,
     ) -> None:
         """Test that using transaction after commit raises error."""
-        client = async_client_with_schema
+        client = stress_test_async_client
 
         txn = client.txn()
         await txn.mutate(set_obj={"name": "UseAfterCommit"}, commit_now=True)
@@ -518,10 +518,10 @@ class TestAsyncTransactionEdgeCases:
     @pytest.mark.asyncio
     async def test_read_only_mutation_error_async(
         self,
-        async_client_with_schema: AsyncDgraphClient,
+        stress_test_async_client: AsyncDgraphClient,
     ) -> None:
         """Test that mutations in read-only transaction raise error."""
-        client = async_client_with_schema
+        client = stress_test_async_client
 
         txn = client.txn(read_only=True)
 
@@ -531,10 +531,10 @@ class TestAsyncTransactionEdgeCases:
     @pytest.mark.asyncio
     async def test_best_effort_requires_read_only_async(
         self,
-        async_client_with_schema: AsyncDgraphClient,
+        stress_test_async_client: AsyncDgraphClient,
     ) -> None:
         """Test that best_effort requires read_only=True."""
-        client = async_client_with_schema
+        client = stress_test_async_client
 
         with pytest.raises(ValueError):
             client.txn(read_only=False, best_effort=True)
@@ -542,10 +542,10 @@ class TestAsyncTransactionEdgeCases:
     @pytest.mark.asyncio
     async def test_double_discard_is_safe_async(
         self,
-        async_client_with_schema: AsyncDgraphClient,
+        stress_test_async_client: AsyncDgraphClient,
     ) -> None:
         """Test that calling discard twice is safe for async transactions."""
-        client = async_client_with_schema
+        client = stress_test_async_client
 
         txn = client.txn()
         await txn.mutate(set_obj={"name": "AsyncDoubleDiscard"})

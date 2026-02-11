@@ -42,13 +42,13 @@ class TestSyncClientStress:
 
     def test_concurrent_read_queries_sync(
         self,
-        sync_client_with_movies_schema: DgraphClient,
+        stress_test_sync_client: DgraphClient,
         executor: ThreadPoolExecutor,
         stress_config: dict[str, Any],
         benchmark: BenchmarkFixture,
     ) -> None:
         """Test many concurrent read-only queries don't cause issues."""
-        client = sync_client_with_movies_schema
+        client = stress_test_sync_client
         num_ops = stress_config["ops"]
 
         # Insert some test data first (outside benchmark)
@@ -90,13 +90,13 @@ class TestSyncClientStress:
 
     def test_concurrent_mutations_sync(
         self,
-        sync_client_with_movies_schema: DgraphClient,
+        stress_test_sync_client: DgraphClient,
         executor: ThreadPoolExecutor,
         stress_config: dict[str, Any],
         benchmark: BenchmarkFixture,
     ) -> None:
         """Test concurrent mutations in separate transactions."""
-        client = sync_client_with_movies_schema
+        client = stress_test_sync_client
         num_ops = stress_config["workers"] * 10
 
         success_count = 0
@@ -129,13 +129,13 @@ class TestSyncClientStress:
 
     def test_mixed_workload_sync(
         self,
-        sync_client_with_movies_schema: DgraphClient,
+        stress_test_sync_client: DgraphClient,
         executor: ThreadPoolExecutor,
         stress_config: dict[str, Any],
         benchmark: BenchmarkFixture,
     ) -> None:
         """Test mix of queries, mutations, commits, and discards concurrently."""
-        client = sync_client_with_movies_schema
+        client = stress_test_sync_client
         num_ops = stress_config["workers"] * 20
 
         # Setup: Seed some data once before benchmarking
@@ -197,13 +197,13 @@ class TestSyncTransactionStress:
 
     def test_upsert_conflicts_sync(
         self,
-        sync_client_with_movies_schema: DgraphClient,
+        stress_test_sync_client: DgraphClient,
         executor: ThreadPoolExecutor,
         stress_config: dict[str, Any],
         benchmark: BenchmarkFixture,
     ) -> None:
         """Test concurrent upserts on the same key detect conflicts properly."""
-        client = sync_client_with_movies_schema
+        client = stress_test_sync_client
         target_email = "conflict@test.com"
         num_workers = stress_config["workers"]
 
@@ -252,11 +252,11 @@ class TestSyncTransactionStress:
 
     def test_transaction_isolation_sync(  # noqa: C901
         self,
-        sync_client_with_movies_schema: DgraphClient,
+        stress_test_sync_client: DgraphClient,
         stress_config: dict[str, Any],
     ) -> None:
         """Test that transactions provide proper isolation."""
-        client = sync_client_with_movies_schema
+        client = stress_test_sync_client
         workers = min(stress_config["workers"], 20)
 
         # Insert initial data with a counter stored in tagline
@@ -321,7 +321,7 @@ class TestSyncRetryStress:
 
     def test_retry_under_conflicts_sync(
         self,
-        sync_client_with_movies_schema: DgraphClient,
+        stress_test_sync_client: DgraphClient,
         executor: ThreadPoolExecutor,
         stress_config: dict[str, Any],
         benchmark: BenchmarkFixture,
@@ -336,7 +336,7 @@ class TestSyncRetryStress:
             nonlocal total_successes
             for attempt in retry():
                 with attempt:
-                    txn = sync_client_with_movies_schema.txn()
+                    txn = stress_test_sync_client.txn()
                     txn.mutate(
                         set_obj=generate_movie(total_successes),
                         commit_now=True,
@@ -364,7 +364,7 @@ class TestSyncRetryStress:
 
     def test_run_transaction_sync(
         self,
-        sync_client_with_movies_schema: DgraphClient,
+        stress_test_sync_client: DgraphClient,
         executor: ThreadPoolExecutor,
         stress_config: dict[str, Any],
         benchmark: BenchmarkFixture,
@@ -388,7 +388,7 @@ class TestSyncRetryStress:
                     )
                     return next(iter(response.uids.values()), "")
 
-                uid = run_transaction(sync_client_with_movies_schema, txn_func)
+                uid = run_transaction(stress_test_sync_client, txn_func)
                 results.append(uid)
             except Exception as e:
                 exc_list.append(e)
@@ -412,11 +412,11 @@ class TestSyncDeadlockPrevention:
 
     def test_no_deadlock_on_error_sync(
         self,
-        sync_client_with_movies_schema: DgraphClient,
+        stress_test_sync_client: DgraphClient,
         stress_config: dict[str, Any],
     ) -> None:
         """Test that errors don't cause deadlocks."""
-        client = sync_client_with_movies_schema
+        client = stress_test_sync_client
         workers = min(stress_config["workers"], 20)
 
         def cause_error() -> None:
