@@ -16,8 +16,10 @@ __status__ = "development"
 class AbortedError(Exception):
     """Error thrown by aborted transactions."""
 
-    def __init__(self) -> None:
-        super().__init__("Transaction has been aborted. Please retry")
+    def __init__(
+        self, message: str = "Transaction has been aborted. Please retry"
+    ) -> None:
+        super().__init__(message)
 
 
 class RetriableError(Exception):
