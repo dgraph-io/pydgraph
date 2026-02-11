@@ -91,7 +91,7 @@ def stress_config() -> dict[str, Any]:
 def _downloaded_data_fixture_path(name: str) -> Path:
     """Download a data fixture file if it doesn't exist locally."""
     path = DATA_FIXTURE_DIR / name
-    if not path.exists() or path.stat().st_size == 0:run
+    if not path.exists() or path.stat().st_size == 0:
         url = DATA_FIXTURE_BASE_URL + name
         path.parent.mkdir(parents=True, exist_ok=True)
         logger.info("Downloading %s from %s", name, url)
