@@ -18,7 +18,6 @@ Usage:
 from __future__ import annotations
 
 import asyncio
-import random
 from typing import TYPE_CHECKING, Any
 
 import pytest
@@ -33,19 +32,10 @@ from pydgraph import (
 )
 from pydgraph.proto import api_pb2 as api
 
+from .helpers import generate_movie
+
 if TYPE_CHECKING:
     from pytest_benchmark.fixture import BenchmarkFixture
-
-
-def _generate_person(index: int) -> dict[str, Any]:
-    """Generate a person object for testing."""
-    return {
-        "name": f"Person_{index}_{random.randint(1000, 9999)}",  # noqa: S311
-        "email": f"person{index}_{random.randint(1000, 9999)}@test.com",  # noqa: S311
-        "age": random.randint(18, 80),  # noqa: S311
-        "balance": random.uniform(0, 10000),  # noqa: S311
-        "active": random.choice([True, False]),  # noqa: S311
-    }
 
 
 # =============================================================================
@@ -53,26 +43,25 @@ def _generate_person(index: int) -> dict[str, Any]:
 # =============================================================================
 
 
+@pytest.mark.usefixtures("movies_data_loaded")
 class TestAsyncClientStress:
     """Stress tests for asynchronous Dgraph client using pure asyncio."""
 
     def test_concurrent_read_queries_async(
         self,
-        async_client_with_schema_for_benchmark: tuple[
-            AsyncDgraphClient, asyncio.AbstractEventLoop
-        ],
+        async_client_with_movies_schema_for_benchmark,
         stress_config: dict[str, Any],
         benchmark: BenchmarkFixture,
     ) -> None:
         """Test many concurrent read-only queries using asyncio.gather."""
-        client, loop = async_client_with_schema_for_benchmark
+        client, loop = async_client_with_movies_schema_for_benchmark
         num_ops = stress_config["ops"]
 
         query = """query {
             people(func: has(name), first: 10) {
                 name
                 email
-                age
+                tagline
             }
         }"""
 
@@ -80,7 +69,7 @@ class TestAsyncClientStress:
         async def setup_data() -> None:
             txn = client.txn()
             for i in range(100):
-                await txn.mutate(set_obj=_generate_person(i))
+                await txn.mutate(set_obj=generate_movie(i))
             await txn.commit()
 
         loop.run_until_complete(setup_data())
@@ -106,20 +95,18 @@ class TestAsyncClientStress:
 
     def test_concurrent_mutations_async(
         self,
-        async_client_with_schema_for_benchmark: tuple[
-            AsyncDgraphClient, asyncio.AbstractEventLoop
-        ],
+        async_client_with_movies_schema_for_benchmark,
         stress_config: dict[str, Any],
         benchmark: BenchmarkFixture,
     ) -> None:
         """Test concurrent mutations in separate transactions using asyncio.gather."""
-        client, loop = async_client_with_schema_for_benchmark
+        client, loop = async_client_with_movies_schema_for_benchmark
         num_ops = stress_config["workers"] * 10
 
         async def run_mutation(index: int) -> bool:
             try:
                 txn = client.txn()
-                await txn.mutate(set_obj=_generate_person(index), commit_now=True)
+                await txn.mutate(set_obj=generate_movie(index), commit_now=True)
             except errors.AbortedError:
                 return False
             else:
@@ -143,21 +130,19 @@ class TestAsyncClientStress:
 
     def test_mixed_workload_async(
         self,
-        async_client_with_schema_for_benchmark: tuple[
-            AsyncDgraphClient, asyncio.AbstractEventLoop
-        ],
+        async_client_with_movies_schema_for_benchmark,
         stress_config: dict[str, Any],
         benchmark: BenchmarkFixture,
     ) -> None:
         """Test mix of queries, mutations, commits, and discards concurrently."""
-        client, loop = async_client_with_schema_for_benchmark
+        client, loop = async_client_with_movies_schema_for_benchmark
         num_ops = stress_config["workers"] * 20
 
         # Setup: Seed some data once before benchmarking (using same loop)
         async def setup_data() -> None:
             txn = client.txn()
             for i in range(50):
-                await txn.mutate(set_obj=_generate_person(i))
+                await txn.mutate(set_obj=generate_movie(i))
             await txn.commit()
 
         loop.run_until_complete(setup_data())
@@ -174,18 +159,18 @@ class TestAsyncClientStress:
                 elif op_type == 1:
                     # Mutation with commit_now
                     txn = client.txn()
-                    await txn.mutate(set_obj=_generate_person(op_id), commit_now=True)
+                    await txn.mutate(set_obj=generate_movie(op_id), commit_now=True)
                     result = "mutation"
                 elif op_type == 2:
                     # Mutation with explicit commit
                     txn = client.txn()
-                    await txn.mutate(set_obj=_generate_person(op_id))
+                    await txn.mutate(set_obj=generate_movie(op_id))
                     await txn.commit()
                     result = "commit"
                 else:
                     # Mutation with discard
                     txn = client.txn()
-                    await txn.mutate(set_obj=_generate_person(op_id))
+                    await txn.mutate(set_obj=generate_movie(op_id))
                     await txn.discard()
                     result = "discard"
             except errors.AbortedError:
@@ -211,19 +196,18 @@ class TestAsyncClientStress:
 # =============================================================================
 
 
+@pytest.mark.usefixtures("movies_data_loaded")
 class TestAsyncTransactionStress:
     """Stress tests for async transaction conflict handling."""
 
     def test_upsert_conflicts_async(
         self,
-        async_client_with_schema_for_benchmark: tuple[
-            AsyncDgraphClient, asyncio.AbstractEventLoop
-        ],
+        async_client_with_movies_schema_for_benchmark,
         stress_config: dict[str, Any],
         benchmark: BenchmarkFixture,
     ) -> None:
         """Test concurrent upserts on the same key detect conflicts properly."""
-        client, loop = async_client_with_schema_for_benchmark
+        client, loop = async_client_with_movies_schema_for_benchmark
         target_email = "async_conflict@test.com"
         num_workers = stress_config["workers"]
 
@@ -235,7 +219,7 @@ class TestAsyncTransactionStress:
                     set_nquads=f"""
                     uid(u) <email> "{target_email}" .
                     uid(u) <name> "AsyncWorker_{worker_id}" .
-                    uid(u) <balance> "{worker_id}" .
+                    uid(u) <tagline> "AsyncWorker {worker_id} tagline" .
                     """.encode(),
                     cond="@if(eq(len(u), 0))",
                 )
@@ -374,19 +358,18 @@ class TestAsyncTransactionStress:
 # =============================================================================
 
 
+@pytest.mark.usefixtures("movies_data_loaded")
 class TestAsyncRetryStress:
     """Stress tests for async retry utilities."""
 
     def test_retry_under_conflicts_async(
         self,
-        async_client_with_schema_for_benchmark: tuple[
-            AsyncDgraphClient, asyncio.AbstractEventLoop
-        ],
+        async_client_with_movies_schema_for_benchmark,
         stress_config: dict[str, Any],
         benchmark: BenchmarkFixture,
     ) -> None:
         """Test retry_async() generator handles conflicts correctly under load."""
-        client, loop = async_client_with_schema_for_benchmark
+        client, loop = async_client_with_movies_schema_for_benchmark
         iterations = stress_config["iterations"]
         num_workers = min(stress_config["workers"], 20)
 
@@ -397,7 +380,7 @@ class TestAsyncRetryStress:
                     with attempt:  # Note: regular 'with', not 'async with'
                         txn = client.txn()
                         await txn.mutate(
-                            set_obj=_generate_person(worker_id * 1000 + successes),
+                            set_obj=generate_movie(worker_id * 1000 + successes),
                             commit_now=True,
                         )
                         successes += 1
@@ -421,21 +404,19 @@ class TestAsyncRetryStress:
 
     def test_with_retry_decorator_async(
         self,
-        async_client_with_schema_for_benchmark: tuple[
-            AsyncDgraphClient, asyncio.AbstractEventLoop
-        ],
+        async_client_with_movies_schema_for_benchmark,
         stress_config: dict[str, Any],
         benchmark: BenchmarkFixture,
     ) -> None:
         """Test @with_retry_async decorator handles conflicts correctly."""
-        client, loop = async_client_with_schema_for_benchmark
+        client, loop = async_client_with_movies_schema_for_benchmark
         num_workers = min(stress_config["workers"], 10)
 
         @with_retry_async()
         async def create_person(index: int) -> str:
             txn = client.txn()
             response = await txn.mutate(
-                set_obj=_generate_person(index),
+                set_obj=generate_movie(index),
                 commit_now=True,
             )
             return next(iter(response.uids.values()), "")
@@ -458,14 +439,12 @@ class TestAsyncRetryStress:
 
     def test_run_transaction_async(
         self,
-        async_client_with_schema_for_benchmark: tuple[
-            AsyncDgraphClient, asyncio.AbstractEventLoop
-        ],
+        async_client_with_movies_schema_for_benchmark,
         stress_config: dict[str, Any],
         benchmark: BenchmarkFixture,
     ) -> None:
         """Test run_transaction_async() helper handles conflicts correctly."""
-        client, loop = async_client_with_schema_for_benchmark
+        client, loop = async_client_with_movies_schema_for_benchmark
         num_workers = min(stress_config["workers"], 10)
 
         async def work(worker_id: int) -> str:
@@ -473,7 +452,7 @@ class TestAsyncRetryStress:
                 response = await txn.mutate(
                     set_obj={
                         "name": f"AsyncRunTxn_{worker_id}",
-                        "balance": float(worker_id),
+                        "tagline": f"AsyncWorker {worker_id} transaction",
                     },
                     commit_now=True,
                 )
@@ -503,6 +482,7 @@ class TestAsyncRetryStress:
 # =============================================================================
 
 
+@pytest.mark.usefixtures("movies_data_loaded")
 class TestAsyncTransactionEdgeCases:
     """Tests for async transaction edge cases and error handling."""
 

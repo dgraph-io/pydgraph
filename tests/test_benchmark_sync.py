@@ -22,7 +22,7 @@ import pydgraph
 from pydgraph import DgraphClient, run_transaction
 from pydgraph.proto import api_pb2 as api
 
-from .helpers import generate_person
+from .helpers import generate_movie
 
 if TYPE_CHECKING:
     from pytest_benchmark.fixture import BenchmarkFixture
@@ -38,21 +38,21 @@ class TestSyncQueryBenchmarks:
 
     def test_benchmark_query_sync(
         self,
-        sync_client_with_schema: DgraphClient,
+        sync_client_with_movies_schema: DgraphClient,
         benchmark: BenchmarkFixture,
     ) -> None:
         """Benchmark a simple read query."""
-        client = sync_client_with_schema
+        client = sync_client_with_movies_schema
 
         # Setup: seed data outside benchmark
         txn = client.txn()
-        txn.mutate(set_obj=generate_person(0), commit_now=True)
+        txn.mutate(set_obj=generate_movie(0), commit_now=True)
 
         query = """query {
             people(func: has(name), first: 1) {
                 name
                 email
-                age
+                tagline
             }
         }"""
 
@@ -64,16 +64,17 @@ class TestSyncQueryBenchmarks:
 
     def test_benchmark_query_with_vars_sync(
         self,
-        sync_client_with_schema: DgraphClient,
+        sync_client_with_movies_schema: DgraphClient,
         benchmark: BenchmarkFixture,
     ) -> None:
         """Benchmark a query with variables."""
-        client = sync_client_with_schema
+        client = sync_client_with_movies_schema
 
         # Setup: seed data
         txn = client.txn()
         txn.mutate(
-            set_obj={"name": "BenchmarkUser", "email": "bench@test.com"}, commit_now=True
+            set_obj={"name": "BenchmarkUser", "email": "bench@test.com"},
+            commit_now=True,
         )
 
         query = """query people($name: string) {
@@ -91,15 +92,15 @@ class TestSyncQueryBenchmarks:
 
     def test_benchmark_query_best_effort_sync(
         self,
-        sync_client_with_schema: DgraphClient,
+        sync_client_with_movies_schema: DgraphClient,
         benchmark: BenchmarkFixture,
     ) -> None:
         """Benchmark a best-effort read query."""
-        client = sync_client_with_schema
+        client = sync_client_with_movies_schema
 
         # Setup: seed data
         txn = client.txn()
-        txn.mutate(set_obj=generate_person(0), commit_now=True)
+        txn.mutate(set_obj=generate_movie(0), commit_now=True)
 
         query = "{ people(func: has(name), first: 1) { name } }"
 
@@ -120,70 +121,70 @@ class TestSyncMutationBenchmarks:
 
     def test_benchmark_mutation_commit_now_sync(
         self,
-        sync_client_with_schema: DgraphClient,
+        sync_client_with_movies_schema: DgraphClient,
         benchmark: BenchmarkFixture,
     ) -> None:
         """Benchmark mutation with commit_now (single round-trip)."""
-        client = sync_client_with_schema
+        client = sync_client_with_movies_schema
         counter = [0]
 
         def run_mutation() -> api.Response:
             counter[0] += 1
             txn = client.txn()
-            return txn.mutate(set_obj=generate_person(counter[0]), commit_now=True)
+            return txn.mutate(set_obj=generate_movie(counter[0]), commit_now=True)
 
         benchmark(run_mutation)
 
     def test_benchmark_mutation_explicit_commit_sync(
         self,
-        sync_client_with_schema: DgraphClient,
+        sync_client_with_movies_schema: DgraphClient,
         benchmark: BenchmarkFixture,
     ) -> None:
         """Benchmark mutation with explicit commit (two round-trips)."""
-        client = sync_client_with_schema
+        client = sync_client_with_movies_schema
         counter = [0]
 
         def run_mutation() -> api.TxnContext | None:
             counter[0] += 1
             txn = client.txn()
-            txn.mutate(set_obj=generate_person(counter[0]))
+            txn.mutate(set_obj=generate_movie(counter[0]))
             return txn.commit()
 
         benchmark(run_mutation)
 
     def test_benchmark_discard_sync(
         self,
-        sync_client_with_schema: DgraphClient,
+        sync_client_with_movies_schema: DgraphClient,
         benchmark: BenchmarkFixture,
     ) -> None:
         """Benchmark mutation followed by discard (rollback cost)."""
-        client = sync_client_with_schema
+        client = sync_client_with_movies_schema
         counter = [0]
 
         def run_mutation() -> None:
             counter[0] += 1
             txn = client.txn()
-            txn.mutate(set_obj=generate_person(counter[0]))
+            txn.mutate(set_obj=generate_movie(counter[0]))
             txn.discard()
 
         benchmark(run_mutation)
 
     def test_benchmark_mutation_nquads_sync(
         self,
-        sync_client_with_schema: DgraphClient,
+        sync_client_with_movies_schema: DgraphClient,
         benchmark: BenchmarkFixture,
     ) -> None:
         """Benchmark N-Quads mutation format."""
-        client = sync_client_with_schema
+        client = sync_client_with_movies_schema
         counter = [0]
 
         def run_mutation() -> api.Response:
             counter[0] += 1
             txn = client.txn()
             nquads = f"""
-                _:person <name> "Person_{counter[0]}" .
-                _:person <email> "person{counter[0]}@test.com" .
-                _:person <age> "{counter[0] % 80}" .
+                _:person <name> "Movie_{counter[0]}" .
+                _:person <email> "movie{counter[0]}@test.com" .
+                _:person <tagline> "A test movie number {counter[0]}" .
             """
             return txn.mutate(set_nquads=nquads, commit_now=True)
 
@@ -191,17 +192,17 @@ class TestSyncMutationBenchmarks:
 
     def test_benchmark_delete_sync(
         self,
-        sync_client_with_schema: DgraphClient,
+        sync_client_with_movies_schema: DgraphClient,
         benchmark: BenchmarkFixture,
     ) -> None:
         """Benchmark delete mutation."""
-        client = sync_client_with_schema
+        client = sync_client_with_movies_schema
 
         # Pre-create nodes to delete
         uids: list[str] = []
         for i in range(100):
             txn = client.txn()
-            resp = txn.mutate(set_obj=generate_person(i), commit_now=True)
+            resp = txn.mutate(set_obj=generate_movie(i), commit_now=True)
             uids.append(next(iter(resp.uids.values())))
 
         uid_index = [0]
@@ -225,11 +226,11 @@ class TestSyncTransactionBenchmarks:
 
     def test_benchmark_upsert_sync(
         self,
-        sync_client_with_schema: DgraphClient,
+        sync_client_with_movies_schema: DgraphClient,
         benchmark: BenchmarkFixture,
     ) -> None:
         """Benchmark upsert operation (query + conditional mutation)."""
-        client = sync_client_with_schema
+        client = sync_client_with_movies_schema
         counter = [0]
 
         def run_upsert() -> api.Response:
@@ -255,11 +256,11 @@ class TestSyncTransactionBenchmarks:
 
     def test_benchmark_batch_mutations_sync(
         self,
-        sync_client_with_schema: DgraphClient,
+        sync_client_with_movies_schema: DgraphClient,
         benchmark: BenchmarkFixture,
     ) -> None:
         """Benchmark multiple mutations in one transaction."""
-        client = sync_client_with_schema
+        client = sync_client_with_movies_schema
         counter = [0]
         batch_size = 10
 
@@ -267,23 +268,23 @@ class TestSyncTransactionBenchmarks:
             txn = client.txn()
             for _ in range(batch_size):
                 counter[0] += 1
-                txn.mutate(set_obj=generate_person(counter[0]))
+                txn.mutate(set_obj=generate_movie(counter[0]))
             return txn.commit()
 
         benchmark(run_batch)
 
     def test_benchmark_run_transaction_sync(
         self,
-        sync_client_with_schema: DgraphClient,
+        sync_client_with_movies_schema: DgraphClient,
         benchmark: BenchmarkFixture,
     ) -> None:
         """Benchmark run_transaction helper overhead."""
-        client = sync_client_with_schema
+        client = sync_client_with_movies_schema
         counter = [0]
 
         def txn_func(txn: pydgraph.Txn) -> str:
             counter[0] += 1
-            response = txn.mutate(set_obj=generate_person(counter[0]), commit_now=True)
+            response = txn.mutate(set_obj=generate_movie(counter[0]), commit_now=True)
             return next(iter(response.uids.values()), "")
 
         def run_with_helper() -> str:
@@ -302,11 +303,11 @@ class TestSyncClientBenchmarks:
 
     def test_benchmark_check_version_sync(
         self,
-        sync_client_with_schema: DgraphClient,
+        sync_client_with_movies_schema: DgraphClient,
         benchmark: BenchmarkFixture,
     ) -> None:
         """Benchmark check_version (health check)."""
-        client = sync_client_with_schema
+        client = sync_client_with_movies_schema
 
         def run_check() -> str:
             return client.check_version()
@@ -315,11 +316,11 @@ class TestSyncClientBenchmarks:
 
     def test_benchmark_alter_schema_sync(
         self,
-        sync_client_with_schema: DgraphClient,
+        sync_client_with_movies_schema: DgraphClient,
         benchmark: BenchmarkFixture,
     ) -> None:
         """Benchmark schema alter operation."""
-        client = sync_client_with_schema
+        client = sync_client_with_movies_schema
         counter = [0]
 
         def run_alter() -> api.Payload:

@@ -9,6 +9,7 @@ import asyncio
 import gzip
 import logging
 import os
+import re
 import shutil
 import tempfile
 import time
@@ -28,7 +29,7 @@ from pydgraph import (
     DgraphClientStub,
 )
 
-from .helpers import SYNTHETIC_SCHEMA, TEST_SERVER_ADDR
+from .helpers import TEST_SERVER_ADDR
 
 # =============================================================================
 # Data Fixture Configuration (fetched on demand for stress/benchmark tests)
@@ -127,9 +128,103 @@ def movies_rdf(movies_rdf_gz: Path) -> Generator[Path, None, None]:
     """
     with tempfile.TemporaryDirectory() as tempdir:
         output_path = Path(tempdir) / "1million.rdf"
+        logger.info("Decompressing %s to %s", movies_rdf_gz, output_path)
         with gzip.open(movies_rdf_gz, "rb") as f_in, open(output_path, "wb") as f_out:
             shutil.copyfileobj(f_in, f_out)
+        logger.info(
+            "Decompressed RDF file: %.1f MB", output_path.stat().st_size / 1024 / 1024
+        )
         yield output_path
+
+
+@pytest.fixture(scope="session")
+def session_sync_client() -> Generator[DgraphClient, None, None]:
+    """Session-scoped sync client with login."""
+    client_stub = DgraphClientStub(TEST_SERVER_ADDR)
+    client = DgraphClient(client_stub)
+
+    for _ in range(30):
+        try:
+            client.login("groot", "password")
+            break
+        except Exception as e:
+            if "user not found" in str(e):
+                raise
+            time.sleep(0.1)
+
+    yield client
+    client.close()
+
+
+@pytest.fixture(scope="session")
+def movies_data_loaded(
+    request: pytest.FixtureRequest,
+    stress_config: dict[str, Any],
+) -> bool:
+    """Load the 1million movie dataset into Dgraph if load_movies is True.
+
+    Uses lazy fixture evaluation - only requests movies_rdf and client fixtures
+    when load_movies is True, avoiding unnecessary downloads in quick mode.
+
+    Returns True if data was loaded, False otherwise.
+    """
+    if not stress_config["load_movies"]:
+        logger.info("Skipping movie data loading (load_movies=False)")
+        return False
+
+    # Lazy evaluation: only instantiate session-scoped fixtures when actually needed
+    client: DgraphClient = request.getfixturevalue("session_sync_client")
+    movies_rdf_path: Path = request.getfixturevalue("movies_rdf")
+    schema_content: str = request.getfixturevalue("movies_schema_content")
+
+    # Apply schema before loading data
+    client.alter(pydgraph.Operation(drop_all=True))
+    client.alter(pydgraph.Operation(schema=schema_content))
+
+    # Pattern to convert explicit UIDs and UUIDs to blank nodes
+    # Matches: <12345> (numeric UIDs) and <24d9530f-553a-43fc-8eb6-14ac667b2387> (UUIDs)
+    # These formats can't be directly used as Dgraph UIDs
+    uid_pattern = re.compile(
+        r"<(\d+|[a-f0-9]{8}-[a-f0-9]{4}-[a-f0-9]{4}-[a-f0-9]{4}-[a-f0-9]{12})>",
+        re.IGNORECASE,
+    )
+
+    def convert_uids_to_blank_nodes(line: str) -> str:
+        """Convert <12345> or <uuid> to _:identifier so Dgraph assigns new UIDs."""
+        return uid_pattern.sub(r"_:\1", line)
+
+    # Load RDF data in batches
+    batch_size = 10000
+    batch: list[str] = []
+    total_loaded = 0
+
+    logger.info("Loading RDF data from %s", movies_rdf_path)
+    with open(movies_rdf_path, encoding="utf-8") as f:
+        for line in f:
+            line = line.strip()
+            if line and not line.startswith("#"):
+                # Convert UIDs to blank nodes
+                line = convert_uids_to_blank_nodes(line)
+                batch.append(line)
+
+            if len(batch) >= batch_size:
+                nquads = "\n".join(batch)
+                txn = client.txn()
+                txn.mutate(set_nquads=nquads, commit_now=True)
+                total_loaded += len(batch)
+                if total_loaded % 100000 == 0:
+                    logger.info("Loaded %d RDF triples", total_loaded)
+                batch = []
+
+        # Load remaining batch
+        if batch:
+            nquads = "\n".join(batch)
+            txn = client.txn()
+            txn.mutate(set_nquads=nquads, commit_now=True)
+            total_loaded += len(batch)
+
+    logger.info("Finished loading %d RDF triples", total_loaded)
+    return True
 
 
 # =============================================================================
@@ -178,10 +273,18 @@ def sync_client_clean(sync_client: DgraphClient) -> DgraphClient:
     return sync_client
 
 
+@pytest.fixture(scope="session")
+def movies_schema_content(movies_schema: Path) -> str:
+    """Return the movies schema content as a string."""
+    return movies_schema.read_text()
+
+
 @pytest.fixture
-def sync_client_with_schema(sync_client_clean: DgraphClient) -> DgraphClient:
-    """Sync client with synthetic test schema."""
-    sync_client_clean.alter(pydgraph.Operation(schema=SYNTHETIC_SCHEMA))
+def sync_client_with_movies_schema(
+    sync_client_clean: DgraphClient, movies_schema_content: str
+) -> DgraphClient:
+    """Sync client with movies test schema."""
+    sync_client_clean.alter(pydgraph.Operation(schema=movies_schema_content))
     return sync_client_clean
 
 
@@ -217,11 +320,12 @@ async def async_client_clean(async_client: AsyncDgraphClient) -> AsyncDgraphClie
 
 
 @pytest.fixture
-async def async_client_with_schema(
+async def async_client_with_movies_schema(
     async_client_clean: AsyncDgraphClient,
+    movies_schema_content: str,
 ) -> AsyncDgraphClient:
-    """Async client with synthetic test schema."""
-    await async_client_clean.alter(pydgraph.Operation(schema=SYNTHETIC_SCHEMA))
+    """Async client with movies test schema."""
+    await async_client_clean.alter(pydgraph.Operation(schema=movies_schema_content))
     return async_client_clean
 
 
@@ -234,9 +338,9 @@ async def async_client_with_schema(
 
 
 @pytest.fixture
-def async_client_with_schema_for_benchmark() -> Generator[
-    tuple[AsyncDgraphClient, asyncio.AbstractEventLoop], None, None
-]:
+def async_client_with_movies_schema_for_benchmark(
+    movies_schema_content: str,
+) -> Generator[tuple[AsyncDgraphClient, asyncio.AbstractEventLoop], None, None]:
     """Async client with schema and its event loop for benchmarking.
 
     Returns a tuple of (client, loop) so tests can run async operations
@@ -244,6 +348,8 @@ def async_client_with_schema_for_benchmark() -> Generator[
     """
     loop = asyncio.new_event_loop()
     asyncio.set_event_loop(loop)
+
+    schema_content = movies_schema_content  # Capture for closure
 
     async def setup() -> AsyncDgraphClient:
         client_stub = AsyncDgraphClientStub(TEST_SERVER_ADDR)
@@ -257,7 +363,7 @@ def async_client_with_schema_for_benchmark() -> Generator[
                     raise
                 await asyncio.sleep(0.1)
         await client.alter(pydgraph.Operation(drop_all=True))
-        await client.alter(pydgraph.Operation(schema=SYNTHETIC_SCHEMA))
+        await client.alter(pydgraph.Operation(schema=schema_content))
         return client
 
     client = loop.run_until_complete(setup())

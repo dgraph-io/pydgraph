@@ -16,14 +16,13 @@ Usage:
 
 from __future__ import annotations
 
-import asyncio
 from typing import TYPE_CHECKING
 
 import pydgraph
-from pydgraph import AsyncDgraphClient, run_transaction_async
+from pydgraph import run_transaction_async
 from pydgraph.proto import api_pb2 as api
 
-from .helpers import generate_person
+from .helpers import generate_movie
 
 if TYPE_CHECKING:
     from pytest_benchmark.fixture import BenchmarkFixture
@@ -39,18 +38,16 @@ class TestAsyncQueryBenchmarks:
 
     def test_benchmark_query_async(
         self,
-        async_client_with_schema_for_benchmark: tuple[
-            AsyncDgraphClient, asyncio.AbstractEventLoop
-        ],
+        async_client_with_movies_schema_for_benchmark,
         benchmark: BenchmarkFixture,
     ) -> None:
         """Benchmark a simple async read query."""
-        client, loop = async_client_with_schema_for_benchmark
+        client, loop = async_client_with_movies_schema_for_benchmark
 
         # Setup: seed data outside benchmark
         async def setup() -> None:
             txn = client.txn()
-            await txn.mutate(set_obj=generate_person(0), commit_now=True)
+            await txn.mutate(set_obj=generate_movie(0), commit_now=True)
 
         loop.run_until_complete(setup())
 
@@ -58,7 +55,7 @@ class TestAsyncQueryBenchmarks:
             people(func: has(name), first: 1) {
                 name
                 email
-                age
+                tagline
             }
         }"""
 
@@ -73,13 +70,11 @@ class TestAsyncQueryBenchmarks:
 
     def test_benchmark_query_with_vars_async(
         self,
-        async_client_with_schema_for_benchmark: tuple[
-            AsyncDgraphClient, asyncio.AbstractEventLoop
-        ],
+        async_client_with_movies_schema_for_benchmark,
         benchmark: BenchmarkFixture,
     ) -> None:
         """Benchmark an async query with variables."""
-        client, loop = async_client_with_schema_for_benchmark
+        client, loop = async_client_with_movies_schema_for_benchmark
 
         # Setup
         async def setup() -> None:
@@ -109,18 +104,16 @@ class TestAsyncQueryBenchmarks:
 
     def test_benchmark_query_best_effort_async(
         self,
-        async_client_with_schema_for_benchmark: tuple[
-            AsyncDgraphClient, asyncio.AbstractEventLoop
-        ],
+        async_client_with_movies_schema_for_benchmark,
         benchmark: BenchmarkFixture,
     ) -> None:
         """Benchmark a best-effort async read query."""
-        client, loop = async_client_with_schema_for_benchmark
+        client, loop = async_client_with_movies_schema_for_benchmark
 
         # Setup
         async def setup() -> None:
             txn = client.txn()
-            await txn.mutate(set_obj=generate_person(0), commit_now=True)
+            await txn.mutate(set_obj=generate_movie(0), commit_now=True)
 
         loop.run_until_complete(setup())
 
@@ -146,19 +139,17 @@ class TestAsyncMutationBenchmarks:
 
     def test_benchmark_mutation_commit_now_async(
         self,
-        async_client_with_schema_for_benchmark: tuple[
-            AsyncDgraphClient, asyncio.AbstractEventLoop
-        ],
+        async_client_with_movies_schema_for_benchmark,
         benchmark: BenchmarkFixture,
     ) -> None:
         """Benchmark async mutation with commit_now."""
-        client, loop = async_client_with_schema_for_benchmark
+        client, loop = async_client_with_movies_schema_for_benchmark
         counter = [0]
 
         async def run_mutation() -> api.Response:
             counter[0] += 1
             txn = client.txn()
-            return await txn.mutate(set_obj=generate_person(counter[0]), commit_now=True)
+            return await txn.mutate(set_obj=generate_movie(counter[0]), commit_now=True)
 
         def benchmark_wrapper() -> api.Response:
             return loop.run_until_complete(run_mutation())
@@ -167,19 +158,17 @@ class TestAsyncMutationBenchmarks:
 
     def test_benchmark_mutation_explicit_commit_async(
         self,
-        async_client_with_schema_for_benchmark: tuple[
-            AsyncDgraphClient, asyncio.AbstractEventLoop
-        ],
+        async_client_with_movies_schema_for_benchmark,
         benchmark: BenchmarkFixture,
     ) -> None:
         """Benchmark async mutation with explicit commit."""
-        client, loop = async_client_with_schema_for_benchmark
+        client, loop = async_client_with_movies_schema_for_benchmark
         counter = [0]
 
         async def run_mutation() -> api.TxnContext | None:
             counter[0] += 1
             txn = client.txn()
-            await txn.mutate(set_obj=generate_person(counter[0]))
+            await txn.mutate(set_obj=generate_movie(counter[0]))
             return await txn.commit()
 
         def benchmark_wrapper() -> api.TxnContext | None:
@@ -189,19 +178,17 @@ class TestAsyncMutationBenchmarks:
 
     def test_benchmark_discard_async(
         self,
-        async_client_with_schema_for_benchmark: tuple[
-            AsyncDgraphClient, asyncio.AbstractEventLoop
-        ],
+        async_client_with_movies_schema_for_benchmark,
         benchmark: BenchmarkFixture,
     ) -> None:
         """Benchmark async mutation followed by discard."""
-        client, loop = async_client_with_schema_for_benchmark
+        client, loop = async_client_with_movies_schema_for_benchmark
         counter = [0]
 
         async def run_mutation() -> None:
             counter[0] += 1
             txn = client.txn()
-            await txn.mutate(set_obj=generate_person(counter[0]))
+            await txn.mutate(set_obj=generate_movie(counter[0]))
             await txn.discard()
 
         def benchmark_wrapper() -> None:
@@ -211,22 +198,20 @@ class TestAsyncMutationBenchmarks:
 
     def test_benchmark_mutation_nquads_async(
         self,
-        async_client_with_schema_for_benchmark: tuple[
-            AsyncDgraphClient, asyncio.AbstractEventLoop
-        ],
+        async_client_with_movies_schema_for_benchmark,
         benchmark: BenchmarkFixture,
     ) -> None:
         """Benchmark async N-Quads mutation."""
-        client, loop = async_client_with_schema_for_benchmark
+        client, loop = async_client_with_movies_schema_for_benchmark
         counter = [0]
 
         async def run_mutation() -> api.Response:
             counter[0] += 1
             txn = client.txn()
             nquads = f"""
-                _:person <name> "Person_{counter[0]}" .
-                _:person <email> "person{counter[0]}@test.com" .
-                _:person <age> "{counter[0] % 80}" .
+                _:person <name> "Movie_{counter[0]}" .
+                _:person <email> "movie{counter[0]}@test.com" .
+                _:person <tagline> "A test movie number {counter[0]}" .
             """
             return await txn.mutate(set_nquads=nquads, commit_now=True)
 
@@ -237,20 +222,18 @@ class TestAsyncMutationBenchmarks:
 
     def test_benchmark_delete_async(
         self,
-        async_client_with_schema_for_benchmark: tuple[
-            AsyncDgraphClient, asyncio.AbstractEventLoop
-        ],
+        async_client_with_movies_schema_for_benchmark,
         benchmark: BenchmarkFixture,
     ) -> None:
         """Benchmark async delete mutation."""
-        client, loop = async_client_with_schema_for_benchmark
+        client, loop = async_client_with_movies_schema_for_benchmark
 
         # Pre-create nodes to delete
         async def setup() -> list[str]:
             uids = []
             for i in range(100):
                 txn = client.txn()
-                resp = await txn.mutate(set_obj=generate_person(i), commit_now=True)
+                resp = await txn.mutate(set_obj=generate_movie(i), commit_now=True)
                 uids.append(next(iter(resp.uids.values())))
             return uids
 
@@ -279,13 +262,11 @@ class TestAsyncTransactionBenchmarks:
 
     def test_benchmark_upsert_async(
         self,
-        async_client_with_schema_for_benchmark: tuple[
-            AsyncDgraphClient, asyncio.AbstractEventLoop
-        ],
+        async_client_with_movies_schema_for_benchmark,
         benchmark: BenchmarkFixture,
     ) -> None:
         """Benchmark async upsert operation."""
-        client, loop = async_client_with_schema_for_benchmark
+        client, loop = async_client_with_movies_schema_for_benchmark
         counter = [0]
 
         async def run_upsert() -> api.Response:
@@ -314,13 +295,11 @@ class TestAsyncTransactionBenchmarks:
 
     def test_benchmark_batch_mutations_async(
         self,
-        async_client_with_schema_for_benchmark: tuple[
-            AsyncDgraphClient, asyncio.AbstractEventLoop
-        ],
+        async_client_with_movies_schema_for_benchmark,
         benchmark: BenchmarkFixture,
     ) -> None:
         """Benchmark multiple async mutations in one transaction."""
-        client, loop = async_client_with_schema_for_benchmark
+        client, loop = async_client_with_movies_schema_for_benchmark
         counter = [0]
         batch_size = 10
 
@@ -328,7 +307,7 @@ class TestAsyncTransactionBenchmarks:
             txn = client.txn()
             for _ in range(batch_size):
                 counter[0] += 1
-                await txn.mutate(set_obj=generate_person(counter[0]))
+                await txn.mutate(set_obj=generate_movie(counter[0]))
             return await txn.commit()
 
         def benchmark_wrapper() -> api.TxnContext | None:
@@ -338,19 +317,17 @@ class TestAsyncTransactionBenchmarks:
 
     def test_benchmark_run_transaction_async(
         self,
-        async_client_with_schema_for_benchmark: tuple[
-            AsyncDgraphClient, asyncio.AbstractEventLoop
-        ],
+        async_client_with_movies_schema_for_benchmark,
         benchmark: BenchmarkFixture,
     ) -> None:
         """Benchmark run_transaction_async helper overhead."""
-        client, loop = async_client_with_schema_for_benchmark
+        client, loop = async_client_with_movies_schema_for_benchmark
         counter = [0]
 
         async def txn_func(txn: pydgraph.AsyncTxn) -> str:
             counter[0] += 1
             response = await txn.mutate(
-                set_obj=generate_person(counter[0]), commit_now=True
+                set_obj=generate_movie(counter[0]), commit_now=True
             )
             return next(iter(response.uids.values()), "")
 
@@ -373,13 +350,11 @@ class TestAsyncClientBenchmarks:
 
     def test_benchmark_check_version_async(
         self,
-        async_client_with_schema_for_benchmark: tuple[
-            AsyncDgraphClient, asyncio.AbstractEventLoop
-        ],
+        async_client_with_movies_schema_for_benchmark,
         benchmark: BenchmarkFixture,
     ) -> None:
         """Benchmark async check_version."""
-        client, loop = async_client_with_schema_for_benchmark
+        client, loop = async_client_with_movies_schema_for_benchmark
 
         async def run_check() -> str:
             return await client.check_version()
@@ -391,13 +366,11 @@ class TestAsyncClientBenchmarks:
 
     def test_benchmark_alter_schema_async(
         self,
-        async_client_with_schema_for_benchmark: tuple[
-            AsyncDgraphClient, asyncio.AbstractEventLoop
-        ],
+        async_client_with_movies_schema_for_benchmark,
         benchmark: BenchmarkFixture,
     ) -> None:
         """Benchmark async schema alter operation."""
-        client, loop = async_client_with_schema_for_benchmark
+        client, loop = async_client_with_movies_schema_for_benchmark
         counter = [0]
 
         async def run_alter() -> api.Payload:

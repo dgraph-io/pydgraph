@@ -19,35 +19,23 @@ from typing import Any
 
 TEST_SERVER_ADDR = os.getenv("TEST_SERVER_ADDR", "localhost:9180")
 
-# Synthetic test schema for stress tests
-SYNTHETIC_SCHEMA = """
-name: string @index(term, exact) .
-email: string @index(exact) @upsert .
-age: int @index(int) .
-balance: float .
-active: bool @index(bool) .
-created: datetime @index(hour) .
-friends: [uid] @count @reverse .
-"""
 
 # =============================================================================
 # Helper Functions
 # =============================================================================
 
 
-def generate_person(index: int) -> dict[str, Any]:
-    """Generate a person object for testing.
+def generate_movie(index: int) -> dict[str, Any]:
+    """Generate a movie object for testing using 1million.schema predicates.
 
     Args:
-        index: Unique index for this person (used in name/email generation)
+        index: Unique index for this movie (used in name generation)
 
     Returns:
-        Dictionary with person attributes suitable for Dgraph mutation
+        Dictionary with movie attributes suitable for Dgraph mutation
     """
     return {
-        "name": f"Person_{index}_{random.randint(1000, 9999)}",  # noqa: S311
-        "email": f"person{index}_{random.randint(1000, 9999)}@test.com",  # noqa: S311
-        "age": random.randint(18, 80),  # noqa: S311
-        "balance": random.uniform(0, 10000),  # noqa: S311
-        "active": random.choice([True, False]),  # noqa: S311
+        "name": f"TestMovie_{index}_{random.randint(1000, 9999)}",  # noqa: S311
+        "tagline": f"An amazing test film number {index}",
+        "email": f"movie{index}_{random.randint(1000, 9999)}@test.com",  # noqa: S311
     }

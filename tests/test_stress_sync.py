@@ -20,6 +20,8 @@ import json
 from concurrent.futures import ThreadPoolExecutor, wait
 from typing import TYPE_CHECKING, Any
 
+import pytest
+
 if TYPE_CHECKING:
     from pytest_benchmark.fixture import BenchmarkFixture
 
@@ -27,38 +29,39 @@ import pydgraph
 from pydgraph import DgraphClient, errors, retry, run_transaction
 from pydgraph.proto import api_pb2 as api
 
-from .helpers import generate_person
+from .helpers import generate_movie
 
 # =============================================================================
 # Sync Client Stress Tests
 # =============================================================================
 
 
+@pytest.mark.usefixtures("movies_data_loaded")
 class TestSyncClientStress:
     """Stress tests for synchronous Dgraph client."""
 
     def test_concurrent_read_queries_sync(
         self,
-        sync_client_with_schema: DgraphClient,
+        sync_client_with_movies_schema: DgraphClient,
         executor: ThreadPoolExecutor,
         stress_config: dict[str, Any],
         benchmark: BenchmarkFixture,
     ) -> None:
         """Test many concurrent read-only queries don't cause issues."""
-        client = sync_client_with_schema
+        client = sync_client_with_movies_schema
         num_ops = stress_config["ops"]
 
         # Insert some test data first (outside benchmark)
         txn = client.txn()
         for i in range(100):
-            txn.mutate(set_obj=generate_person(i))
+            txn.mutate(set_obj=generate_movie(i))
         txn.commit()
 
         query = """query {
             people(func: has(name), first: 10) {
                 name
                 email
-                age
+                tagline
             }
         }"""
 
@@ -87,13 +90,13 @@ class TestSyncClientStress:
 
     def test_concurrent_mutations_sync(
         self,
-        sync_client_with_schema: DgraphClient,
+        sync_client_with_movies_schema: DgraphClient,
         executor: ThreadPoolExecutor,
         stress_config: dict[str, Any],
         benchmark: BenchmarkFixture,
     ) -> None:
         """Test concurrent mutations in separate transactions."""
-        client = sync_client_with_schema
+        client = sync_client_with_movies_schema
         num_ops = stress_config["workers"] * 10
 
         success_count = 0
@@ -103,7 +106,7 @@ class TestSyncClientStress:
             nonlocal success_count
             try:
                 txn = client.txn()
-                txn.mutate(set_obj=generate_person(index), commit_now=True)
+                txn.mutate(set_obj=generate_movie(index), commit_now=True)
                 success_count += 1
             except errors.AbortedError:
                 pass  # Expected conflict
@@ -126,19 +129,19 @@ class TestSyncClientStress:
 
     def test_mixed_workload_sync(
         self,
-        sync_client_with_schema: DgraphClient,
+        sync_client_with_movies_schema: DgraphClient,
         executor: ThreadPoolExecutor,
         stress_config: dict[str, Any],
         benchmark: BenchmarkFixture,
     ) -> None:
         """Test mix of queries, mutations, commits, and discards concurrently."""
-        client = sync_client_with_schema
+        client = sync_client_with_movies_schema
         num_ops = stress_config["workers"] * 20
 
         # Setup: Seed some data once before benchmarking
         txn = client.txn()
         for i in range(50):
-            txn.mutate(set_obj=generate_person(i))
+            txn.mutate(set_obj=generate_movie(i))
         txn.commit()
 
         results: list[str] = []
@@ -155,18 +158,18 @@ class TestSyncClientStress:
                 elif op_type == 1:
                     # Mutation with commit_now
                     txn = client.txn()
-                    txn.mutate(set_obj=generate_person(op_id), commit_now=True)
+                    txn.mutate(set_obj=generate_movie(op_id), commit_now=True)
                     results.append("mutation")
                 elif op_type == 2:
                     # Mutation with explicit commit
                     txn = client.txn()
-                    txn.mutate(set_obj=generate_person(op_id))
+                    txn.mutate(set_obj=generate_movie(op_id))
                     txn.commit()
                     results.append("commit")
                 else:
                     # Mutation with discard
                     txn = client.txn()
-                    txn.mutate(set_obj=generate_person(op_id))
+                    txn.mutate(set_obj=generate_movie(op_id))
                     txn.discard()
                     results.append("discard")
             except errors.AbortedError:
@@ -188,18 +191,19 @@ class TestSyncClientStress:
         assert result_count == num_ops
 
 
+@pytest.mark.usefixtures("movies_data_loaded")
 class TestSyncTransactionStress:
     """Stress tests for sync transaction conflict handling."""
 
     def test_upsert_conflicts_sync(
         self,
-        sync_client_with_schema: DgraphClient,
+        sync_client_with_movies_schema: DgraphClient,
         executor: ThreadPoolExecutor,
         stress_config: dict[str, Any],
         benchmark: BenchmarkFixture,
     ) -> None:
         """Test concurrent upserts on the same key detect conflicts properly."""
-        client = sync_client_with_schema
+        client = sync_client_with_movies_schema
         target_email = "conflict@test.com"
         num_workers = stress_config["workers"]
 
@@ -216,7 +220,7 @@ class TestSyncTransactionStress:
                     set_nquads=f"""
                     uid(u) <email> "{target_email}" .
                     uid(u) <name> "Worker_{worker_id}" .
-                    uid(u) <balance> "{worker_id}" .
+                    uid(u) <tagline> "Worker {worker_id} tagline" .
                     """.encode(),
                     cond="@if(eq(len(u), 0))",
                 )
@@ -248,44 +252,48 @@ class TestSyncTransactionStress:
 
     def test_transaction_isolation_sync(  # noqa: C901
         self,
-        sync_client_with_schema: DgraphClient,
+        sync_client_with_movies_schema: DgraphClient,
         stress_config: dict[str, Any],
     ) -> None:
         """Test that transactions provide proper isolation."""
-        client = sync_client_with_schema
+        client = sync_client_with_movies_schema
         workers = min(stress_config["workers"], 20)
 
-        # Insert initial data
+        # Insert initial data with a counter stored in tagline
         txn = client.txn()
         response = txn.mutate(
-            set_obj={"name": "IsolationTest", "balance": 100.0}, commit_now=True
+            set_obj={"name": "IsolationTest", "tagline": "counter:100"}, commit_now=True
         )
         uid = next(iter(response.uids.values()))
 
-        results: list[float] = []
+        results: list[int] = []
         exc_list: list[Exception] = []
 
-        def read_balance() -> None:
+        def read_counter() -> None:
             try:
                 txn = client.txn(read_only=True)
-                query = f'{{ node(func: uid("{uid}")) {{ balance }} }}'
+                query = f'{{ node(func: uid("{uid}")) {{ tagline }} }}'
                 response = txn.query(query)
                 data = json.loads(response.json)
                 if data.get("node"):
-                    results.append(data["node"][0]["balance"])
+                    tagline = data["node"][0]["tagline"]
+                    counter = int(tagline.split(":")[1])
+                    results.append(counter)
             except Exception as e:
                 exc_list.append(e)
 
-        def update_balance(delta: float) -> None:
+        def update_counter(delta: int) -> None:
             try:
                 txn = client.txn()
-                query = f'{{ node(func: uid("{uid}")) {{ balance }} }}'
+                query = f'{{ node(func: uid("{uid}")) {{ tagline }} }}'
                 response = txn.query(query)
                 data = json.loads(response.json)
                 if data.get("node"):
-                    current = data["node"][0]["balance"]
+                    tagline = data["node"][0]["tagline"]
+                    current = int(tagline.split(":")[1])
                     txn.mutate(
-                        set_obj={"uid": uid, "balance": current + delta}, commit_now=True
+                        set_obj={"uid": uid, "tagline": f"counter:{current + delta}"},
+                        commit_now=True,
                     )
             except errors.AbortedError:
                 pass  # Expected
@@ -296,23 +304,24 @@ class TestSyncTransactionStress:
             futures = []
             for i in range(100):
                 if i % 3 == 0:
-                    futures.append(executor.submit(update_balance, 1.0))
+                    futures.append(executor.submit(update_counter, 1))
                 else:
-                    futures.append(executor.submit(read_balance))
+                    futures.append(executor.submit(read_counter))
             wait(futures)
 
         assert len(exc_list) == 0, f"Unexpected errors: {exc_list}"
-        for balance in results:
-            assert isinstance(balance, (int, float))
-            assert balance >= 100.0
+        for counter in results:
+            assert isinstance(counter, int)
+            assert counter >= 100
 
 
+@pytest.mark.usefixtures("movies_data_loaded")
 class TestSyncRetryStress:
     """Stress tests for sync retry utilities."""
 
     def test_retry_under_conflicts_sync(
         self,
-        sync_client_with_schema: DgraphClient,
+        sync_client_with_movies_schema: DgraphClient,
         executor: ThreadPoolExecutor,
         stress_config: dict[str, Any],
         benchmark: BenchmarkFixture,
@@ -327,9 +336,9 @@ class TestSyncRetryStress:
             nonlocal total_successes
             for attempt in retry():
                 with attempt:
-                    txn = sync_client_with_schema.txn()
+                    txn = sync_client_with_movies_schema.txn()
                     txn.mutate(
-                        set_obj=generate_person(total_successes),
+                        set_obj=generate_movie(total_successes),
                         commit_now=True,
                     )
                     total_successes += 1
@@ -355,7 +364,7 @@ class TestSyncRetryStress:
 
     def test_run_transaction_sync(
         self,
-        sync_client_with_schema: DgraphClient,
+        sync_client_with_movies_schema: DgraphClient,
         executor: ThreadPoolExecutor,
         stress_config: dict[str, Any],
         benchmark: BenchmarkFixture,
@@ -373,13 +382,13 @@ class TestSyncRetryStress:
                     response = txn.mutate(
                         set_obj={
                             "name": f"RunTxn_{worker_id}",
-                            "balance": float(worker_id),
+                            "tagline": f"Worker {worker_id} transaction",
                         },
                         commit_now=True,
                     )
                     return next(iter(response.uids.values()), "")
 
-                uid = run_transaction(sync_client_with_schema, txn_func)
+                uid = run_transaction(sync_client_with_movies_schema, txn_func)
                 results.append(uid)
             except Exception as e:
                 exc_list.append(e)
@@ -397,16 +406,17 @@ class TestSyncRetryStress:
         assert result_count == num_workers
 
 
+@pytest.mark.usefixtures("movies_data_loaded")
 class TestSyncDeadlockPrevention:
     """Tests for deadlock prevention in sync client."""
 
     def test_no_deadlock_on_error_sync(
         self,
-        sync_client_with_schema: DgraphClient,
+        sync_client_with_movies_schema: DgraphClient,
         stress_config: dict[str, Any],
     ) -> None:
         """Test that errors don't cause deadlocks."""
-        client = sync_client_with_schema
+        client = sync_client_with_movies_schema
         workers = min(stress_config["workers"], 20)
 
         def cause_error() -> None:
