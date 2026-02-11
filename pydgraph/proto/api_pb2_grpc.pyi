@@ -7,18 +7,24 @@ SongServerRequest. Use underscore_separated_names for field names – for
 example, song_name.
 """
 
-import abc
-from . import api_pb2
-import collections.abc
-import grpc
-import grpc.aio
-import typing
+from collections import abc as _abc
+from grpc import aio as _aio
+import abc as _abc_1
+import api_pb2 as _api_pb2
+import grpc as _grpc
+import sys
+import typing as _typing
 
-_T = typing.TypeVar("_T")
+if sys.version_info >= (3, 11):
+    from typing import Self as _Self
+else:
+    from typing_extensions import Self as _Self
 
-class _MaybeAsyncIterator(collections.abc.AsyncIterator[_T], collections.abc.Iterator[_T], metaclass=abc.ABCMeta): ...
+_T = _typing.TypeVar("_T")
 
-class _ServicerContext(grpc.ServicerContext, grpc.aio.ServicerContext):  # type: ignore[misc, type-arg]
+class _MaybeAsyncIterator(_abc.AsyncIterator[_T], _abc.Iterator[_T], metaclass=_abc_1.ABCMeta): ...
+
+class _ServicerContext(_grpc.ServicerContext, _aio.ServicerContext):  # type: ignore[misc, type-arg]
     ...
 
 GRPC_GENERATED_VERSION: str
@@ -27,126 +33,126 @@ GRPC_VERSION: str
 class DgraphStub:
     """Graph response."""
 
-    @typing.overload
-    def __new__(cls, channel: grpc.Channel) -> DgraphStub: ...
-    @typing.overload
-    def __new__(cls, channel: grpc.aio.Channel) -> DgraphAsyncStub: ...
-    Login: grpc.UnaryUnaryMultiCallable[api_pb2.LoginRequest, api_pb2.Response]
-    Query: grpc.UnaryUnaryMultiCallable[api_pb2.Request, api_pb2.Response]
-    Alter: grpc.UnaryUnaryMultiCallable[api_pb2.Operation, api_pb2.Payload]
-    CommitOrAbort: grpc.UnaryUnaryMultiCallable[api_pb2.TxnContext, api_pb2.TxnContext]
-    CheckVersion: grpc.UnaryUnaryMultiCallable[api_pb2.Check, api_pb2.Version]
-    RunDQL: grpc.UnaryUnaryMultiCallable[api_pb2.RunDQLRequest, api_pb2.Response]
-    AllocateIDs: grpc.UnaryUnaryMultiCallable[api_pb2.AllocateIDsRequest, api_pb2.AllocateIDsResponse]
-    UpdateExtSnapshotStreamingState: grpc.UnaryUnaryMultiCallable[api_pb2.UpdateExtSnapshotStreamingStateRequest, api_pb2.UpdateExtSnapshotStreamingStateResponse]
-    StreamExtSnapshot: grpc.StreamUnaryMultiCallable[api_pb2.StreamExtSnapshotRequest, api_pb2.StreamExtSnapshotResponse]
-    CreateNamespace: grpc.UnaryUnaryMultiCallable[api_pb2.CreateNamespaceRequest, api_pb2.CreateNamespaceResponse]
-    DropNamespace: grpc.UnaryUnaryMultiCallable[api_pb2.DropNamespaceRequest, api_pb2.DropNamespaceResponse]
-    ListNamespaces: grpc.UnaryUnaryMultiCallable[api_pb2.ListNamespacesRequest, api_pb2.ListNamespacesResponse]
+    @_typing.overload
+    def __new__(cls, channel: _grpc.Channel) -> _Self: ...
+    @_typing.overload
+    def __new__(cls, channel: _aio.Channel) -> DgraphAsyncStub: ...
+    Login: _grpc.UnaryUnaryMultiCallable[_api_pb2.LoginRequest, _api_pb2.Response]
+    Query: _grpc.UnaryUnaryMultiCallable[_api_pb2.Request, _api_pb2.Response]
+    Alter: _grpc.UnaryUnaryMultiCallable[_api_pb2.Operation, _api_pb2.Payload]
+    CommitOrAbort: _grpc.UnaryUnaryMultiCallable[_api_pb2.TxnContext, _api_pb2.TxnContext]
+    CheckVersion: _grpc.UnaryUnaryMultiCallable[_api_pb2.Check, _api_pb2.Version]
+    RunDQL: _grpc.UnaryUnaryMultiCallable[_api_pb2.RunDQLRequest, _api_pb2.Response]
+    AllocateIDs: _grpc.UnaryUnaryMultiCallable[_api_pb2.AllocateIDsRequest, _api_pb2.AllocateIDsResponse]
+    UpdateExtSnapshotStreamingState: _grpc.UnaryUnaryMultiCallable[_api_pb2.UpdateExtSnapshotStreamingStateRequest, _api_pb2.UpdateExtSnapshotStreamingStateResponse]
+    StreamExtSnapshot: _grpc.StreamUnaryMultiCallable[_api_pb2.StreamExtSnapshotRequest, _api_pb2.StreamExtSnapshotResponse]
+    CreateNamespace: _grpc.UnaryUnaryMultiCallable[_api_pb2.CreateNamespaceRequest, _api_pb2.CreateNamespaceResponse]
+    DropNamespace: _grpc.UnaryUnaryMultiCallable[_api_pb2.DropNamespaceRequest, _api_pb2.DropNamespaceResponse]
+    ListNamespaces: _grpc.UnaryUnaryMultiCallable[_api_pb2.ListNamespacesRequest, _api_pb2.ListNamespacesResponse]
 
-@typing.type_check_only
+@_typing.type_check_only
 class DgraphAsyncStub(DgraphStub):
     """Graph response."""
 
-    def __init__(self, channel: grpc.aio.Channel) -> None: ...
-    Login: grpc.aio.UnaryUnaryMultiCallable[api_pb2.LoginRequest, api_pb2.Response]  # type: ignore[assignment]
-    Query: grpc.aio.UnaryUnaryMultiCallable[api_pb2.Request, api_pb2.Response]  # type: ignore[assignment]
-    Alter: grpc.aio.UnaryUnaryMultiCallable[api_pb2.Operation, api_pb2.Payload]  # type: ignore[assignment]
-    CommitOrAbort: grpc.aio.UnaryUnaryMultiCallable[api_pb2.TxnContext, api_pb2.TxnContext]  # type: ignore[assignment]
-    CheckVersion: grpc.aio.UnaryUnaryMultiCallable[api_pb2.Check, api_pb2.Version]  # type: ignore[assignment]
-    RunDQL: grpc.aio.UnaryUnaryMultiCallable[api_pb2.RunDQLRequest, api_pb2.Response]  # type: ignore[assignment]
-    AllocateIDs: grpc.aio.UnaryUnaryMultiCallable[api_pb2.AllocateIDsRequest, api_pb2.AllocateIDsResponse]  # type: ignore[assignment]
-    UpdateExtSnapshotStreamingState: grpc.aio.UnaryUnaryMultiCallable[api_pb2.UpdateExtSnapshotStreamingStateRequest, api_pb2.UpdateExtSnapshotStreamingStateResponse]  # type: ignore[assignment]
-    StreamExtSnapshot: grpc.aio.StreamUnaryMultiCallable[api_pb2.StreamExtSnapshotRequest, api_pb2.StreamExtSnapshotResponse]  # type: ignore[assignment]
-    CreateNamespace: grpc.aio.UnaryUnaryMultiCallable[api_pb2.CreateNamespaceRequest, api_pb2.CreateNamespaceResponse]  # type: ignore[assignment]
-    DropNamespace: grpc.aio.UnaryUnaryMultiCallable[api_pb2.DropNamespaceRequest, api_pb2.DropNamespaceResponse]  # type: ignore[assignment]
-    ListNamespaces: grpc.aio.UnaryUnaryMultiCallable[api_pb2.ListNamespacesRequest, api_pb2.ListNamespacesResponse]  # type: ignore[assignment]
+    def __init__(self, channel: _aio.Channel) -> None: ...
+    Login: _aio.UnaryUnaryMultiCallable[_api_pb2.LoginRequest, _api_pb2.Response]  # type: ignore[assignment]
+    Query: _aio.UnaryUnaryMultiCallable[_api_pb2.Request, _api_pb2.Response]  # type: ignore[assignment]
+    Alter: _aio.UnaryUnaryMultiCallable[_api_pb2.Operation, _api_pb2.Payload]  # type: ignore[assignment]
+    CommitOrAbort: _aio.UnaryUnaryMultiCallable[_api_pb2.TxnContext, _api_pb2.TxnContext]  # type: ignore[assignment]
+    CheckVersion: _aio.UnaryUnaryMultiCallable[_api_pb2.Check, _api_pb2.Version]  # type: ignore[assignment]
+    RunDQL: _aio.UnaryUnaryMultiCallable[_api_pb2.RunDQLRequest, _api_pb2.Response]  # type: ignore[assignment]
+    AllocateIDs: _aio.UnaryUnaryMultiCallable[_api_pb2.AllocateIDsRequest, _api_pb2.AllocateIDsResponse]  # type: ignore[assignment]
+    UpdateExtSnapshotStreamingState: _aio.UnaryUnaryMultiCallable[_api_pb2.UpdateExtSnapshotStreamingStateRequest, _api_pb2.UpdateExtSnapshotStreamingStateResponse]  # type: ignore[assignment]
+    StreamExtSnapshot: _aio.StreamUnaryMultiCallable[_api_pb2.StreamExtSnapshotRequest, _api_pb2.StreamExtSnapshotResponse]  # type: ignore[assignment]
+    CreateNamespace: _aio.UnaryUnaryMultiCallable[_api_pb2.CreateNamespaceRequest, _api_pb2.CreateNamespaceResponse]  # type: ignore[assignment]
+    DropNamespace: _aio.UnaryUnaryMultiCallable[_api_pb2.DropNamespaceRequest, _api_pb2.DropNamespaceResponse]  # type: ignore[assignment]
+    ListNamespaces: _aio.UnaryUnaryMultiCallable[_api_pb2.ListNamespacesRequest, _api_pb2.ListNamespacesResponse]  # type: ignore[assignment]
 
-class DgraphServicer(metaclass=abc.ABCMeta):
+class DgraphServicer(metaclass=_abc_1.ABCMeta):
     """Graph response."""
 
-    @abc.abstractmethod
+    @_abc_1.abstractmethod
     def Login(
         self,
-        request: api_pb2.LoginRequest,
+        request: _api_pb2.LoginRequest,
         context: _ServicerContext,
-    ) -> typing.Union[api_pb2.Response, collections.abc.Awaitable[api_pb2.Response]]: ...
+    ) -> _typing.Union[_api_pb2.Response, _abc.Awaitable[_api_pb2.Response]]: ...
 
-    @abc.abstractmethod
+    @_abc_1.abstractmethod
     def Query(
         self,
-        request: api_pb2.Request,
+        request: _api_pb2.Request,
         context: _ServicerContext,
-    ) -> typing.Union[api_pb2.Response, collections.abc.Awaitable[api_pb2.Response]]: ...
+    ) -> _typing.Union[_api_pb2.Response, _abc.Awaitable[_api_pb2.Response]]: ...
 
-    @abc.abstractmethod
+    @_abc_1.abstractmethod
     def Alter(
         self,
-        request: api_pb2.Operation,
+        request: _api_pb2.Operation,
         context: _ServicerContext,
-    ) -> typing.Union[api_pb2.Payload, collections.abc.Awaitable[api_pb2.Payload]]: ...
+    ) -> _typing.Union[_api_pb2.Payload, _abc.Awaitable[_api_pb2.Payload]]: ...
 
-    @abc.abstractmethod
+    @_abc_1.abstractmethod
     def CommitOrAbort(
         self,
-        request: api_pb2.TxnContext,
+        request: _api_pb2.TxnContext,
         context: _ServicerContext,
-    ) -> typing.Union[api_pb2.TxnContext, collections.abc.Awaitable[api_pb2.TxnContext]]: ...
+    ) -> _typing.Union[_api_pb2.TxnContext, _abc.Awaitable[_api_pb2.TxnContext]]: ...
 
-    @abc.abstractmethod
+    @_abc_1.abstractmethod
     def CheckVersion(
         self,
-        request: api_pb2.Check,
+        request: _api_pb2.Check,
         context: _ServicerContext,
-    ) -> typing.Union[api_pb2.Version, collections.abc.Awaitable[api_pb2.Version]]: ...
+    ) -> _typing.Union[_api_pb2.Version, _abc.Awaitable[_api_pb2.Version]]: ...
 
-    @abc.abstractmethod
+    @_abc_1.abstractmethod
     def RunDQL(
         self,
-        request: api_pb2.RunDQLRequest,
+        request: _api_pb2.RunDQLRequest,
         context: _ServicerContext,
-    ) -> typing.Union[api_pb2.Response, collections.abc.Awaitable[api_pb2.Response]]: ...
+    ) -> _typing.Union[_api_pb2.Response, _abc.Awaitable[_api_pb2.Response]]: ...
 
-    @abc.abstractmethod
+    @_abc_1.abstractmethod
     def AllocateIDs(
         self,
-        request: api_pb2.AllocateIDsRequest,
+        request: _api_pb2.AllocateIDsRequest,
         context: _ServicerContext,
-    ) -> typing.Union[api_pb2.AllocateIDsResponse, collections.abc.Awaitable[api_pb2.AllocateIDsResponse]]: ...
+    ) -> _typing.Union[_api_pb2.AllocateIDsResponse, _abc.Awaitable[_api_pb2.AllocateIDsResponse]]: ...
 
-    @abc.abstractmethod
+    @_abc_1.abstractmethod
     def UpdateExtSnapshotStreamingState(
         self,
-        request: api_pb2.UpdateExtSnapshotStreamingStateRequest,
+        request: _api_pb2.UpdateExtSnapshotStreamingStateRequest,
         context: _ServicerContext,
-    ) -> typing.Union[api_pb2.UpdateExtSnapshotStreamingStateResponse, collections.abc.Awaitable[api_pb2.UpdateExtSnapshotStreamingStateResponse]]: ...
+    ) -> _typing.Union[_api_pb2.UpdateExtSnapshotStreamingStateResponse, _abc.Awaitable[_api_pb2.UpdateExtSnapshotStreamingStateResponse]]: ...
 
-    @abc.abstractmethod
+    @_abc_1.abstractmethod
     def StreamExtSnapshot(
         self,
-        request_iterator: _MaybeAsyncIterator[api_pb2.StreamExtSnapshotRequest],
+        request_iterator: _MaybeAsyncIterator[_api_pb2.StreamExtSnapshotRequest],
         context: _ServicerContext,
-    ) -> typing.Union[api_pb2.StreamExtSnapshotResponse, collections.abc.Awaitable[api_pb2.StreamExtSnapshotResponse]]: ...
+    ) -> _typing.Union[_api_pb2.StreamExtSnapshotResponse, _abc.Awaitable[_api_pb2.StreamExtSnapshotResponse]]: ...
 
-    @abc.abstractmethod
+    @_abc_1.abstractmethod
     def CreateNamespace(
         self,
-        request: api_pb2.CreateNamespaceRequest,
+        request: _api_pb2.CreateNamespaceRequest,
         context: _ServicerContext,
-    ) -> typing.Union[api_pb2.CreateNamespaceResponse, collections.abc.Awaitable[api_pb2.CreateNamespaceResponse]]: ...
+    ) -> _typing.Union[_api_pb2.CreateNamespaceResponse, _abc.Awaitable[_api_pb2.CreateNamespaceResponse]]: ...
 
-    @abc.abstractmethod
+    @_abc_1.abstractmethod
     def DropNamespace(
         self,
-        request: api_pb2.DropNamespaceRequest,
+        request: _api_pb2.DropNamespaceRequest,
         context: _ServicerContext,
-    ) -> typing.Union[api_pb2.DropNamespaceResponse, collections.abc.Awaitable[api_pb2.DropNamespaceResponse]]: ...
+    ) -> _typing.Union[_api_pb2.DropNamespaceResponse, _abc.Awaitable[_api_pb2.DropNamespaceResponse]]: ...
 
-    @abc.abstractmethod
+    @_abc_1.abstractmethod
     def ListNamespaces(
         self,
-        request: api_pb2.ListNamespacesRequest,
+        request: _api_pb2.ListNamespacesRequest,
         context: _ServicerContext,
-    ) -> typing.Union[api_pb2.ListNamespacesResponse, collections.abc.Awaitable[api_pb2.ListNamespacesResponse]]: ...
+    ) -> _typing.Union[_api_pb2.ListNamespacesResponse, _abc.Awaitable[_api_pb2.ListNamespacesResponse]]: ...
 
-def add_DgraphServicer_to_server(servicer: DgraphServicer, server: typing.Union[grpc.Server, grpc.aio.Server]) -> None: ...
+def add_DgraphServicer_to_server(servicer: DgraphServicer, server: _typing.Union[_grpc.Server, _aio.Server]) -> None: ...
