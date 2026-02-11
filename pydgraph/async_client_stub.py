@@ -181,7 +181,7 @@ class AsyncDgraphClientStub:
 
         try:
             parsed = urlparse(endpoint)
-            host = parsed.hostname if parsed.hostname else cloud_endpoint
+            host = parsed.hostname or cloud_endpoint
         except Exception:
             host = cloud_endpoint
 
