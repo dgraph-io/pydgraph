@@ -7,10 +7,12 @@ from __future__ import annotations
 
 import asyncio
 import gzip
+import logging
 import os
 import shutil
 import tempfile
 import time
+import urllib.request
 from collections.abc import AsyncGenerator, Generator
 from concurrent.futures import ThreadPoolExecutor
 from pathlib import Path
@@ -26,7 +28,18 @@ from pydgraph import (
     DgraphClientStub,
 )
 
-from .helpers import SYNTHETIC_SCHEMA, TEST_RESOURCES, TEST_SERVER_ADDR
+from .helpers import SYNTHETIC_SCHEMA, TEST_SERVER_ADDR
+
+# =============================================================================
+# Data Fixture Configuration (fetched on demand for stress/benchmark tests)
+# =============================================================================
+
+DATA_FIXTURE_DIR = Path(__file__).parent / "resources"
+DATA_FIXTURE_BASE_URL = (
+    "https://github.com/dgraph-io/dgraph-benchmarks/raw/refs/heads/main/data/"
+)
+
+logger = logging.getLogger(__name__)
 
 # =============================================================================
 # Stress Test Configuration
@@ -75,16 +88,34 @@ def stress_config() -> dict[str, Any]:
 # =============================================================================
 
 
+def _downloaded_data_fixture_path(name: str) -> Path:
+    """Download a data fixture file if it doesn't exist locally."""
+    path = DATA_FIXTURE_DIR / name
+    if not path.exists() or path.stat().st_size == 0:run
+        url = DATA_FIXTURE_BASE_URL + name
+        path.parent.mkdir(parents=True, exist_ok=True)
+        logger.info("Downloading %s from %s", name, url)
+        urllib.request.urlretrieve(url, path)  # noqa: S310
+        logger.info("Downloaded %s (%.1f MB)", name, path.stat().st_size / 1024 / 1024)
+    return path
+
+
 @pytest.fixture(scope="session")
 def movies_schema() -> Path:
-    """Path to the 1million movie schema file."""
-    return TEST_RESOURCES / "1million.schema"
+    """Path to the 1million movie schema file.
+
+    Downloads from dgraph-benchmarks repo if not present locally.
+    """
+    return _downloaded_data_fixture_path("1million.schema")
 
 
 @pytest.fixture(scope="session")
 def movies_rdf_gz() -> Path:
-    """Path to the compressed 1million movie RDF data file."""
-    return TEST_RESOURCES / "1million.rdf.gz"
+    """Path to the compressed 1million movie RDF data file.
+
+    Downloads from dgraph-benchmarks repo if not present locally.
+    """
+    return _downloaded_data_fixture_path("1million.rdf.gz")
 
 
 @pytest.fixture(scope="session")
@@ -203,9 +234,9 @@ async def async_client_with_schema(
 
 
 @pytest.fixture
-def async_client_with_schema_for_benchmark() -> (
-    Generator[tuple[AsyncDgraphClient, asyncio.AbstractEventLoop], None, None]
-):
+def async_client_with_schema_for_benchmark() -> Generator[
+    tuple[AsyncDgraphClient, asyncio.AbstractEventLoop], None, None
+]:
     """Async client with schema and its event loop for benchmarking.
 
     Returns a tuple of (client, loop) so tests can run async operations

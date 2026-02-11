@@ -11,7 +11,6 @@ from __future__ import annotations
 
 import os
 import random
-from pathlib import Path
 from typing import Any
 
 # =============================================================================
@@ -30,10 +29,6 @@ active: bool @index(bool) .
 created: datetime @index(hour) .
 friends: [uid] @count @reverse .
 """
-
-# Path to test resources directory
-TEST_RESOURCES = Path(__file__).parent / "resources"
-
 
 # =============================================================================
 # Helper Functions
