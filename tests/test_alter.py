@@ -257,12 +257,5 @@ class TestAlter(helper.ClientIntegrationTestCase):
             self.client.set_schema("")
 
 
-def suite() -> unittest.TestSuite:
-    """Returns a test suite object."""
-    suite_obj = unittest.TestSuite()
-    suite_obj.addTest(unittest.makeSuite(TestAlter))
-    return suite_obj
-
-
 if __name__ == "__main__":
     unittest.main()

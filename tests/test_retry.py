@@ -477,24 +477,5 @@ class TestRunTransaction(unittest.TestCase):
             )
 
 
-def suite() -> unittest.TestSuite:
-    """Returns a test suite object."""
-    suite_obj = unittest.TestSuite()
-    suite_obj.addTest(unittest.makeSuite(TestCalculateDelay))
-    suite_obj.addTest(unittest.makeSuite(TestIsRetriable))
-    suite_obj.addTest(unittest.makeSuite(TestAbortedErrorPickle))
-    suite_obj.addTest(unittest.makeSuite(TestRetryGenerator))
-    suite_obj.addTest(unittest.makeSuite(TestRetryAsyncGenerator))
-    suite_obj.addTest(unittest.makeSuite(TestWithRetryDecorator))
-    suite_obj.addTest(unittest.makeSuite(TestWithRetryAsyncDecorator))
-    suite_obj.addTest(unittest.makeSuite(TestRetryImports))
-    suite_obj.addTest(unittest.makeSuite(TestRetryWithRetriableError))
-    suite_obj.addTest(unittest.makeSuite(TestRetryExponentialBackoff))
-    suite_obj.addTest(unittest.makeSuite(TestParameterValidation))
-    suite_obj.addTest(unittest.makeSuite(TestRunTransaction))
-    return suite_obj
-
-
 if __name__ == "__main__":
-    runner = unittest.TextTestRunner()
-    runner.run(suite())
+    unittest.main()

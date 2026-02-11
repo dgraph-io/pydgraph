@@ -23,13 +23,5 @@ class TestDgraphClient(unittest.TestCase):
             pydgraph.DgraphClient()
 
 
-def suite() -> unittest.TestSuite:
-    """Returns a tests suite object."""
-    suite_obj = unittest.TestSuite()
-    suite_obj.addTest(unittest.makeSuite(TestDgraphClient))
-    return suite_obj
-
-
 if __name__ == "__main__":
-    runner = unittest.TextTestRunner()
-    runner.run(suite())
+    unittest.main()
