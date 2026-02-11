@@ -82,6 +82,39 @@ class TestIsRetriable(unittest.TestCase):
         assert not _is_retriable(errors.TransactionError("test"))
 
 
+class TestAbortedErrorPickle(unittest.TestCase):
+    """Tests that AbortedError survives pickle round-trips (e.g. Celery)."""
+
+    def test_pickle_default_message(self) -> None:
+        """AbortedError() should pickle and unpickle correctly."""
+        import pickle
+
+        err = errors.AbortedError()
+        restored = pickle.loads(pickle.dumps(err))  # noqa: S301
+        assert isinstance(restored, errors.AbortedError)
+        assert str(restored) == "Transaction has been aborted. Please retry"
+
+    def test_pickle_custom_message(self) -> None:
+        """AbortedError(msg) should preserve the custom message."""
+        import pickle
+
+        err = errors.AbortedError("custom conflict message")
+        restored = pickle.loads(pickle.dumps(err))  # noqa: S301
+        assert isinstance(restored, errors.AbortedError)
+        assert str(restored) == "custom conflict message"
+
+    def test_raise_class_directly(self) -> None:
+        """'raise AbortedError' (no parens) should also be picklable."""
+        import pickle
+
+        try:
+            raise errors.AbortedError  # noqa: TRY301
+        except errors.AbortedError as caught:
+            restored = pickle.loads(pickle.dumps(caught))  # noqa: S301
+            assert isinstance(restored, errors.AbortedError)
+            assert str(restored) == "Transaction has been aborted. Please retry"
+
+
 class TestRetryGenerator(unittest.TestCase):
     """Tests for sync retry generator."""
 
