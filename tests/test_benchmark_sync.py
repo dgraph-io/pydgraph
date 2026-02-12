@@ -27,22 +27,34 @@ from .helpers import generate_movie
 if TYPE_CHECKING:
     from pytest_benchmark.fixture import BenchmarkFixture
 
+import pytest
+
+# =============================================================================
+# Fixtures
+# =============================================================================
+
+@pytest.fixture
+def stress_client(
+    _sync_client_clean: DgraphClient, movies_schema_content: str
+) -> DgraphClient:
+    """Sync client with movies test schema for benchmark tests."""
+    _sync_client_clean.alter(pydgraph.Operation(schema=movies_schema_content))
+    return _sync_client_clean
 
 # =============================================================================
 # Query Benchmarks
 # =============================================================================
-
 
 class TestSyncQueryBenchmarks:
     """Benchmarks for sync query operations."""
 
     def test_benchmark_query_sync(
         self,
-        stress_test_sync_client: DgraphClient,
+        stress_client: DgraphClient,
         benchmark: BenchmarkFixture,
     ) -> None:
         """Benchmark a simple read query."""
-        client = stress_test_sync_client
+        client = stress_client
 
         # Setup: seed data outside benchmark
         txn = client.txn()
@@ -64,11 +76,11 @@ class TestSyncQueryBenchmarks:
 
     def test_benchmark_query_with_vars_sync(
         self,
-        stress_test_sync_client: DgraphClient,
+        stress_client: DgraphClient,
         benchmark: BenchmarkFixture,
     ) -> None:
         """Benchmark a query with variables."""
-        client = stress_test_sync_client
+        client = stress_client
 
         # Setup: seed data
         txn = client.txn()
@@ -92,11 +104,11 @@ class TestSyncQueryBenchmarks:
 
     def test_benchmark_query_best_effort_sync(
         self,
-        stress_test_sync_client: DgraphClient,
+        stress_client: DgraphClient,
         benchmark: BenchmarkFixture,
     ) -> None:
         """Benchmark a best-effort read query."""
-        client = stress_test_sync_client
+        client = stress_client
 
         # Setup: seed data
         txn = client.txn()
@@ -110,22 +122,20 @@ class TestSyncQueryBenchmarks:
 
         benchmark(run_query)
 
-
 # =============================================================================
 # Mutation Benchmarks
 # =============================================================================
-
 
 class TestSyncMutationBenchmarks:
     """Benchmarks for sync mutation operations."""
 
     def test_benchmark_mutation_commit_now_sync(
         self,
-        stress_test_sync_client: DgraphClient,
+        stress_client: DgraphClient,
         benchmark: BenchmarkFixture,
     ) -> None:
         """Benchmark mutation with commit_now (single round-trip)."""
-        client = stress_test_sync_client
+        client = stress_client
         counter = [0]
 
         def run_mutation() -> api.Response:
@@ -137,11 +147,11 @@ class TestSyncMutationBenchmarks:
 
     def test_benchmark_mutation_explicit_commit_sync(
         self,
-        stress_test_sync_client: DgraphClient,
+        stress_client: DgraphClient,
         benchmark: BenchmarkFixture,
     ) -> None:
         """Benchmark mutation with explicit commit (two round-trips)."""
-        client = stress_test_sync_client
+        client = stress_client
         counter = [0]
 
         def run_mutation() -> api.TxnContext | None:
@@ -154,11 +164,11 @@ class TestSyncMutationBenchmarks:
 
     def test_benchmark_discard_sync(
         self,
-        stress_test_sync_client: DgraphClient,
+        stress_client: DgraphClient,
         benchmark: BenchmarkFixture,
     ) -> None:
         """Benchmark mutation followed by discard (rollback cost)."""
-        client = stress_test_sync_client
+        client = stress_client
         counter = [0]
 
         def run_mutation() -> None:
@@ -171,11 +181,11 @@ class TestSyncMutationBenchmarks:
 
     def test_benchmark_mutation_nquads_sync(
         self,
-        stress_test_sync_client: DgraphClient,
+        stress_client: DgraphClient,
         benchmark: BenchmarkFixture,
     ) -> None:
         """Benchmark N-Quads mutation format."""
-        client = stress_test_sync_client
+        client = stress_client
         counter = [0]
 
         def run_mutation() -> api.Response:
@@ -192,11 +202,11 @@ class TestSyncMutationBenchmarks:
 
     def test_benchmark_delete_sync(
         self,
-        stress_test_sync_client: DgraphClient,
+        stress_client: DgraphClient,
         benchmark: BenchmarkFixture,
     ) -> None:
         """Benchmark delete mutation."""
-        client = stress_test_sync_client
+        client = stress_client
 
         # Pre-create nodes to delete
         uids: list[str] = []
@@ -215,22 +225,20 @@ class TestSyncMutationBenchmarks:
 
         benchmark(run_delete)
 
-
 # =============================================================================
 # Transaction Benchmarks
 # =============================================================================
-
 
 class TestSyncTransactionBenchmarks:
     """Benchmarks for advanced sync transaction operations."""
 
     def test_benchmark_upsert_sync(
         self,
-        stress_test_sync_client: DgraphClient,
+        stress_client: DgraphClient,
         benchmark: BenchmarkFixture,
     ) -> None:
         """Benchmark upsert operation (query + conditional mutation)."""
-        client = stress_test_sync_client
+        client = stress_client
         counter = [0]
 
         def run_upsert() -> api.Response:
@@ -256,11 +264,11 @@ class TestSyncTransactionBenchmarks:
 
     def test_benchmark_batch_mutations_sync(
         self,
-        stress_test_sync_client: DgraphClient,
+        stress_client: DgraphClient,
         benchmark: BenchmarkFixture,
     ) -> None:
         """Benchmark multiple mutations in one transaction."""
-        client = stress_test_sync_client
+        client = stress_client
         counter = [0]
         batch_size = 10
 
@@ -275,11 +283,11 @@ class TestSyncTransactionBenchmarks:
 
     def test_benchmark_run_transaction_sync(
         self,
-        stress_test_sync_client: DgraphClient,
+        stress_client: DgraphClient,
         benchmark: BenchmarkFixture,
     ) -> None:
         """Benchmark run_transaction helper overhead."""
-        client = stress_test_sync_client
+        client = stress_client
         counter = [0]
 
         def txn_func(txn: pydgraph.Txn) -> str:
@@ -292,22 +300,20 @@ class TestSyncTransactionBenchmarks:
 
         benchmark(run_with_helper)
 
-
 # =============================================================================
 # Client Benchmarks
 # =============================================================================
-
 
 class TestSyncClientBenchmarks:
     """Benchmarks for sync client-level operations."""
 
     def test_benchmark_check_version_sync(
         self,
-        stress_test_sync_client: DgraphClient,
+        stress_client: DgraphClient,
         benchmark: BenchmarkFixture,
     ) -> None:
         """Benchmark check_version (health check)."""
-        client = stress_test_sync_client
+        client = stress_client
 
         def run_check() -> str:
             return client.check_version()
@@ -316,11 +322,11 @@ class TestSyncClientBenchmarks:
 
     def test_benchmark_alter_schema_sync(
         self,
-        stress_test_sync_client: DgraphClient,
+        stress_client: DgraphClient,
         benchmark: BenchmarkFixture,
     ) -> None:
         """Benchmark schema alter operation."""
-        client = stress_test_sync_client
+        client = stress_client
         counter = [0]
 
         def run_alter() -> api.Payload:

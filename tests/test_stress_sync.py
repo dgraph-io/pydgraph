@@ -32,9 +32,20 @@ from pydgraph.proto import api_pb2 as api
 from .helpers import generate_movie
 
 # =============================================================================
-# Sync Client Stress Tests
+# Fixtures
 # =============================================================================
 
+@pytest.fixture
+def stress_client(
+    _sync_client_clean: DgraphClient, movies_schema_content: str
+) -> DgraphClient:
+    """Sync client with movies test schema for stress tests."""
+    _sync_client_clean.alter(pydgraph.Operation(schema=movies_schema_content))
+    return _sync_client_clean
+
+# =============================================================================
+# Sync Client Stress Tests
+# =============================================================================
 
 @pytest.mark.usefixtures("movies_data_loaded")
 class TestSyncClientStress:
@@ -42,13 +53,13 @@ class TestSyncClientStress:
 
     def test_concurrent_read_queries_sync(
         self,
-        stress_test_sync_client: DgraphClient,
+        stress_client: DgraphClient,
         executor: ThreadPoolExecutor,
         stress_config: dict[str, Any],
         benchmark: BenchmarkFixture,
     ) -> None:
         """Test many concurrent read-only queries don't cause issues."""
-        client = stress_test_sync_client
+        client = stress_client
         num_ops = stress_config["ops"]
 
         # Insert some test data first (outside benchmark)
@@ -90,13 +101,13 @@ class TestSyncClientStress:
 
     def test_concurrent_mutations_sync(
         self,
-        stress_test_sync_client: DgraphClient,
+        stress_client: DgraphClient,
         executor: ThreadPoolExecutor,
         stress_config: dict[str, Any],
         benchmark: BenchmarkFixture,
     ) -> None:
         """Test concurrent mutations in separate transactions."""
-        client = stress_test_sync_client
+        client = stress_client
         num_ops = stress_config["workers"] * 10
 
         success_count = 0
@@ -129,13 +140,13 @@ class TestSyncClientStress:
 
     def test_mixed_workload_sync(
         self,
-        stress_test_sync_client: DgraphClient,
+        stress_client: DgraphClient,
         executor: ThreadPoolExecutor,
         stress_config: dict[str, Any],
         benchmark: BenchmarkFixture,
     ) -> None:
         """Test mix of queries, mutations, commits, and discards concurrently."""
-        client = stress_test_sync_client
+        client = stress_client
         num_ops = stress_config["workers"] * 20
 
         # Setup: Seed some data once before benchmarking
@@ -190,20 +201,19 @@ class TestSyncClientStress:
         assert len(exc_list) == 0, f"Unexpected errors: {exc_list[:5]}"
         assert result_count == num_ops
 
-
 @pytest.mark.usefixtures("movies_data_loaded")
 class TestSyncTransactionStress:
     """Stress tests for sync transaction conflict handling."""
 
     def test_upsert_conflicts_sync(
         self,
-        stress_test_sync_client: DgraphClient,
+        stress_client: DgraphClient,
         executor: ThreadPoolExecutor,
         stress_config: dict[str, Any],
         benchmark: BenchmarkFixture,
     ) -> None:
         """Test concurrent upserts on the same key detect conflicts properly."""
-        client = stress_test_sync_client
+        client = stress_client
         target_email = "conflict@test.com"
         num_workers = stress_config["workers"]
 
@@ -252,11 +262,11 @@ class TestSyncTransactionStress:
 
     def test_transaction_isolation_sync(  # noqa: C901
         self,
-        stress_test_sync_client: DgraphClient,
+        stress_client: DgraphClient,
         stress_config: dict[str, Any],
     ) -> None:
         """Test that transactions provide proper isolation."""
-        client = stress_test_sync_client
+        client = stress_client
         workers = min(stress_config["workers"], 20)
 
         # Insert initial data with a counter stored in tagline
@@ -314,14 +324,13 @@ class TestSyncTransactionStress:
             assert isinstance(counter, int)
             assert counter >= 100
 
-
 @pytest.mark.usefixtures("movies_data_loaded")
 class TestSyncRetryStress:
     """Stress tests for sync retry utilities."""
 
     def test_retry_under_conflicts_sync(
         self,
-        stress_test_sync_client: DgraphClient,
+        stress_client: DgraphClient,
         executor: ThreadPoolExecutor,
         stress_config: dict[str, Any],
         benchmark: BenchmarkFixture,
@@ -336,7 +345,7 @@ class TestSyncRetryStress:
             nonlocal total_successes
             for attempt in retry():
                 with attempt:
-                    txn = stress_test_sync_client.txn()
+                    txn = stress_client.txn()
                     txn.mutate(
                         set_obj=generate_movie(total_successes),
                         commit_now=True,
@@ -364,7 +373,7 @@ class TestSyncRetryStress:
 
     def test_run_transaction_sync(
         self,
-        stress_test_sync_client: DgraphClient,
+        stress_client: DgraphClient,
         executor: ThreadPoolExecutor,
         stress_config: dict[str, Any],
         benchmark: BenchmarkFixture,
@@ -388,7 +397,7 @@ class TestSyncRetryStress:
                     )
                     return next(iter(response.uids.values()), "")
 
-                uid = run_transaction(stress_test_sync_client, txn_func)
+                uid = run_transaction(stress_client, txn_func)
                 results.append(uid)
             except Exception as e:
                 exc_list.append(e)
@@ -405,18 +414,17 @@ class TestSyncRetryStress:
 
         assert result_count == num_workers
 
-
 @pytest.mark.usefixtures("movies_data_loaded")
 class TestSyncDeadlockPrevention:
     """Tests for deadlock prevention in sync client."""
 
     def test_no_deadlock_on_error_sync(
         self,
-        stress_test_sync_client: DgraphClient,
+        stress_client: DgraphClient,
         stress_config: dict[str, Any],
     ) -> None:
         """Test that errors don't cause deadlocks."""
-        client = stress_test_sync_client
+        client = stress_client
         workers = min(stress_config["workers"], 20)
 
         def cause_error() -> None:

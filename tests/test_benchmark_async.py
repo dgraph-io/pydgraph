@@ -16,16 +16,62 @@ Usage:
 
 from __future__ import annotations
 
+import asyncio
+from collections.abc import Generator
 from typing import TYPE_CHECKING
 
+import pytest
+
 import pydgraph
-from pydgraph import run_transaction_async
+from pydgraph import AsyncDgraphClient, AsyncDgraphClientStub, run_transaction_async
 from pydgraph.proto import api_pb2 as api
 
-from .helpers import generate_movie
+from .helpers import TEST_SERVER_ADDR, generate_movie
 
 if TYPE_CHECKING:
     from pytest_benchmark.fixture import BenchmarkFixture
+
+
+# =============================================================================
+# Fixtures
+# =============================================================================
+
+
+@pytest.fixture
+def event_loop() -> Generator[asyncio.AbstractEventLoop, None, None]:
+    """Dedicated event loop for async benchmark tests."""
+    loop = asyncio.new_event_loop()
+    asyncio.set_event_loop(loop)
+    yield loop
+    loop.close()
+
+
+@pytest.fixture
+def benchmark_client(
+    event_loop: asyncio.AbstractEventLoop,
+    movies_schema_content: str,
+) -> Generator[AsyncDgraphClient, None, None]:
+    """Async client with schema for benchmark tests."""
+    loop = event_loop
+
+    async def setup() -> AsyncDgraphClient:
+        client_stub = AsyncDgraphClientStub(TEST_SERVER_ADDR)
+        client = AsyncDgraphClient(client_stub)
+        for _ in range(30):
+            try:
+                await client.login("groot", "password")
+                break
+            except Exception as e:
+                if "user not found" in str(e):
+                    raise
+                await asyncio.sleep(0.1)
+        await client.alter(pydgraph.Operation(drop_all=True))
+        await client.alter(pydgraph.Operation(schema=movies_schema_content))
+        return client
+
+    client = loop.run_until_complete(setup())
+    yield client
+    loop.run_until_complete(client.close())
 
 
 # =============================================================================
@@ -38,11 +84,13 @@ class TestAsyncQueryBenchmarks:
 
     def test_benchmark_query_async(
         self,
-        stress_test_async_client_for_benchmark,
+        event_loop: asyncio.AbstractEventLoop,
+        benchmark_client: AsyncDgraphClient,
         benchmark: BenchmarkFixture,
     ) -> None:
         """Benchmark a simple async read query."""
-        client, loop = stress_test_async_client_for_benchmark
+        loop = event_loop
+        client = benchmark_client
 
         # Setup: seed data outside benchmark
         async def setup() -> None:
@@ -70,11 +118,13 @@ class TestAsyncQueryBenchmarks:
 
     def test_benchmark_query_with_vars_async(
         self,
-        stress_test_async_client_for_benchmark,
+        event_loop: asyncio.AbstractEventLoop,
+        benchmark_client: AsyncDgraphClient,
         benchmark: BenchmarkFixture,
     ) -> None:
         """Benchmark an async query with variables."""
-        client, loop = stress_test_async_client_for_benchmark
+        loop = event_loop
+        client = benchmark_client
 
         # Setup
         async def setup() -> None:
@@ -104,11 +154,13 @@ class TestAsyncQueryBenchmarks:
 
     def test_benchmark_query_best_effort_async(
         self,
-        stress_test_async_client_for_benchmark,
+        event_loop: asyncio.AbstractEventLoop,
+        benchmark_client: AsyncDgraphClient,
         benchmark: BenchmarkFixture,
     ) -> None:
         """Benchmark a best-effort async read query."""
-        client, loop = stress_test_async_client_for_benchmark
+        loop = event_loop
+        client = benchmark_client
 
         # Setup
         async def setup() -> None:
@@ -139,11 +191,13 @@ class TestAsyncMutationBenchmarks:
 
     def test_benchmark_mutation_commit_now_async(
         self,
-        stress_test_async_client_for_benchmark,
+        event_loop: asyncio.AbstractEventLoop,
+        benchmark_client: AsyncDgraphClient,
         benchmark: BenchmarkFixture,
     ) -> None:
         """Benchmark async mutation with commit_now."""
-        client, loop = stress_test_async_client_for_benchmark
+        loop = event_loop
+        client = benchmark_client
         counter = [0]
 
         async def run_mutation() -> api.Response:
@@ -158,11 +212,13 @@ class TestAsyncMutationBenchmarks:
 
     def test_benchmark_mutation_explicit_commit_async(
         self,
-        stress_test_async_client_for_benchmark,
+        event_loop: asyncio.AbstractEventLoop,
+        benchmark_client: AsyncDgraphClient,
         benchmark: BenchmarkFixture,
     ) -> None:
         """Benchmark async mutation with explicit commit."""
-        client, loop = stress_test_async_client_for_benchmark
+        loop = event_loop
+        client = benchmark_client
         counter = [0]
 
         async def run_mutation() -> api.TxnContext | None:
@@ -178,11 +234,13 @@ class TestAsyncMutationBenchmarks:
 
     def test_benchmark_discard_async(
         self,
-        stress_test_async_client_for_benchmark,
+        event_loop: asyncio.AbstractEventLoop,
+        benchmark_client: AsyncDgraphClient,
         benchmark: BenchmarkFixture,
     ) -> None:
         """Benchmark async mutation followed by discard."""
-        client, loop = stress_test_async_client_for_benchmark
+        loop = event_loop
+        client = benchmark_client
         counter = [0]
 
         async def run_mutation() -> None:
@@ -198,11 +256,13 @@ class TestAsyncMutationBenchmarks:
 
     def test_benchmark_mutation_nquads_async(
         self,
-        stress_test_async_client_for_benchmark,
+        event_loop: asyncio.AbstractEventLoop,
+        benchmark_client: AsyncDgraphClient,
         benchmark: BenchmarkFixture,
     ) -> None:
         """Benchmark async N-Quads mutation."""
-        client, loop = stress_test_async_client_for_benchmark
+        loop = event_loop
+        client = benchmark_client
         counter = [0]
 
         async def run_mutation() -> api.Response:
@@ -222,11 +282,13 @@ class TestAsyncMutationBenchmarks:
 
     def test_benchmark_delete_async(
         self,
-        stress_test_async_client_for_benchmark,
+        event_loop: asyncio.AbstractEventLoop,
+        benchmark_client: AsyncDgraphClient,
         benchmark: BenchmarkFixture,
     ) -> None:
         """Benchmark async delete mutation."""
-        client, loop = stress_test_async_client_for_benchmark
+        loop = event_loop
+        client = benchmark_client
 
         # Pre-create nodes to delete
         async def setup() -> list[str]:
@@ -262,11 +324,13 @@ class TestAsyncTransactionBenchmarks:
 
     def test_benchmark_upsert_async(
         self,
-        stress_test_async_client_for_benchmark,
+        event_loop: asyncio.AbstractEventLoop,
+        benchmark_client: AsyncDgraphClient,
         benchmark: BenchmarkFixture,
     ) -> None:
         """Benchmark async upsert operation."""
-        client, loop = stress_test_async_client_for_benchmark
+        loop = event_loop
+        client = benchmark_client
         counter = [0]
 
         async def run_upsert() -> api.Response:
@@ -295,11 +359,13 @@ class TestAsyncTransactionBenchmarks:
 
     def test_benchmark_batch_mutations_async(
         self,
-        stress_test_async_client_for_benchmark,
+        event_loop: asyncio.AbstractEventLoop,
+        benchmark_client: AsyncDgraphClient,
         benchmark: BenchmarkFixture,
     ) -> None:
         """Benchmark multiple async mutations in one transaction."""
-        client, loop = stress_test_async_client_for_benchmark
+        loop = event_loop
+        client = benchmark_client
         counter = [0]
         batch_size = 10
 
@@ -317,11 +383,13 @@ class TestAsyncTransactionBenchmarks:
 
     def test_benchmark_run_transaction_async(
         self,
-        stress_test_async_client_for_benchmark,
+        event_loop: asyncio.AbstractEventLoop,
+        benchmark_client: AsyncDgraphClient,
         benchmark: BenchmarkFixture,
     ) -> None:
         """Benchmark run_transaction_async helper overhead."""
-        client, loop = stress_test_async_client_for_benchmark
+        loop = event_loop
+        client = benchmark_client
         counter = [0]
 
         async def txn_func(txn: pydgraph.AsyncTxn) -> str:
@@ -350,11 +418,13 @@ class TestAsyncClientBenchmarks:
 
     def test_benchmark_check_version_async(
         self,
-        stress_test_async_client_for_benchmark,
+        event_loop: asyncio.AbstractEventLoop,
+        benchmark_client: AsyncDgraphClient,
         benchmark: BenchmarkFixture,
     ) -> None:
         """Benchmark async check_version."""
-        client, loop = stress_test_async_client_for_benchmark
+        loop = event_loop
+        client = benchmark_client
 
         async def run_check() -> str:
             return await client.check_version()
@@ -366,11 +436,13 @@ class TestAsyncClientBenchmarks:
 
     def test_benchmark_alter_schema_async(
         self,
-        stress_test_async_client_for_benchmark,
+        event_loop: asyncio.AbstractEventLoop,
+        benchmark_client: AsyncDgraphClient,
         benchmark: BenchmarkFixture,
     ) -> None:
         """Benchmark async schema alter operation."""
-        client, loop = stress_test_async_client_for_benchmark
+        loop = event_loop
+        client = benchmark_client
         counter = [0]
 
         async def run_alter() -> api.Payload:
