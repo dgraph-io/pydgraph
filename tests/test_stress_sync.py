@@ -35,20 +35,20 @@ from .helpers import generate_movie
 # Fixtures
 # =============================================================================
 
-@pytest.fixture
+@pytest.fixture(scope="module")
 def stress_client(
-    sync_client: DgraphClient, movies_schema: str
+    sync_client: DgraphClient, movies_schema: str, movies_data_loaded: bool
 ) -> DgraphClient:
-    """Sync client with movies test schema for stress tests."""
-    sync_client.alter(pydgraph.Operation(drop_all=True))
-    sync_client.alter(pydgraph.Operation(schema=movies_schema))
+    """Module-scoped sync client with movies test schema for stress tests."""
+    if not movies_data_loaded:
+        sync_client.alter(pydgraph.Operation(drop_all=True))
+        sync_client.alter(pydgraph.Operation(schema=movies_schema))
     return sync_client
 
 # =============================================================================
 # Sync Client Stress Tests
 # =============================================================================
 
-@pytest.mark.usefixtures("movies_data_loaded")
 class TestSyncClientStress:
     """Stress tests for synchronous Dgraph client."""
 
@@ -202,7 +202,6 @@ class TestSyncClientStress:
         assert len(exc_list) == 0, f"Unexpected errors: {exc_list[:5]}"
         assert result_count == num_ops
 
-@pytest.mark.usefixtures("movies_data_loaded")
 class TestSyncTransactionStress:
     """Stress tests for sync transaction conflict handling."""
 
@@ -325,7 +324,6 @@ class TestSyncTransactionStress:
             assert isinstance(counter, int)
             assert counter >= 100
 
-@pytest.mark.usefixtures("movies_data_loaded")
 class TestSyncRetryStress:
     """Stress tests for sync retry utilities."""
 
@@ -415,7 +413,6 @@ class TestSyncRetryStress:
 
         assert result_count == num_workers
 
-@pytest.mark.usefixtures("movies_data_loaded")
 class TestSyncDeadlockPrevention:
     """Tests for deadlock prevention in sync client."""
 

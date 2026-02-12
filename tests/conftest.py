@@ -272,8 +272,3 @@ async def async_client() -> AsyncGenerator[AsyncDgraphClient, None]:
     await client.close()
 
 
-@pytest.fixture
-async def async_client_clean(async_client: AsyncDgraphClient) -> AsyncDgraphClient:
-    """Async client with clean database."""
-    await async_client.alter(pydgraph.Operation(drop_all=True))
-    return async_client
