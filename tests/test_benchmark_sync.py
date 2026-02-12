@@ -33,17 +33,21 @@ import pytest
 # Fixtures
 # =============================================================================
 
+
 @pytest.fixture
 def stress_client(
-    _sync_client_clean: DgraphClient, movies_schema_content: str
+    sync_client: DgraphClient, movies_schema: str
 ) -> DgraphClient:
     """Sync client with movies test schema for benchmark tests."""
-    _sync_client_clean.alter(pydgraph.Operation(schema=movies_schema_content))
-    return _sync_client_clean
+    sync_client.alter(pydgraph.Operation(drop_all=True))
+    sync_client.alter(pydgraph.Operation(schema=movies_schema))
+    return sync_client
+
 
 # =============================================================================
 # Query Benchmarks
 # =============================================================================
+
 
 class TestSyncQueryBenchmarks:
     """Benchmarks for sync query operations."""
@@ -122,9 +126,11 @@ class TestSyncQueryBenchmarks:
 
         benchmark(run_query)
 
+
 # =============================================================================
 # Mutation Benchmarks
 # =============================================================================
+
 
 class TestSyncMutationBenchmarks:
     """Benchmarks for sync mutation operations."""
@@ -225,9 +231,11 @@ class TestSyncMutationBenchmarks:
 
         benchmark(run_delete)
 
+
 # =============================================================================
 # Transaction Benchmarks
 # =============================================================================
+
 
 class TestSyncTransactionBenchmarks:
     """Benchmarks for advanced sync transaction operations."""
@@ -300,9 +308,11 @@ class TestSyncTransactionBenchmarks:
 
         benchmark(run_with_helper)
 
+
 # =============================================================================
 # Client Benchmarks
 # =============================================================================
+
 
 class TestSyncClientBenchmarks:
     """Benchmarks for sync client-level operations."""

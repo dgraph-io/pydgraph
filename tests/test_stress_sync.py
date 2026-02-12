@@ -37,11 +37,12 @@ from .helpers import generate_movie
 
 @pytest.fixture
 def stress_client(
-    _sync_client_clean: DgraphClient, movies_schema_content: str
+    sync_client: DgraphClient, movies_schema: str
 ) -> DgraphClient:
     """Sync client with movies test schema for stress tests."""
-    _sync_client_clean.alter(pydgraph.Operation(schema=movies_schema_content))
-    return _sync_client_clean
+    sync_client.alter(pydgraph.Operation(drop_all=True))
+    sync_client.alter(pydgraph.Operation(schema=movies_schema))
+    return sync_client
 
 # =============================================================================
 # Sync Client Stress Tests

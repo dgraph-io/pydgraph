@@ -102,7 +102,7 @@ def _downloaded_data_fixture_path(name: str) -> Path:
 
 
 @pytest.fixture(scope="session")
-def movies_schema() -> Path:
+def movies_schema_path() -> Path:
     """Path to the 1million movie schema file.
 
     Downloads from dgraph-benchmarks repo if not present locally.
@@ -175,7 +175,7 @@ def movies_data_loaded(
     # Lazy evaluation: only instantiate session-scoped fixtures when actually needed
     client: DgraphClient = request.getfixturevalue("sync_client")
     movies_rdf_path: Path = request.getfixturevalue("movies_rdf")
-    schema_content: str = request.getfixturevalue("movies_schema_content")
+    schema_content: str = request.getfixturevalue("movies_schema")
 
     # Apply schema before loading data
     client.alter(pydgraph.Operation(drop_all=True))
@@ -242,41 +242,10 @@ def executor(
         yield ex
 
 
-# =============================================================================
-# Sync Client Fixtures
-# =============================================================================
-
-
-@pytest.fixture
-def _sync_client() -> Generator[DgraphClient, None, None]:
-    """Function-scoped sync client with login (internal use)."""
-    client_stub = DgraphClientStub(TEST_SERVER_ADDR)
-    client = DgraphClient(client_stub)
-
-    for _ in range(30):
-        try:
-            client.login("groot", "password")
-            break
-        except Exception as e:
-            if "user not found" in str(e):
-                raise
-            time.sleep(0.1)
-
-    yield client
-    client.close()
-
-
-@pytest.fixture
-def _sync_client_clean(_sync_client: DgraphClient) -> DgraphClient:
-    """Function-scoped sync client with clean database (internal use)."""
-    _sync_client.alter(pydgraph.Operation(drop_all=True))
-    return _sync_client
-
-
 @pytest.fixture(scope="session")
-def movies_schema_content(movies_schema: Path) -> str:
+def movies_schema(movies_schema_path: Path) -> str:
     """Return the movies schema content as a string."""
-    return movies_schema.read_text()
+    return movies_schema_path.read_text()
 
 
 # =============================================================================

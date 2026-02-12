@@ -49,7 +49,7 @@ def event_loop() -> Generator[asyncio.AbstractEventLoop, None, None]:
 @pytest.fixture
 def benchmark_client(
     event_loop: asyncio.AbstractEventLoop,
-    movies_schema_content: str,
+    movies_schema: str,
 ) -> Generator[AsyncDgraphClient, None, None]:
     """Async client with schema for benchmark tests."""
     loop = event_loop
@@ -66,7 +66,7 @@ def benchmark_client(
                     raise
                 await asyncio.sleep(0.1)
         await client.alter(pydgraph.Operation(drop_all=True))
-        await client.alter(pydgraph.Operation(schema=movies_schema_content))
+        await client.alter(pydgraph.Operation(schema=movies_schema))
         return client
 
     client = loop.run_until_complete(setup())
