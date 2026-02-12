@@ -98,7 +98,7 @@ def stress_config() -> dict[str, Any]:
             in ("1", "true"),
         }
 
-    if rounds_override is not None:
+    if rounds_override:
         config["rounds"] = int(rounds_override)
 
     return config
