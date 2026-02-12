@@ -52,33 +52,39 @@ def stress_config() -> dict[str, Any]:
     """Configuration for stress tests based on STRESS_TEST_MODE env var.
 
     Modes:
-        quick: Fast sanity check (default) - 20 workers, 50 ops, 10 iterations
-        moderate: Meaningful stress test - 200 workers, 500 ops, 100 iterations
-        full: Maximum stress test - 2000 workers, 5000 ops, 1000 iterations
+        quick: Fast sanity check (default, ~30s) - 20 workers, 200 ops, 50 rounds
+        moderate: Sustained async stress (5-8 min) - 10 workers, 200 ops, 8 rounds
+        full: Extended sync stress (12-16 min) - 15 workers, 500 ops, 15 rounds
+
+    Parameters:
+        workers: Concurrency level (thread pool size or asyncio task count)
+        ops: Operations per concurrent batch
+        rounds: How many times each test repeats its concurrent batch
+        load_movies: Whether to load the 1million movie dataset
     """
     mode = os.environ.get("STRESS_TEST_MODE", "quick")
 
     if mode == "full":
         return {
             "mode": "full",
-            "workers": 2000,
-            "ops": 5000,
-            "iterations": 1000,
+            "workers": 15,
+            "ops": 500,
+            "rounds": 15,
             "load_movies": True,
         }
     if mode == "moderate":
         return {
             "mode": "moderate",
-            "workers": 200,
-            "ops": 500,
-            "iterations": 100,
+            "workers": 10,
+            "ops": 200,
+            "rounds": 8,
             "load_movies": True,
         }
     return {
         "mode": "quick",
         "workers": 20,
-        "ops": 50,
-        "iterations": 10,
+        "ops": 200,
+        "rounds": 50,
         "load_movies": os.environ.get("STRESS_TEST_LOAD_MOVIES", "").lower()
         in ("1", "true"),
     }

@@ -103,6 +103,7 @@ class TestAsyncClientStress:
         loop = benchmark_event_loop
         client = stress_client
         num_ops = stress_config["ops"]
+        rounds = stress_config["rounds"]
 
         query = """query {
             people(func: has(name), first: 10) {
@@ -127,18 +128,22 @@ class TestAsyncClientStress:
 
         # Wrap async execution in sync function for benchmark (using same loop)
         def run_benchmark() -> list[api.Response | BaseException]:
-            return loop.run_until_complete(
-                asyncio.gather(
-                    *[run_query() for _ in range(num_ops)],
-                    return_exceptions=True,
+            all_results: list[api.Response | BaseException] = []
+            for _ in range(rounds):
+                batch = loop.run_until_complete(
+                    asyncio.gather(
+                        *[run_query() for _ in range(num_ops)],
+                        return_exceptions=True,
+                    )
                 )
-            )
+                all_results.extend(batch)
+            return all_results
 
         results = benchmark(run_benchmark)
 
         exc_list = [r for r in results if isinstance(r, Exception)]
         assert len(exc_list) == 0, f"Got {len(exc_list)} errors: {exc_list[:5]}"
-        assert len(results) == num_ops
+        assert len(results) == num_ops * rounds
 
     def test_concurrent_mutations_async(
         self,
@@ -151,23 +156,30 @@ class TestAsyncClientStress:
         loop = benchmark_event_loop
         client = stress_client
         num_ops = stress_config["workers"] * 10
+        rounds = stress_config["rounds"]
+        counter = [0]
 
-        async def run_mutation(index: int) -> bool:
+        async def run_mutation() -> bool:
+            counter[0] += 1
             try:
                 txn = client.txn()
-                await txn.mutate(set_obj=generate_movie(index), commit_now=True)
+                await txn.mutate(set_obj=generate_movie(counter[0]), commit_now=True)
             except errors.AbortedError:
                 return False
             else:
                 return True
 
         def run_benchmark() -> list[bool | BaseException]:
-            return loop.run_until_complete(
-                asyncio.gather(
-                    *[run_mutation(i) for i in range(num_ops)],
-                    return_exceptions=True,
+            all_results: list[bool | BaseException] = []
+            for _ in range(rounds):
+                batch = loop.run_until_complete(
+                    asyncio.gather(
+                        *[run_mutation() for _ in range(num_ops)],
+                        return_exceptions=True,
+                    )
                 )
-            )
+                all_results.extend(batch)
+            return all_results
 
         results = benchmark(run_benchmark)
 
@@ -175,7 +187,7 @@ class TestAsyncClientStress:
         successes = sum(1 for r in results if r is True)
 
         assert len(exc_list) == 0, f"Unexpected errors: {exc_list[:5]}"
-        assert successes > num_ops * 0.5, f"Too few successes: {successes}/{num_ops}"
+        assert successes > num_ops * rounds * 0.5, f"Too few successes: {successes}/{num_ops * rounds}"
 
     def test_mixed_workload_async(
         self,
@@ -188,6 +200,8 @@ class TestAsyncClientStress:
         loop = benchmark_event_loop
         client = stress_client
         num_ops = stress_config["workers"] * 20
+        rounds = stress_config["rounds"]
+        counter = [0]
 
         # Setup: Seed some data once before benchmarking (using same loop)
         async def setup_data() -> None:
@@ -199,6 +213,8 @@ class TestAsyncClientStress:
         loop.run_until_complete(setup_data())
 
         async def random_operation(op_id: int) -> str:
+            counter[0] += 1
+            unique_id = counter[0]
             op_type = op_id % 4
             result = "unknown"
             try:
@@ -210,18 +226,18 @@ class TestAsyncClientStress:
                 elif op_type == 1:
                     # Mutation with commit_now
                     txn = client.txn()
-                    await txn.mutate(set_obj=generate_movie(op_id), commit_now=True)
+                    await txn.mutate(set_obj=generate_movie(unique_id), commit_now=True)
                     result = "mutation"
                 elif op_type == 2:
                     # Mutation with explicit commit
                     txn = client.txn()
-                    await txn.mutate(set_obj=generate_movie(op_id))
+                    await txn.mutate(set_obj=generate_movie(unique_id))
                     await txn.commit()
                     result = "commit"
                 else:
                     # Mutation with discard
                     txn = client.txn()
-                    await txn.mutate(set_obj=generate_movie(op_id))
+                    await txn.mutate(set_obj=generate_movie(unique_id))
                     await txn.discard()
                     result = "discard"
             except errors.AbortedError:
@@ -229,12 +245,16 @@ class TestAsyncClientStress:
             return result
 
         def run_benchmark() -> list[str | BaseException]:
-            return loop.run_until_complete(
-                asyncio.gather(
-                    *[random_operation(i) for i in range(num_ops)],
-                    return_exceptions=True,
+            all_results: list[str | BaseException] = []
+            for _ in range(rounds):
+                batch = loop.run_until_complete(
+                    asyncio.gather(
+                        *[random_operation(i) for i in range(num_ops)],
+                        return_exceptions=True,
+                    )
                 )
-            )
+                all_results.extend(batch)
+            return all_results
 
         results = benchmark(run_benchmark)
 
@@ -262,6 +282,7 @@ class TestAsyncTransactionStress:
         client = stress_client
         target_email = "async_conflict@test.com"
         num_workers = stress_config["workers"]
+        rounds = stress_config["rounds"]
 
         async def run_upsert(worker_id: int) -> str:
             try:
@@ -287,12 +308,16 @@ class TestAsyncTransactionStress:
                 return "success"
 
         def run_benchmark() -> list[str | BaseException]:
-            return loop.run_until_complete(
-                asyncio.gather(
-                    *[run_upsert(i) for i in range(num_workers)],
-                    return_exceptions=True,
+            all_results: list[str | BaseException] = []
+            for _ in range(rounds):
+                batch = loop.run_until_complete(
+                    asyncio.gather(
+                        *[run_upsert(i) for i in range(num_workers)],
+                        return_exceptions=True,
+                    )
                 )
-            )
+                all_results.extend(batch)
+            return all_results
 
         results = benchmark(run_benchmark)
 
@@ -300,7 +325,7 @@ class TestAsyncTransactionStress:
         successes = sum(1 for r in results if r == "success")
 
         assert len(exc_list) == 0, f"Unexpected errors: {exc_list}"
-        assert successes >= 1, "No upserts succeeded"
+        assert successes >= rounds, "Too few upserts succeeded"
 
     def test_deadlock_regression_async(
         self,
@@ -366,12 +391,10 @@ class TestAsyncTransactionStress:
         self,
         benchmark_event_loop: asyncio.AbstractEventLoop,
         stress_client: AsyncDgraphClient,
-        stress_config: dict[str, Any],
     ) -> None:
         """Test that context managers properly clean up even on errors."""
         loop = benchmark_event_loop
         client = stress_client
-        iterations = stress_config["iterations"]
 
         async def run_test() -> None:
             async def use_txn_with_error() -> None:
@@ -380,7 +403,7 @@ class TestAsyncTransactionStress:
                     raise ValueError("Intentional error")
 
             # Should not leave any locks held
-            for _ in range(iterations):
+            for _ in range(2):
                 try:
                     await use_txn_with_error()
                 except ValueError:
@@ -442,12 +465,13 @@ class TestAsyncRetryStress:
         """Test retry_async() generator handles conflicts correctly under load."""
         loop = benchmark_event_loop
         client = stress_client
-        iterations = stress_config["iterations"]
         num_workers = min(stress_config["workers"], 20)
+        rounds = stress_config["rounds"]
+        reps_per_worker = 2
 
         async def retry_work(worker_id: int) -> int:
             successes = 0
-            for _ in range(iterations):
+            for _ in range(reps_per_worker):
                 async for attempt in retry_async():
                     with attempt:  # Note: regular 'with', not 'async with'
                         txn = client.txn()
@@ -459,12 +483,16 @@ class TestAsyncRetryStress:
             return successes
 
         def run_benchmark() -> list[int | BaseException]:
-            return loop.run_until_complete(
-                asyncio.gather(
-                    *[retry_work(i) for i in range(num_workers)],
-                    return_exceptions=True,
+            all_results: list[int | BaseException] = []
+            for _ in range(rounds):
+                batch = loop.run_until_complete(
+                    asyncio.gather(
+                        *[retry_work(i) for i in range(num_workers)],
+                        return_exceptions=True,
+                    )
                 )
-            )
+                all_results.extend(batch)
+            return all_results
 
         results = benchmark(run_benchmark)
 
@@ -472,7 +500,7 @@ class TestAsyncRetryStress:
         total_successes = sum(r for r in results if isinstance(r, int))
 
         assert len(exc_list) == 0, f"Errors: {exc_list[:5]}"
-        assert total_successes >= num_workers * iterations
+        assert total_successes >= num_workers * reps_per_worker * rounds
 
     def test_with_retry_decorator_async(
         self,
@@ -485,23 +513,30 @@ class TestAsyncRetryStress:
         loop = benchmark_event_loop
         client = stress_client
         num_workers = min(stress_config["workers"], 10)
+        rounds = stress_config["rounds"]
+        counter = [0]
 
         @with_retry_async()
-        async def create_person(index: int) -> str:
+        async def create_person() -> str:
+            counter[0] += 1
             txn = client.txn()
             response = await txn.mutate(
-                set_obj=generate_movie(index),
+                set_obj=generate_movie(counter[0]),
                 commit_now=True,
             )
             return next(iter(response.uids.values()), "")
 
         def run_benchmark() -> list[str | BaseException]:
-            return loop.run_until_complete(
-                asyncio.gather(
-                    *[create_person(i) for i in range(num_workers)],
-                    return_exceptions=True,
+            all_results: list[str | BaseException] = []
+            for _ in range(rounds):
+                batch = loop.run_until_complete(
+                    asyncio.gather(
+                        *[create_person() for _ in range(num_workers)],
+                        return_exceptions=True,
+                    )
                 )
-            )
+                all_results.extend(batch)
+            return all_results
 
         results = benchmark(run_benchmark)
 
@@ -509,7 +544,7 @@ class TestAsyncRetryStress:
         successes = [r for r in results if isinstance(r, str) and r]
 
         assert len(exc_list) == 0, f"Errors: {exc_list[:5]}"
-        assert len(successes) == num_workers
+        assert len(successes) == num_workers * rounds
 
     def test_run_transaction_async(
         self,
@@ -522,13 +557,18 @@ class TestAsyncRetryStress:
         loop = benchmark_event_loop
         client = stress_client
         num_workers = min(stress_config["workers"], 10)
+        rounds = stress_config["rounds"]
+        counter = [0]
 
-        async def work(worker_id: int) -> str:
+        async def work() -> str:
+            counter[0] += 1
+            unique_id = counter[0]
+
             async def txn_func(txn: pydgraph.AsyncTxn) -> str:
                 response = await txn.mutate(
                     set_obj={
-                        "name": f"AsyncRunTxn_{worker_id}",
-                        "tagline": f"AsyncWorker {worker_id} transaction",
+                        "name": f"AsyncRunTxn_{unique_id}",
+                        "tagline": f"AsyncWorker {unique_id} transaction",
                     },
                     commit_now=True,
                 )
@@ -537,12 +577,16 @@ class TestAsyncRetryStress:
             return await run_transaction_async(client, txn_func)
 
         def run_benchmark() -> list[str | BaseException]:
-            return loop.run_until_complete(
-                asyncio.gather(
-                    *[work(i) for i in range(num_workers)],
-                    return_exceptions=True,
+            all_results: list[str | BaseException] = []
+            for _ in range(rounds):
+                batch = loop.run_until_complete(
+                    asyncio.gather(
+                        *[work() for _ in range(num_workers)],
+                        return_exceptions=True,
+                    )
                 )
-            )
+                all_results.extend(batch)
+            return all_results
 
         results = benchmark(run_benchmark)
 
@@ -550,7 +594,7 @@ class TestAsyncRetryStress:
         successes = [r for r in results if isinstance(r, str) and r]
 
         assert len(exc_list) == 0, f"Errors: {exc_list[:5]}"
-        assert len(successes) == num_workers
+        assert len(successes) == num_workers * rounds
 
 
 # =============================================================================

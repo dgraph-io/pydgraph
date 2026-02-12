@@ -62,6 +62,7 @@ class TestSyncClientStress:
         """Test many concurrent read-only queries don't cause issues."""
         client = stress_client
         num_ops = stress_config["ops"]
+        rounds = stress_config["rounds"]
 
         # Insert some test data first (outside benchmark)
         txn = client.txn()
@@ -92,13 +93,14 @@ class TestSyncClientStress:
             # Clear state at start of each benchmark iteration
             results.clear()
             exc_list.clear()
-            futures = [executor.submit(run_query) for _ in range(num_ops)]
-            wait(futures)
+            for _ in range(rounds):
+                futures = [executor.submit(run_query) for _ in range(num_ops)]
+                wait(futures)
             return len(results)
 
         result_count = benchmark(run_all_queries)
 
-        assert result_count == num_ops
+        assert result_count == num_ops * rounds
 
     def test_concurrent_mutations_sync(
         self,
@@ -110,15 +112,18 @@ class TestSyncClientStress:
         """Test concurrent mutations in separate transactions."""
         client = stress_client
         num_ops = stress_config["workers"] * 10
+        rounds = stress_config["rounds"]
+        counter = [0]
 
         success_count = 0
         exc_list: list[Exception] = []
 
-        def run_mutation(index: int) -> None:
+        def run_mutation() -> None:
             nonlocal success_count
+            counter[0] += 1
             try:
                 txn = client.txn()
-                txn.mutate(set_obj=generate_movie(index), commit_now=True)
+                txn.mutate(set_obj=generate_movie(counter[0]), commit_now=True)
                 success_count += 1
             except errors.AbortedError:
                 pass  # Expected conflict
@@ -130,14 +135,15 @@ class TestSyncClientStress:
             # Clear state at start of each benchmark iteration
             success_count = 0
             exc_list.clear()
-            futures = [executor.submit(run_mutation, i) for i in range(num_ops)]
-            wait(futures)
+            for _ in range(rounds):
+                futures = [executor.submit(run_mutation) for _ in range(num_ops)]
+                wait(futures)
             return success_count
 
         result_count = benchmark(run_all_mutations)
 
         # Some AbortedErrors are expected
-        assert result_count > num_ops * 0.5
+        assert result_count > num_ops * rounds * 0.5
 
     def test_mixed_workload_sync(
         self,
@@ -149,6 +155,8 @@ class TestSyncClientStress:
         """Test mix of queries, mutations, commits, and discards concurrently."""
         client = stress_client
         num_ops = stress_config["workers"] * 20
+        rounds = stress_config["rounds"]
+        counter = [0]
 
         # Setup: Seed some data once before benchmarking
         txn = client.txn()
@@ -160,6 +168,8 @@ class TestSyncClientStress:
         exc_list: list[Exception] = []
 
         def random_operation(op_id: int) -> None:
+            counter[0] += 1
+            unique_id = counter[0]
             op_type = op_id % 4
             try:
                 if op_type == 0:
@@ -170,18 +180,18 @@ class TestSyncClientStress:
                 elif op_type == 1:
                     # Mutation with commit_now
                     txn = client.txn()
-                    txn.mutate(set_obj=generate_movie(op_id), commit_now=True)
+                    txn.mutate(set_obj=generate_movie(unique_id), commit_now=True)
                     results.append("mutation")
                 elif op_type == 2:
                     # Mutation with explicit commit
                     txn = client.txn()
-                    txn.mutate(set_obj=generate_movie(op_id))
+                    txn.mutate(set_obj=generate_movie(unique_id))
                     txn.commit()
                     results.append("commit")
                 else:
                     # Mutation with discard
                     txn = client.txn()
-                    txn.mutate(set_obj=generate_movie(op_id))
+                    txn.mutate(set_obj=generate_movie(unique_id))
                     txn.discard()
                     results.append("discard")
             except errors.AbortedError:
@@ -193,14 +203,15 @@ class TestSyncClientStress:
             # Clear state at start of each benchmark iteration
             results.clear()
             exc_list.clear()
-            futures = [executor.submit(random_operation, i) for i in range(num_ops)]
-            wait(futures)
+            for _ in range(rounds):
+                futures = [executor.submit(random_operation, i) for i in range(num_ops)]
+                wait(futures)
             return len(results)
 
         result_count = benchmark(run_all_operations)
 
         assert len(exc_list) == 0, f"Unexpected errors: {exc_list[:5]}"
-        assert result_count == num_ops
+        assert result_count == num_ops * rounds
 
 class TestSyncTransactionStress:
     """Stress tests for sync transaction conflict handling."""
@@ -216,6 +227,7 @@ class TestSyncTransactionStress:
         client = stress_client
         target_email = "conflict@test.com"
         num_workers = stress_config["workers"]
+        rounds = stress_config["rounds"]
 
         aborted_count = 0
         success_count = 0
@@ -252,13 +264,14 @@ class TestSyncTransactionStress:
             aborted_count = 0
             success_count = 0
             exc_list.clear()
-            futures = [executor.submit(run_upsert, i) for i in range(num_workers)]
-            wait(futures)
+            for _ in range(rounds):
+                futures = [executor.submit(run_upsert, i) for i in range(num_workers)]
+                wait(futures)
             return success_count
 
         result_count = benchmark(run_all_upserts)
 
-        assert result_count >= 1, "No upserts succeeded"
+        assert result_count >= rounds, "Too few upserts succeeded"
 
     def test_transaction_isolation_sync(  # noqa: C901
         self,
@@ -336,6 +349,7 @@ class TestSyncRetryStress:
     ) -> None:
         """Test retry() generator handles conflicts correctly under load."""
         num_workers = min(stress_config["workers"], 10)
+        rounds = stress_config["rounds"]
 
         total_successes = 0
         all_errors: list[str] = []
@@ -356,19 +370,20 @@ class TestSyncRetryStress:
             # Clear state at start of each benchmark iteration
             total_successes = 0
             all_errors.clear()
-            futures = [executor.submit(retry_work) for _ in range(num_workers)]
-            wait(futures)
-            # Check for exceptions
-            for f in futures:
-                try:
-                    f.result()
-                except Exception as e:
-                    all_errors.append(str(e))
+            for _ in range(rounds):
+                futures = [executor.submit(retry_work) for _ in range(num_workers)]
+                wait(futures)
+                # Check for exceptions
+                for f in futures:
+                    try:
+                        f.result()
+                    except Exception as e:
+                        all_errors.append(str(e))
             return total_successes
 
         result_count = benchmark(run_all_retry_work)
 
-        assert result_count >= num_workers
+        assert result_count >= num_workers * rounds
 
     def test_run_transaction_sync(
         self,
@@ -379,18 +394,22 @@ class TestSyncRetryStress:
     ) -> None:
         """Test run_transaction() helper handles conflicts correctly."""
         num_workers = min(stress_config["workers"], 10)
+        rounds = stress_config["rounds"]
+        counter = [0]
 
         results: list[str] = []
         exc_list: list[Exception] = []
 
-        def work(worker_id: int) -> None:
+        def work() -> None:
+            counter[0] += 1
+            unique_id = counter[0]
             try:
 
                 def txn_func(txn: pydgraph.Txn) -> str:
                     response = txn.mutate(
                         set_obj={
-                            "name": f"RunTxn_{worker_id}",
-                            "tagline": f"Worker {worker_id} transaction",
+                            "name": f"RunTxn_{unique_id}",
+                            "tagline": f"Worker {unique_id} transaction",
                         },
                         commit_now=True,
                     )
@@ -405,13 +424,14 @@ class TestSyncRetryStress:
             # Clear state at start of each benchmark iteration
             results.clear()
             exc_list.clear()
-            futures = [executor.submit(work, i) for i in range(num_workers)]
-            wait(futures)
+            for _ in range(rounds):
+                futures = [executor.submit(work) for _ in range(num_workers)]
+                wait(futures)
             return len(results)
 
         result_count = benchmark(run_all_transactions)
 
-        assert result_count == num_workers
+        assert result_count == num_workers * rounds
 
 class TestSyncDeadlockPrevention:
     """Tests for deadlock prevention in sync client."""
