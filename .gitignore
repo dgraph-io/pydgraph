@@ -49,6 +49,7 @@ examples/notebook/RAG/.env
 # Benchmark outputs
 benchmark-results.json
 benchmark-histogram.svg
+stress-benchmark-results.json
 
 # Downloaded test data (fetched on demand)
 tests/resources/1million.rdf.gz

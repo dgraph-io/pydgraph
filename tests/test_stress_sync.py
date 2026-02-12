@@ -98,7 +98,13 @@ class TestSyncClientStress:
                 wait(futures)
             return len(results)
 
-        result_count = benchmark(run_all_queries)
+        # Stress tests use pedantic(rounds=1) because the stress workload is
+        # already controlled by stress_config["rounds"] inside the callable.
+        # Letting pytest-benchmark repeat the whole concurrent batch would
+        # compound iterations and overwhelm the Dgraph cluster.
+        result_count = benchmark.pedantic(
+            run_all_queries, rounds=1, iterations=1, warmup_rounds=0
+        )
 
         assert result_count == num_ops * rounds
 
@@ -140,7 +146,9 @@ class TestSyncClientStress:
                 wait(futures)
             return success_count
 
-        result_count = benchmark(run_all_mutations)
+        result_count = benchmark.pedantic(
+            run_all_mutations, rounds=1, iterations=1, warmup_rounds=0
+        )
 
         # Some AbortedErrors are expected
         assert result_count > num_ops * rounds * 0.5
@@ -208,7 +216,9 @@ class TestSyncClientStress:
                 wait(futures)
             return len(results)
 
-        result_count = benchmark(run_all_operations)
+        result_count = benchmark.pedantic(
+            run_all_operations, rounds=1, iterations=1, warmup_rounds=0
+        )
 
         assert len(exc_list) == 0, f"Unexpected errors: {exc_list[:5]}"
         assert result_count == num_ops * rounds
@@ -269,7 +279,9 @@ class TestSyncTransactionStress:
                 wait(futures)
             return success_count
 
-        result_count = benchmark(run_all_upserts)
+        result_count = benchmark.pedantic(
+            run_all_upserts, rounds=1, iterations=1, warmup_rounds=0
+        )
 
         assert result_count >= rounds, "Too few upserts succeeded"
 
@@ -381,7 +393,9 @@ class TestSyncRetryStress:
                         all_errors.append(str(e))
             return total_successes
 
-        result_count = benchmark(run_all_retry_work)
+        result_count = benchmark.pedantic(
+            run_all_retry_work, rounds=1, iterations=1, warmup_rounds=0
+        )
 
         assert result_count >= num_workers * rounds
 
@@ -429,7 +443,9 @@ class TestSyncRetryStress:
                 wait(futures)
             return len(results)
 
-        result_count = benchmark(run_all_transactions)
+        result_count = benchmark.pedantic(
+            run_all_transactions, rounds=1, iterations=1, warmup_rounds=0
+        )
 
         assert result_count == num_workers * rounds
 

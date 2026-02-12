@@ -46,6 +46,47 @@ DATA_FIXTURE_BASE_URL = (
 
 logger = logging.getLogger(__name__)
 
+
+# =============================================================================
+# Alpha Health Check
+# =============================================================================
+
+
+def _wait_for_alpha_ready(
+    client: DgraphClient,
+    *,
+    max_wait: float = 60.0,
+    poll_interval: float = 2.0,
+) -> None:
+    """Block until the Dgraph alpha can serve real queries, or raise after max_wait.
+
+    WHY THIS EXISTS:
+    After bulk-loading 1M+ RDF triples, the alpha needs time to finish
+    background indexing and Raft log compaction.  A lightweight health check
+    like ``check_version()`` can pass while the alpha is still unable to serve
+    queries — then the first stress test hits a dead connection.
+
+    This helper runs a real read query (not just a version ping) so we only
+    proceed once the alpha is genuinely ready for workload.  It is called at
+    the end of ``movies_data_loaded``, after all data is committed.
+    """
+    probe_query = "{ probe(func: has(name), first: 1) { name } }"
+    start = time.time()
+    last_exc: Exception | None = None
+    while time.time() - start < max_wait:
+        try:
+            txn = client.txn(read_only=True)
+            txn.query(probe_query)
+            return  # alpha is ready for real work
+        except Exception as exc:
+            last_exc = exc
+            time.sleep(poll_interval)
+
+    raise RuntimeError(
+        f"Dgraph alpha not query-ready after {max_wait}s — last error: {last_exc}"
+    )
+
+
 # =============================================================================
 # Stress Test Configuration
 # =============================================================================
@@ -64,13 +105,11 @@ def stress_config() -> dict[str, Any]:
         workers: Concurrency level (thread pool size or asyncio task count)
         ops: Operations per concurrent batch
         rounds: How many times each test repeats its concurrent batch.
-            When pytest-benchmark is active it handles repetition itself,
-            so ``make benchmark`` sets STRESS_TEST_ROUNDS=1 to avoid
-            compounding repetitions.
+            Each stress test uses ``benchmark.pedantic(rounds=1)`` so
+            pytest-benchmark doesn't compound on top of this inner loop.
         load_movies: Whether to load the 1million movie dataset
     """
     mode = os.environ.get("STRESS_TEST_MODE", "quick")
-    rounds_override = os.environ.get("STRESS_TEST_ROUNDS")
 
     if mode == "full":
         config = {
@@ -97,9 +136,6 @@ def stress_config() -> dict[str, Any]:
             "load_movies": os.environ.get("STRESS_TEST_LOAD_MOVIES", "").lower()
             in ("1", "true"),
         }
-
-    if rounds_override:
-        config["rounds"] = int(rounds_override)
 
     return config
 
@@ -244,6 +280,15 @@ def movies_data_loaded(
             total_loaded += len(batch)
 
     logger.info("Finished loading %d RDF triples", total_loaded)
+
+    # After bulk-loading 1M+ triples the alpha needs time to finish background
+    # indexing and Raft log compaction.  Without this gate the first stress test
+    # (especially under ``--benchmark-only``) hits the alpha while it is still
+    # recovering and gets connection-refused on every operation.
+    logger.info("Waiting for alpha to finish indexing before stress tests start")
+    _wait_for_alpha_ready(client)
+    logger.info("Alpha is query-ready")
+
     return True
 
 

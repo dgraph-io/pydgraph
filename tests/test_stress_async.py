@@ -139,7 +139,13 @@ class TestAsyncClientStress:
                 all_results.extend(batch)
             return all_results
 
-        results = benchmark(run_benchmark)
+        # Stress tests use pedantic(rounds=1) because the stress workload is
+        # already controlled by stress_config["rounds"] inside run_benchmark().
+        # Letting pytest-benchmark repeat the whole concurrent batch would
+        # compound iterations and overwhelm the Dgraph cluster.
+        results = benchmark.pedantic(
+            run_benchmark, rounds=1, iterations=1, warmup_rounds=0
+        )
 
         exc_list = [r for r in results if isinstance(r, Exception)]
         assert len(exc_list) == 0, f"Got {len(exc_list)} errors: {exc_list[:5]}"
@@ -181,7 +187,9 @@ class TestAsyncClientStress:
                 all_results.extend(batch)
             return all_results
 
-        results = benchmark(run_benchmark)
+        results = benchmark.pedantic(
+            run_benchmark, rounds=1, iterations=1, warmup_rounds=0
+        )
 
         exc_list = [r for r in results if isinstance(r, Exception)]
         successes = sum(1 for r in results if r is True)
@@ -256,7 +264,9 @@ class TestAsyncClientStress:
                 all_results.extend(batch)
             return all_results
 
-        results = benchmark(run_benchmark)
+        results = benchmark.pedantic(
+            run_benchmark, rounds=1, iterations=1, warmup_rounds=0
+        )
 
         exc_list = [r for r in results if isinstance(r, Exception)]
         assert len(exc_list) == 0, f"Unexpected errors: {exc_list[:5]}"
@@ -319,7 +329,9 @@ class TestAsyncTransactionStress:
                 all_results.extend(batch)
             return all_results
 
-        results = benchmark(run_benchmark)
+        results = benchmark.pedantic(
+            run_benchmark, rounds=1, iterations=1, warmup_rounds=0
+        )
 
         exc_list = [r for r in results if isinstance(r, Exception)]
         successes = sum(1 for r in results if r == "success")
@@ -494,7 +506,9 @@ class TestAsyncRetryStress:
                 all_results.extend(batch)
             return all_results
 
-        results = benchmark(run_benchmark)
+        results = benchmark.pedantic(
+            run_benchmark, rounds=1, iterations=1, warmup_rounds=0
+        )
 
         exc_list = [r for r in results if isinstance(r, Exception)]
         total_successes = sum(r for r in results if isinstance(r, int))
@@ -538,7 +552,9 @@ class TestAsyncRetryStress:
                 all_results.extend(batch)
             return all_results
 
-        results = benchmark(run_benchmark)
+        results = benchmark.pedantic(
+            run_benchmark, rounds=1, iterations=1, warmup_rounds=0
+        )
 
         exc_list = [r for r in results if isinstance(r, Exception)]
         successes = [r for r in results if isinstance(r, str) and r]
@@ -588,7 +604,9 @@ class TestAsyncRetryStress:
                 all_results.extend(batch)
             return all_results
 
-        results = benchmark(run_benchmark)
+        results = benchmark.pedantic(
+            run_benchmark, rounds=1, iterations=1, warmup_rounds=0
+        )
 
         exc_list = [r for r in results if isinstance(r, Exception)]
         successes = [r for r in results if isinstance(r, str) and r]
