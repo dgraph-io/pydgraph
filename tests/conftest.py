@@ -9,6 +9,10 @@ import asyncio
 import gzip
 import logging
 import os
+
+# Prevent gRPC atfork crash when pytest-benchmark calls subprocess.fork()
+# to collect machine info while gRPC channels are still open.
+os.environ.setdefault("GRPC_ENABLE_FORK_SUPPORT", "0")
 import re
 import shutil
 import tempfile
@@ -59,35 +63,45 @@ def stress_config() -> dict[str, Any]:
     Parameters:
         workers: Concurrency level (thread pool size or asyncio task count)
         ops: Operations per concurrent batch
-        rounds: How many times each test repeats its concurrent batch
+        rounds: How many times each test repeats its concurrent batch.
+            When pytest-benchmark is active it handles repetition itself,
+            so ``make benchmark`` sets STRESS_TEST_ROUNDS=1 to avoid
+            compounding repetitions.
         load_movies: Whether to load the 1million movie dataset
     """
     mode = os.environ.get("STRESS_TEST_MODE", "quick")
+    rounds_override = os.environ.get("STRESS_TEST_ROUNDS")
 
     if mode == "full":
-        return {
+        config = {
             "mode": "full",
             "workers": 15,
             "ops": 500,
             "rounds": 15,
             "load_movies": True,
         }
-    if mode == "moderate":
-        return {
+    elif mode == "moderate":
+        config = {
             "mode": "moderate",
             "workers": 10,
             "ops": 200,
             "rounds": 8,
             "load_movies": True,
         }
-    return {
-        "mode": "quick",
-        "workers": 20,
-        "ops": 200,
-        "rounds": 50,
-        "load_movies": os.environ.get("STRESS_TEST_LOAD_MOVIES", "").lower()
-        in ("1", "true"),
-    }
+    else:
+        config = {
+            "mode": "quick",
+            "workers": 20,
+            "ops": 200,
+            "rounds": 50,
+            "load_movies": os.environ.get("STRESS_TEST_LOAD_MOVIES", "").lower()
+            in ("1", "true"),
+        }
+
+    if rounds_override is not None:
+        config["rounds"] = int(rounds_override)
+
+    return config
 
 
 # =============================================================================

@@ -5,6 +5,7 @@ export PATH := $(HOME)/.local/bin:$(HOME)/.cargo/bin:$(PATH)
 # Export test configuration variables so they're available to child processes
 # Usage: make test STRESS_TEST_MODE=moderate PYTEST_ARGS="-v"
 export STRESS_TEST_MODE
+export STRESS_TEST_ROUNDS
 export DGRAPH_IMAGE_TAG
 PYTEST_ARGS ?= -v --benchmark-disable
 export PYTEST_ARGS
@@ -61,8 +62,8 @@ build: deps-uv sync protogen ## Builds release package
 test: deps-uv sync ## Run tests (use PYTEST_ARGS to pass options, e.g., make test PYTEST_ARGS="-v tests/test_connect.py")
 	bash scripts/local-test.sh $(PYTEST_ARGS)
 
-benchmark: ## Run benchmarks (STRESS_TEST_MODE: quick|moderate|full, default: moderate)
-	$(MAKE) test STRESS_TEST_MODE=moderate PYTEST_ARGS="--benchmark-only --benchmark-json=benchmark-results.json --benchmark-histogram=benchmark-histogram -v"
+benchmark: ## Run benchmarks (measures per-operation latency with pytest-benchmark)
+	$(MAKE) test STRESS_TEST_MODE=quick STRESS_TEST_ROUNDS=1 PYTEST_ARGS="--benchmark-only --benchmark-json=benchmark-results.json --benchmark-histogram=benchmark-histogram -v"
 
 publish: clean build  ## Publish a new release to PyPi (requires UV_PUBLISH_USERNAME and UV_PUBLISH_PASSWORD to be set)
 	$(RUN) uv publish
