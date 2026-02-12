@@ -276,5 +276,3 @@ async def async_client() -> AsyncGenerator[AsyncDgraphClient, None]:
 
     yield client
     await client.close()
-
-
