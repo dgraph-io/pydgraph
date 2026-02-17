@@ -36,4 +36,4 @@ jobs:
           make protogen
           git diff --exit-code -- .
       - name: Run code quality checks
-        run: SKIP=trunk-check,trunk-fmt make check
+        run: SKIP=no-commit-to-branch,trunk-check,trunk-fmt make check
