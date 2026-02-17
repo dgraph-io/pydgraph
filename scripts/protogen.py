@@ -94,6 +94,9 @@ with open(api_pb2_grpc_pyi) as f:
     content = f.read()
 
 # Replace absolute import with relative import
+# Newer mypy-protobuf versions use aliased imports (import api_pb2 as _api_pb2)
+content = content.replace("import api_pb2 as _api_pb2", "from . import api_pb2 as _api_pb2")
+# Fallback for older mypy-protobuf versions without alias
 content = content.replace("import api_pb2\n", "from . import api_pb2\n")
 
 with open(api_pb2_grpc_pyi, "w") as f:
