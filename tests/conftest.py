@@ -77,10 +77,11 @@ def _wait_for_alpha_ready(
         try:
             txn = client.txn(read_only=True)
             txn.query(probe_query)
-            return  # alpha is ready for real work
         except Exception as exc:
             last_exc = exc
             time.sleep(poll_interval)
+        else:
+            return  # alpha is ready for real work
 
     raise RuntimeError(
         f"Dgraph alpha not query-ready after {max_wait}s — last error: {last_exc}"
