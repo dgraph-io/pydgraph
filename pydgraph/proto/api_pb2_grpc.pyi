@@ -10,7 +10,7 @@ example, song_name.
 from collections import abc as _abc
 from grpc import aio as _aio
 import abc as _abc_1
-import api_pb2 as _api_pb2
+from . import api_pb2 as _api_pb2
 import grpc as _grpc
 import sys
 import typing as _typing
