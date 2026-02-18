@@ -2,6 +2,25 @@
 SHELL := /bin/bash
 export PATH := $(HOME)/.local/bin:$(HOME)/.cargo/bin:$(PATH)
 
+# Export test configuration variables so they're available to child processes
+# Usage: make test STRESS_TEST_MODE=moderate PYTEST_ARGS="-v"
+#        make test LOG=info   (adds --log-cli-level=INFO to default PYTEST_ARGS)
+export STRESS_TEST_MODE
+export DGRAPH_IMAGE_TAG
+
+# When LOG is set (e.g., LOG=info), inject --log-cli-level into pytest flags.
+# Works with both the default PYTEST_ARGS and explicit overrides:
+#   make test LOG=info                      → -v --benchmark-disable --log-cli-level=INFO
+#   make benchmark LOG=warning              → --benchmark-only ... --log-cli-level=WARNING
+#   make test PYTEST_ARGS="-x" LOG=debug    → -x --log-cli-level=DEBUG
+PYTEST_ARGS ?= -v --benchmark-disable
+ifdef LOG
+  LOG_FLAG := --log-cli-level=$(shell echo '$(LOG)' | tr '[:lower:]' '[:upper:]')
+  PYTEST_ARGS += $(LOG_FLAG)
+endif
+export LOG
+export PYTEST_ARGS
+
 # Source venv if it exists and isn't already active
 PROJECT_VENV := $(CURDIR)/.venv
 ACTIVATE := $(wildcard .venv/bin/activate)
@@ -15,7 +34,7 @@ else
   RUN :=
 endif
 
-.PHONY: help setup sync deps deps-uv deps-trunk deps-docker test check protogen clean build publish
+.PHONY: help setup sync deps deps-uv deps-trunk deps-docker test benchmark check protogen clean build publish
 
 .DEFAULT_GOAL := help
 
@@ -23,6 +42,13 @@ help: ## Show this help message
 	@echo ""
 	@echo "Environment Variables:"
 	@echo "  INSTALL_MISSING_TOOLS=true    Enable automatic installation of missing tools (default: disabled)"
+	@echo "  LOG=<level>                   Add --log-cli-level to pytest (e.g., LOG=info, LOG=debug)"
+	@echo "                                Works with both 'test' and 'benchmark' targets"
+	@echo "  STRESS_TEST_MODE=<mode>       Stress test preset: quick (default), moderate, full"
+	@echo "  PYTEST_ARGS=\"...\"             Override default pytest flags (default: -v --benchmark-disable)"
+	@echo "                                Note: overrides LOG when set explicitly. 'benchmark' sets its own"
+	@echo "                                PYTEST_ARGS internally but still honours LOG"
+	@echo "  DGRAPH_IMAGE_TAG=<tag>        Override the Dgraph Docker image tag (default: latest)"
 	@echo ""
 	@echo "Available targets:"
 	@grep -E '^[a-zA-Z_-]+:.*?## .*$$' $(MAKEFILE_LIST) | awk 'BEGIN {FS = ":.*?## "}; {printf "\033[36m%-15s\033[0m %s\n", $$1, $$2}'
@@ -51,8 +77,31 @@ clean: ## Cleans build artifacts
 build: deps-uv sync protogen ## Builds release package
 	$(RUN) uv build
 
-test: deps-uv sync ## Run tests
-	bash scripts/local-test.sh
+test: deps-uv sync ## Run tests (use PYTEST_ARGS to pass options, e.g., make test PYTEST_ARGS="-v tests/test_connect.py")
+	bash scripts/local-test.sh $(PYTEST_ARGS)
+
+benchmark: ## Run benchmarks (measures per-operation latency with pytest-benchmark)
+	@# Outputs (all .gitignored):
+	@#   benchmark-results.json        Phase 1 results (pytest-benchmark JSON)
+	@#   benchmark-histogram.svg       Phase 1 latency histogram
+	@#   stress-benchmark-results.json Phase 2 results (pytest-benchmark JSON)
+	@#
+	@# Phase 1: Per-operation latency benchmarks against a clean database.
+	@# Runs targeted benchmark tests (test_benchmark_*.py) which measure individual
+	@# operations (query, mutation, upsert, etc.) in isolation.  Each test creates a
+	@# fresh schema via drop_all, so these MUST run on their own Dgraph cluster —
+	@# the rapid schema churn destabilises the alpha for any tests that follow.
+	@echo "═══ Phase 1: Per-operation latency benchmarks ═══"
+	$(MAKE) test PYTEST_ARGS="--benchmark-only --benchmark-json=benchmark-results.json --benchmark-histogram=benchmark-histogram -v $(LOG_FLAG) tests/test_benchmark_async.py tests/test_benchmark_sync.py"
+	@# Phase 2: Stress-test benchmarks under sustained concurrent load.
+	@# Runs stress tests (test_stress_*.py) with the 1-million-movie dataset loaded.
+	@# Uses a separate Dgraph cluster (via a second 'make test' invocation) so the
+	@# alpha starts fresh after Phase 1's drop_all churn.
+	@# benchmark.pedantic(rounds=1) in each stress test prevents pytest-benchmark
+	@# from compounding iterations — the stress_config["rounds"] inner loop
+	@# (controlled by STRESS_TEST_MODE) handles repetition instead.
+	@echo "═══ Phase 2: Stress-test benchmarks (moderate load, 1M movies) ═══"
+	$(MAKE) test STRESS_TEST_MODE=moderate PYTEST_ARGS="--benchmark-only --benchmark-json=stress-benchmark-results.json -v $(LOG_FLAG) tests/test_stress_async.py tests/test_stress_sync.py"
 
 publish: clean build  ## Publish a new release to PyPi (requires UV_PUBLISH_USERNAME and UV_PUBLISH_PASSWORD to be set)
 	$(RUN) uv publish

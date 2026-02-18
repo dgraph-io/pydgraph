@@ -2,6 +2,8 @@
 # SPDX-License-Identifier: Apache-2.0
 
 # Async client
+# Errors - export both module and individual classes for convenience
+from pydgraph import errors
 from pydgraph.async_client import AsyncDgraphClient, async_open
 from pydgraph.async_client_stub import AsyncDgraphClientStub
 from pydgraph.async_txn import AsyncTxn
@@ -66,6 +68,7 @@ __all__ = [
     "Version",
     "async_open",
     "client_stub",
+    "errors",
     "open",
     "retry",
     "retry_async",

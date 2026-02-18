@@ -220,14 +220,47 @@ make test
 Run specific tests:
 
 ```sh
-bash scripts/local-test.sh -v tests/test_connect.py::TestOpen
+make test PYTEST_ARGS="-v tests/test_connect.py::TestOpen"
 ```
 
 Run a single test:
 
 ```sh
-bash scripts/local-test.sh -v tests/test_connect.py::TestOpen::test_connection_with_auth
+make test PYTEST_ARGS="-v tests/test_connect.py::TestOpen::test_connection_with_auth"
 ```
+
+### Stress Tests
+
+The project includes comprehensive stress tests that verify concurrent operations, transaction
+conflicts, deadlock prevention, and retry mechanisms for both sync and async clients.
+
+**Quick mode** (default, ~12 seconds) - 20 workers, 50 ops, 10 iterations:
+
+```sh
+make test PYTEST_ARGS="tests/test_stress_sync.py tests/test_stress_async.py -v"
+```
+
+**Moderate mode** (10x quick, includes movie dataset, ~60+ seconds) - 200 workers, 500 ops, 100
+iterations:
+
+```sh
+make test STRESS_TEST_MODE=moderate PYTEST_ARGS="tests/test_stress_sync.py tests/test_stress_async.py -v"
+```
+
+**Full mode** (10x moderate, maximum stress, ~10+ minutes) - 2000 workers, 5000 ops, 1000
+iterations:
+
+```sh
+make test STRESS_TEST_MODE=full PYTEST_ARGS="tests/test_stress_sync.py tests/test_stress_async.py -v"
+```
+
+The stress tests cover:
+
+- **Sync tests**: Run with `ThreadPoolExecutor` to test concurrent operations
+- **Async tests**: Use pure `asyncio.gather()` concurrency (no `concurrent.futures` mixing)
+- **Retry utilities**: Tests for `retry_async()`, `with_retry_async()`, and
+  `run_transaction_async()`
+- **Deadlock regression**: Validates the asyncio.Lock deadlock fix from PR #293
 
 ### Test Infrastructure
 

@@ -41,3 +41,16 @@ venv
 pyvenv.cfg
 .DS_Store
 examples/notebook/RAG/.env
+.osgrep
+
+# Git worktrees
+.worktrees/
+
+# Benchmark outputs
+benchmark-results.json
+benchmark-histogram.svg
+stress-benchmark-results.json
+
+# Downloaded test data (fetched on demand)
+tests/resources/1million.rdf.gz
+tests/resources/1million.schema

@@ -1,52 +1,23 @@
 # SPDX-FileCopyrightText: © Hypermode Inc. <hello@hypermode.com>
 # SPDX-License-Identifier: Apache-2.0
 
-"""Integration tests for async client."""
+"""Integration tests for async client.
+
+Note: async_client fixture is defined in conftest.py
+"""
 
 import asyncio
 import json
 import os
-from collections.abc import AsyncGenerator
 
 import pytest
 
 import pydgraph
-from pydgraph import AsyncDgraphClient, AsyncDgraphClientStub, async_open
+from pydgraph import AsyncDgraphClient, async_open
 from pydgraph.proto import api_pb2 as api
 
-# Get test server address from environment
+# Get test server address from environment (also defined in conftest.py)
 TEST_SERVER_ADDR = os.getenv("TEST_SERVER_ADDR", "localhost:9180")
-
-
-@pytest.fixture
-async def async_client() -> AsyncGenerator[AsyncDgraphClient, None]:
-    """Fixture providing an async client with login."""
-    client_stub = AsyncDgraphClientStub(TEST_SERVER_ADDR)
-    client = AsyncDgraphClient(client_stub)
-
-    # Retry login until server is ready
-    max_retries = 30
-    for _ in range(max_retries):
-        try:
-            await client.login("groot", "password")
-            break
-        except Exception as e:
-            if "user not found" in str(e):
-                # User not found means auth is working but user doesn't exist yet
-                # This shouldn't happen with groot, so treat as error
-                raise
-            # Server might not be ready, wait and retry
-            await asyncio.sleep(0.1)
-
-    yield client
-    await client.close()
-
-
-@pytest.fixture
-async def async_client_clean(async_client: AsyncDgraphClient) -> AsyncDgraphClient:
-    """Fixture providing an async client with clean database."""
-    await async_client.alter(pydgraph.Operation(drop_all=True))
-    return async_client
 
 
 class TestAsyncClient:
@@ -72,15 +43,16 @@ class TestAsyncClient:
         assert response is not None
 
     @pytest.mark.asyncio
-    async def test_mutation_and_query(self, async_client_clean: AsyncDgraphClient) -> None:
+    async def test_mutation_and_query(self, async_client: AsyncDgraphClient) -> None:
         """Test async mutation and query operations."""
         # Set schema
-        await async_client_clean.alter(
+        await async_client.alter(pydgraph.Operation(drop_all=True))
+        await async_client.alter(
             pydgraph.Operation(schema="name: string @index(term) .")
         )
 
         # Mutation with commit_now
-        txn = async_client_clean.txn()
+        txn = async_client.txn()
         mutation = pydgraph.Mutation(commit_now=True)
         response = await txn.mutate(
             mutation=mutation, set_nquads='<_:alice> <name> "Alice" .'
@@ -94,21 +66,22 @@ class TestAsyncClient:
             }
         }"""
 
-        txn = async_client_clean.txn(read_only=True)
+        txn = async_client.txn(read_only=True)
         response = await txn.query(query)
         result = json.loads(response.json)
         assert len(result["me"]) == 1
         assert result["me"][0]["name"] == "Alice"
 
     @pytest.mark.asyncio
-    async def test_mutation_with_json(self, async_client_clean: AsyncDgraphClient) -> None:
+    async def test_mutation_with_json(self, async_client: AsyncDgraphClient) -> None:
         """Test mutation with JSON object."""
-        await async_client_clean.alter(
+        await async_client.alter(pydgraph.Operation(drop_all=True))
+        await async_client.alter(
             pydgraph.Operation(schema="name: string @index(term) .")
         )
 
         # Mutation with set_obj
-        txn = async_client_clean.txn()
+        txn = async_client.txn()
         response = await txn.mutate(set_obj={"name": "Bob"}, commit_now=True)
         assert len(response.uids) == 1
 
@@ -125,21 +98,22 @@ class TestAsyncClient:
             }}
         }}"""
 
-        txn = async_client_clean.txn(read_only=True)
+        txn = async_client.txn(read_only=True)
         response = await txn.query(query)
         result = json.loads(response.json)
         assert len(result["me"]) == 1
         assert result["me"][0]["name"] == "Bob"
 
     @pytest.mark.asyncio
-    async def test_transaction_commit(self, async_client_clean: AsyncDgraphClient) -> None:
+    async def test_transaction_commit(self, async_client: AsyncDgraphClient) -> None:
         """Test explicit transaction commit."""
-        await async_client_clean.alter(
+        await async_client.alter(pydgraph.Operation(drop_all=True))
+        await async_client.alter(
             pydgraph.Operation(schema="name: string @index(term) .")
         )
 
         # Mutation without commit_now
-        txn = async_client_clean.txn()
+        txn = async_client.txn()
         response = await txn.mutate(set_obj={"name": "Charlie"})
         assert len(response.uids) == 1
 
@@ -153,21 +127,22 @@ class TestAsyncClient:
             }
         }"""
 
-        txn = async_client_clean.txn(read_only=True)
+        txn = async_client.txn(read_only=True)
         response = await txn.query(query)
         result = json.loads(response.json)
         assert len(result["me"]) == 1
         assert result["me"][0]["name"] == "Charlie"
 
     @pytest.mark.asyncio
-    async def test_transaction_discard(self, async_client_clean: AsyncDgraphClient) -> None:
+    async def test_transaction_discard(self, async_client: AsyncDgraphClient) -> None:
         """Test transaction discard."""
-        await async_client_clean.alter(
+        await async_client.alter(pydgraph.Operation(drop_all=True))
+        await async_client.alter(
             pydgraph.Operation(schema="name: string @index(term) .")
         )
 
         # Mutation without commit
-        txn = async_client_clean.txn()
+        txn = async_client.txn()
         await txn.mutate(set_obj={"name": "David"})
 
         # Discard
@@ -180,20 +155,21 @@ class TestAsyncClient:
             }
         }"""
 
-        txn = async_client_clean.txn(read_only=True)
+        txn = async_client.txn(read_only=True)
         response = await txn.query(query)
         result = json.loads(response.json)
         assert len(result.get("me", [])) == 0
 
     @pytest.mark.asyncio
-    async def test_read_only_transaction(self, async_client_clean: AsyncDgraphClient) -> None:
+    async def test_read_only_transaction(self, async_client: AsyncDgraphClient) -> None:
         """Test read-only transactions."""
-        await async_client_clean.alter(
+        await async_client.alter(pydgraph.Operation(drop_all=True))
+        await async_client.alter(
             pydgraph.Operation(schema="name: string @index(term) .")
         )
 
         # Add some data
-        txn = async_client_clean.txn()
+        txn = async_client.txn()
         await txn.mutate(set_obj={"name": "Eve"}, commit_now=True)
 
         # Read-only query
@@ -203,7 +179,7 @@ class TestAsyncClient:
             }
         }"""
 
-        txn = async_client_clean.txn(read_only=True)
+        txn = async_client.txn(read_only=True)
         response = await txn.query(query)
         result = json.loads(response.json)
         assert len(result["me"]) == 1
@@ -214,14 +190,15 @@ class TestAsyncClient:
             await txn.mutate(set_obj={"name": "Frank"})
 
     @pytest.mark.asyncio
-    async def test_query_with_variables(self, async_client_clean: AsyncDgraphClient) -> None:
+    async def test_query_with_variables(self, async_client: AsyncDgraphClient) -> None:
         """Test query with variables."""
-        await async_client_clean.alter(
+        await async_client.alter(pydgraph.Operation(drop_all=True))
+        await async_client.alter(
             pydgraph.Operation(schema="name: string @index(term) .")
         )
 
         # Add data
-        txn = async_client_clean.txn()
+        txn = async_client.txn()
         await txn.mutate(set_obj={"name": "Grace"}, commit_now=True)
 
         # Query with variables
@@ -231,7 +208,7 @@ class TestAsyncClient:
             }
         }"""
 
-        txn = async_client_clean.txn(read_only=True)
+        txn = async_client.txn(read_only=True)
         response = await txn.query(query, variables={"$name": "Grace"})
         result = json.loads(response.json)
         assert len(result["me"]) == 1
@@ -252,14 +229,15 @@ class TestAsyncContextManager:
         # Client should be closed automatically
 
     @pytest.mark.asyncio
-    async def test_transaction_context_manager(self, async_client_clean: AsyncDgraphClient) -> None:
+    async def test_transaction_context_manager(self, async_client: AsyncDgraphClient) -> None:
         """Test async transaction context manager."""
-        await async_client_clean.alter(
+        await async_client.alter(pydgraph.Operation(drop_all=True))
+        await async_client.alter(
             pydgraph.Operation(schema="name: string @index(term) .")
         )
 
         # Use transaction as context manager
-        async with async_client_clean.txn() as txn:
+        async with async_client.txn() as txn:
             await txn.mutate(set_obj={"name": "Henry"}, commit_now=True)
         # Transaction should be discarded automatically
 
@@ -270,7 +248,7 @@ class TestAsyncContextManager:
             }
         }"""
 
-        async with async_client_clean.txn(read_only=True) as txn:
+        async with async_client.txn(read_only=True) as txn:
             response = await txn.query(query)
             result = json.loads(response.json)
             assert len(result["me"]) == 1
@@ -281,14 +259,15 @@ class TestAsyncConcurrent:
     """Test suite for concurrent async operations."""
 
     @pytest.mark.asyncio
-    async def test_concurrent_queries(self, async_client_clean: AsyncDgraphClient) -> None:
+    async def test_concurrent_queries(self, async_client: AsyncDgraphClient) -> None:
         """Test multiple concurrent queries."""
-        await async_client_clean.alter(
+        await async_client.alter(pydgraph.Operation(drop_all=True))
+        await async_client.alter(
             pydgraph.Operation(schema="name: string @index(term) .")
         )
 
         # Add some data
-        txn = async_client_clean.txn()
+        txn = async_client.txn()
         await txn.mutate(set_obj={"name": "Concurrent Test"}, commit_now=True)
 
         # Run multiple queries concurrently
@@ -299,7 +278,7 @@ class TestAsyncConcurrent:
         }"""
 
         async def run_query() -> api.Response:
-            txn = async_client_clean.txn(read_only=True)
+            txn = async_client.txn(read_only=True)
             return await txn.query(query)
 
         # Run 10 queries concurrently
@@ -314,15 +293,16 @@ class TestAsyncConcurrent:
             assert result["me"][0]["name"] == "Concurrent Test"
 
     @pytest.mark.asyncio
-    async def test_concurrent_mutations(self, async_client_clean: AsyncDgraphClient) -> None:
+    async def test_concurrent_mutations(self, async_client: AsyncDgraphClient) -> None:
         """Test multiple concurrent mutations."""
-        await async_client_clean.alter(
+        await async_client.alter(pydgraph.Operation(drop_all=True))
+        await async_client.alter(
             pydgraph.Operation(schema="name: string @index(term) .")
         )
 
         # Run multiple mutations concurrently
         async def run_mutation(name: str) -> api.Response:
-            txn = async_client_clean.txn()
+            txn = async_client.txn()
             return await txn.mutate(set_obj={"name": name}, commit_now=True)
 
         # Run 5 mutations concurrently
@@ -342,7 +322,7 @@ class TestAsyncConcurrent:
             }
         }"""
 
-        txn = async_client_clean.txn(read_only=True)
+        txn = async_client.txn(read_only=True)
         response = await txn.query(query)
         result = json.loads(response.json)
         assert len(result["me"]) == 5
