@@ -5,6 +5,29 @@ All notable changes to this project will be documented in this file.
 The format is based on [Keep a Changelog](http://keepachangelog.com/en/1.0.0/) and this project
 adheres to [Semantic Versioning](http://semver.org/spec/v2.0.0.html).
 
+## [v25.2.0] - 2026-02-25
+
+**Added**
+
+- Stress tests and CI benchmark integration for performance regression tracking
+  ([#298](https://github.com/dgraph-io/pydgraph/pull/298))
+
+**Fixed**
+
+- `AbortedError` is now picklable for Celery and multiprocessing compatibility by @shaunpatterson in
+  [#299](https://github.com/dgraph-io/pydgraph/pull/299)
+- Prevented `asyncio.Lock` deadlock in `AsyncTxn.do_request` error handling path, submitted by
+  @shaunpatterson in [#293](https://github.com/dgraph-io/pydgraph/pull/293)
+- Resolved Dependabot security vulnerability alerts
+- Fixed relative import in regenerated `api_pb2_grpc.pyi` for mypy compatibility
+
+**Chore**
+
+- Regenerated protobuf files after protobuf version update
+- Fixed CD pipeline `uv version` step incompatible with dynamic versioning
+- Skip `no-commit-to-branch` hook in CI/CD workflows
+- Applied ruff formatting to `async_client`, `client`, and `retry` modules
+
 ## [v25.1.0] - 2026-01-19
 
 **Added**
