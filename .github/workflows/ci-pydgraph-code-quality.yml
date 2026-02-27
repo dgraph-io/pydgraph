@@ -27,8 +27,6 @@ jobs:
         uses: ./.github/actions/setup-python-and-tooling
         with:
           python-version: "3.13"
-      - name: Setup project dependencies
-        run: INSTALL_MISSING_TOOLS=true make setup
       - name: Sync python virtualenv
         run: make sync
       - name: Check generated protobufs are current
@@ -36,4 +34,4 @@ jobs:
           make protogen
           git diff --exit-code -- .
       - name: Run code quality checks
-        run: SKIP=no-commit-to-branch,trunk-check,trunk-fmt make check
+        run: trunk check --all --ci

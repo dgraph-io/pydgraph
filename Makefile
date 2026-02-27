@@ -55,17 +55,13 @@ help: ## Show this help message
 	@echo ""
 
 setup: deps ## Setup project (install tools and sync dependencies)
-	@if [ ! -f .git/hooks/pre-commit ] || ! grep -q "pre-commit" .git/hooks/pre-commit 2>/dev/null; then \
-		echo "Installing pre-commit hooks..."; \
-		uv run pre-commit install; \
-	fi
 	@$(MAKE) sync
 
 sync: ## Sets up and syncs project virtual environment.
 	$(RUN) uv sync --group dev --extra dev
 
-check: ## Run pre-commit hooks on all files
-	$(RUN) pre-commit run --all-files
+check: ## Run code quality checks on all files
+	trunk check --all --no-fix
 
 protogen: ## Regenerate protobuf files (requires Python 3.13+)
 	$(RUN) uv run python scripts/protogen.py
