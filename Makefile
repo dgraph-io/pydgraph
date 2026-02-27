@@ -62,6 +62,7 @@ sync: ## Sets up and syncs project virtual environment.
 
 check: ## Run code quality checks on all files
 	trunk check --all --no-fix
+	$(RUN) uv run ty check pydgraph tests
 
 protogen: ## Regenerate protobuf files (requires Python 3.13+)
 	$(RUN) uv run python scripts/protogen.py

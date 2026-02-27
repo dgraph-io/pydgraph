@@ -25,6 +25,9 @@ lint:
         - pydgraph/proto/api_pb2_grpc.py
         - pydgraph/proto/api_pb2_grpc.pyi
         - examples/notebook/**/*.ipynb
+    - linters: [mypy]
+      paths:
+        - examples/**
     - linters: [bandit]
       paths:
         - tests/**
@@ -56,16 +59,6 @@ lint:
           enabled: true
         - name: check-merge-conflict
           enabled: true
-    - name: ty-check
-      files: [python]
-      commands:
-        - name: lint
-          output: regex
-          parse_regex: "(?P<path>[^:]+):(?P<line>\\d+):(?P<col>\\d+): (?P<message>.+)"
-          read_output_from: stderr
-          batch: true
-          run: uv run ty check --output-format concise pydgraph tests
-          success_codes: [0]
   enabled:
     - trivy@0.68.2
     - trivy@0.58.2
@@ -83,7 +76,6 @@ lint:
     - shfmt@3.6.0
     - taplo@0.10.0
     - trufflehog@3.92.3
-    - ty-check@SYSTEM
     - yamllint@1.37.1
 actions:
   enabled:
