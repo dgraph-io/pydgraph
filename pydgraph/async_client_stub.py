@@ -156,6 +156,116 @@ class AsyncDgraphClientStub:
             check, timeout=timeout, metadata=metadata, credentials=credentials
         )
 
+    async def run_dql(
+        self,
+        req: api.RunDQLRequest,
+        timeout: float | None = None,
+        metadata: list[tuple[str, str]] | None = None,
+        credentials: grpc.CallCredentials | None = None,
+    ) -> api.Response:
+        """Async RunDQL operation.
+
+        Args:
+            req: RunDQLRequest protobuf message
+            timeout: Request timeout in seconds
+            metadata: Request metadata
+            credentials: Call credentials
+
+        Returns:
+            Response protobuf message
+        """
+        return await self.stub.RunDQL(
+            req, timeout=timeout, metadata=metadata, credentials=credentials
+        )
+
+    async def allocate_ids(
+        self,
+        req: api.AllocateIDsRequest,
+        timeout: float | None = None,
+        metadata: list[tuple[str, str]] | None = None,
+        credentials: grpc.CallCredentials | None = None,
+    ) -> api.AllocateIDsResponse:
+        """Async allocate IDs (UIDs, timestamps, or namespaces).
+
+        Args:
+            req: AllocateIDsRequest protobuf message
+            timeout: Request timeout in seconds
+            metadata: Request metadata
+            credentials: Call credentials
+
+        Returns:
+            AllocateIDsResponse protobuf message
+        """
+        return await self.stub.AllocateIDs(
+            req, timeout=timeout, metadata=metadata, credentials=credentials
+        )
+
+    async def create_namespace(
+        self,
+        req: api.CreateNamespaceRequest,
+        timeout: float | None = None,
+        metadata: list[tuple[str, str]] | None = None,
+        credentials: grpc.CallCredentials | None = None,
+    ) -> api.CreateNamespaceResponse:
+        """Async create namespace operation.
+
+        Args:
+            req: CreateNamespaceRequest protobuf message
+            timeout: Request timeout in seconds
+            metadata: Request metadata
+            credentials: Call credentials
+
+        Returns:
+            CreateNamespaceResponse protobuf message
+        """
+        return await self.stub.CreateNamespace(
+            req, timeout=timeout, metadata=metadata, credentials=credentials
+        )
+
+    async def drop_namespace(
+        self,
+        req: api.DropNamespaceRequest,
+        timeout: float | None = None,
+        metadata: list[tuple[str, str]] | None = None,
+        credentials: grpc.CallCredentials | None = None,
+    ) -> Any:
+        """Async drop namespace operation.
+
+        Args:
+            req: DropNamespaceRequest protobuf message
+            timeout: Request timeout in seconds
+            metadata: Request metadata
+            credentials: Call credentials
+
+        Returns:
+            DropNamespaceResponse protobuf message
+        """
+        return await self.stub.DropNamespace(
+            req, timeout=timeout, metadata=metadata, credentials=credentials
+        )
+
+    async def list_namespaces(
+        self,
+        req: api.ListNamespacesRequest,
+        timeout: float | None = None,
+        metadata: list[tuple[str, str]] | None = None,
+        credentials: grpc.CallCredentials | None = None,
+    ) -> api.ListNamespacesResponse:
+        """Async list namespaces operation.
+
+        Args:
+            req: ListNamespacesRequest protobuf message
+            timeout: Request timeout in seconds
+            metadata: Request metadata
+            credentials: Call credentials
+
+        Returns:
+            ListNamespacesResponse protobuf message
+        """
+        return await self.stub.ListNamespaces(
+            req, timeout=timeout, metadata=metadata, credentials=credentials
+        )
+
     @staticmethod
     def parse_host(cloud_endpoint: str) -> str:
         """Converts any cloud endpoint to grpc endpoint.
