@@ -35,3 +35,5 @@ jobs:
           git diff --exit-code -- .
       - name: Run code quality checks
         run: trunk check --all --ci
+      - name: Run ty type checker
+        run: uv run ty check pydgraph tests
