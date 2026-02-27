@@ -1,17 +1,21 @@
 # Trunk as Single Linting Orchestrator
 
-**Date:** 2026-02-27
-**Status:** Approved
+**Date:** 2026-02-27 **Status:** Approved
 
 ## Problem
 
 The project runs linting through three overlapping systems:
 
-1. **pre-commit framework** (`.pre-commit-config.yaml`) — git hooks for ruff, shellcheck, yamllint, mypy, ty, pygrep-hooks, and pre-commit-hooks
-2. **Trunk** (`.trunk/trunk.yaml`) — ruff, shellcheck, yamllint, bandit, prettier, markdownlint, and others
+1. **pre-commit framework** (`.pre-commit-config.yaml`) — git hooks for ruff, shellcheck, yamllint,
+   mypy, ty, pygrep-hooks, and pre-commit-hooks
+2. **Trunk** (`.trunk/trunk.yaml`) — ruff, shellcheck, yamllint, bandit, prettier, markdownlint, and
+   others
 3. **CI workflows** — two separate jobs that each skip the other's tools
 
-ruff, shellcheck, and yamllint run in both pre-commit and Trunk with different pinned versions. Trunk's git hook actions (`trunk-fmt-pre-commit`) hijack the `core.hooksPath` git config, which silently bypasses the pre-commit framework. This caused the mypy CI failure on PR #303 — Trunk's hook ran instead of pre-commit, so mypy never executed locally.
+ruff, shellcheck, and yamllint run in both pre-commit and Trunk with different pinned versions.
+Trunk's git hook actions (`trunk-fmt-pre-commit`) hijack the `core.hooksPath` git config, which
+silently bypasses the pre-commit framework. This caused the mypy CI failure on PR #303 — Trunk's
+hook ran instead of pre-commit, so mypy never executed locally.
 
 ## Decision
 
@@ -21,47 +25,47 @@ Consolidate on Trunk as the single orchestrator. Remove pre-commit entirely.
 
 ### Already covered by Trunk
 
-| pre-commit hook | Trunk equivalent |
-|---|---|
-| `ruff` | `ruff` (already enabled) |
-| `shellcheck` | `shellcheck` (already enabled) |
-| `yamllint` | `yamllint` (already enabled) |
-| `check-yaml` | Covered by `yamllint` |
-| `check-toml` | Covered by `taplo` (already enabled) |
-| `check-json` | Covered by `prettier` (already enabled) |
-| `end-of-file-fixer` | Covered by `trunk fmt` |
-| `trailing-whitespace` | Covered by `trunk fmt` |
+| pre-commit hook        | Trunk equivalent                              |
+| ---------------------- | --------------------------------------------- |
+| `ruff`                 | `ruff` (already enabled)                      |
+| `shellcheck`           | `shellcheck` (already enabled)                |
+| `yamllint`             | `yamllint` (already enabled)                  |
+| `check-yaml`           | Covered by `yamllint`                         |
+| `check-toml`           | Covered by `taplo` (already enabled)          |
+| `check-json`           | Covered by `prettier` (already enabled)       |
+| `end-of-file-fixer`    | Covered by `trunk fmt`                        |
+| `trailing-whitespace`  | Covered by `trunk fmt`                        |
 | `check-merge-conflict` | Covered by `git-diff-check` (already enabled) |
 
 ### Need to enable in Trunk
 
-| pre-commit hook | Trunk action |
-|---|---|
-| `mypy` | Enable native `mypy` linter in trunk.yaml |
-| `check-added-large-files` | Enable `pre-commit-hooks` subcommand |
-| `check-docstring-first` | Enable `pre-commit-hooks` subcommand |
+| pre-commit hook           | Trunk action                              |
+| ------------------------- | ----------------------------------------- |
+| `mypy`                    | Enable native `mypy` linter in trunk.yaml |
+| `check-added-large-files` | Enable `pre-commit-hooks` subcommand      |
+| `check-docstring-first`   | Enable `pre-commit-hooks` subcommand      |
 
 ### Replace with ruff rules
 
-| pre-commit hook | ruff rule |
-|---|---|
-| `python-check-blanket-noqa` | `PGH004` |
-| `python-check-blanket-type-ignore` | `PGH003` |
-| `python-no-eval` | `S307` (also covered by bandit) |
-| `python-use-type-annotations` | `UP037` |
+| pre-commit hook                    | ruff rule                       |
+| ---------------------------------- | ------------------------------- |
+| `python-check-blanket-noqa`        | `PGH004`                        |
+| `python-check-blanket-type-ignore` | `PGH003`                        |
+| `python-no-eval`                   | `S307` (also covered by bandit) |
+| `python-use-type-annotations`      | `UP037`                         |
 
 ### Custom linter definition needed
 
-| Tool | Reason |
-|---|---|
+| Tool | Reason                                          |
+| ---- | ----------------------------------------------- |
 | `ty` | No native Trunk plugin; define as custom linter |
 
 ### Dropped
 
-| Hook | Reason |
-|---|---|
-| `no-commit-to-branch` | CI protects main; unnecessary friction locally |
-| `requirements-txt-fixer` | Project uses uv; no requirements.txt files |
+| Hook                     | Reason                                         |
+| ------------------------ | ---------------------------------------------- |
+| `no-commit-to-branch`    | CI protects main; unnecessary friction locally |
+| `requirements-txt-fixer` | Project uses uv; no requirements.txt files     |
 
 ## trunk.yaml Changes
 
@@ -73,10 +77,13 @@ Consolidate on Trunk as the single orchestrator. Remove pre-commit entirely.
 
 ## mypy Additional Dependencies
 
-The pre-commit config installs 9 type-stub packages (types-requests, grpc-stubs, types-protobuf, etc.) into mypy's isolated environment. Trunk's native mypy plugin also runs in isolation.
+The pre-commit config installs 9 type-stub packages (types-requests, grpc-stubs, types-protobuf,
+etc.) into mypy's isolated environment. Trunk's native mypy plugin also runs in isolation.
 
 Options to resolve:
-- Configure Trunk to run mypy from the project venv (which already has these installed via `uv sync --group dev`)
+
+- Configure Trunk to run mypy from the project venv (which already has these installed via
+  `uv sync --group dev`)
 - Use Trunk's `extra_packages` config if supported
 - Define mypy as a custom linter that runs from the project venv
 
@@ -84,11 +91,13 @@ Options to resolve:
 
 ### ci-pydgraph-code-quality.yml
 
-Replace `SKIP=no-commit-to-branch,trunk-check,trunk-fmt make check` with `trunk check --all --ci`. Remove the pre-commit setup steps.
+Replace `SKIP=no-commit-to-branch,trunk-check,trunk-fmt make check` with `trunk check --all --ci`.
+Remove the pre-commit setup steps.
 
 ### ci-pydgraph-trunk.yml
 
-Evaluate whether this separate workflow is still needed. If the code-quality workflow now runs `trunk check`, this may be redundant. If it's a shared org workflow, keep it.
+Evaluate whether this separate workflow is still needed. If the code-quality workflow now runs
+`trunk check`, this may be redundant. If it's a shared org workflow, keep it.
 
 ### Makefile
 
@@ -103,19 +112,25 @@ Evaluate whether this separate workflow is still needed. If the code-quality wor
 
 ## Risks
 
-1. **mypy environment** — Trunk's isolated mypy needs access to type stubs. If Trunk can't install them, fall back to running mypy from the project venv via custom linter definition.
-2. **Trunk availability** — Contributors must install Trunk. The project already requires it (`deps-trunk` in Makefile), so this adds no new requirement.
-3. **Trunk version drift** — Trunk pins tool versions independently. We control this through `trunk.yaml` version pins.
+1. **mypy environment** — Trunk's isolated mypy needs access to type stubs. If Trunk can't install
+   them, fall back to running mypy from the project venv via custom linter definition.
+2. **Trunk availability** — Contributors must install Trunk. The project already requires it
+   (`deps-trunk` in Makefile), so this adds no new requirement.
+3. **Trunk version drift** — Trunk pins tool versions independently. We control this through
+   `trunk.yaml` version pins.
 
 ---
 
-# Implementation Plan
+## Implementation Plan
 
-> **For Claude:** REQUIRED SUB-SKILL: Use superpowers:executing-plans to implement this plan task-by-task.
+> **For Claude:** REQUIRED SUB-SKILL: Use superpowers:executing-plans to implement this plan
+> task-by-task.
 
-**Goal:** Replace pre-commit with Trunk as the sole linting orchestrator across local dev, Makefile, and CI.
+**Goal:** Replace pre-commit with Trunk as the sole linting orchestrator across local dev, Makefile,
+and CI.
 
-**Architecture:** Enable mypy/pre-commit-hooks/ty in trunk.yaml, add PGH ruff rules, update Makefile and CI workflows, then delete .pre-commit-config.yaml.
+**Architecture:** Enable mypy/pre-commit-hooks/ty in trunk.yaml, add PGH ruff rules, update Makefile
+and CI workflows, then delete .pre-commit-config.yaml.
 
 **Tech Stack:** Trunk CLI, ruff, mypy, ty (via uvx), GitHub Actions
 
@@ -124,11 +139,14 @@ Evaluate whether this separate workflow is still needed. If the code-quality wor
 ### Task 1: Add PGH rules to ruff config
 
 **Files:**
+
 - Modify: `pyproject.toml:82` (ruff.lint.select list)
 
 **Step 1: Add `PGH` to the ruff select list**
 
-In `pyproject.toml` under `[tool.ruff.lint]`, add `"PGH"` to the `select` array. This replaces `python-check-blanket-noqa` (PGH004) and `python-check-blanket-type-ignore` (PGH003). `S307` and `UP037` are already covered by the existing `"S"` and `"UP"` selectors.
+In `pyproject.toml` under `[tool.ruff.lint]`, add `"PGH"` to the `select` array. This replaces
+`python-check-blanket-noqa` (PGH004) and `python-check-blanket-type-ignore` (PGH003). `S307` and
+`UP037` are already covered by the existing `"S"` and `"UP"` selectors.
 
 ```toml
 select = [
@@ -141,8 +159,7 @@ select = [
 
 **Step 2: Verify ruff passes with the new rules**
 
-Run: `uv run ruff check pydgraph tests --select PGH`
-Expected: No errors (or fix any that appear)
+Run: `uv run ruff check pydgraph tests --select PGH` Expected: No errors (or fix any that appear)
 
 **Step 3: Commit**
 
@@ -156,11 +173,14 @@ git commit -m "chore: add PGH rules to ruff replacing pygrep-hooks"
 ### Task 2: Configure trunk.yaml with mypy, ty, and pre-commit-hooks
 
 **Files:**
+
 - Modify: `.trunk/trunk.yaml`
 
 **Step 1: Enable mypy with extra_packages and custom command**
 
-Add `mypy@1.18.2` to `lint.enabled`. Override the default command to use `--config-file=pyproject.toml` instead of `--ignore-missing-imports`. Add `extra_packages` for the type stubs that pre-commit used to install:
+Add `mypy@1.18.2` to `lint.enabled`. Override the default command to use
+`--config-file=pyproject.toml` instead of `--ignore-missing-imports`. Add `extra_packages` for the
+type stubs that pre-commit used to install:
 
 ```yaml
 lint:
@@ -220,11 +240,9 @@ Add a custom linter definition for ty:
       output: pass_fail
       read_output_from: stderr
       run: >
-        uvx ty check pydgraph tests
-        --exclude 'pydgraph/proto/api_pb2\.py'
-        --exclude 'pydgraph/proto/api_pb2_grpc\.py'
-        --exclude 'pydgraph/proto/api_pb2\.pyi'
-        --exclude 'pydgraph/proto/api_pb2_grpc\.pyi'
+        uvx ty check pydgraph tests --exclude 'pydgraph/proto/api_pb2\.py' --exclude
+        'pydgraph/proto/api_pb2_grpc\.py' --exclude 'pydgraph/proto/api_pb2\.pyi' --exclude
+        'pydgraph/proto/api_pb2_grpc\.pyi'
       success_codes: [0, 1]
 ```
 
@@ -245,8 +263,7 @@ Remove the `disabled` section.
 
 **Step 5: Verify trunk check passes**
 
-Run: `trunk check --all --no-fix`
-Expected: All linters pass (or only pre-existing issues)
+Run: `trunk check --all --no-fix` Expected: All linters pass (or only pre-existing issues)
 
 **Step 6: Commit**
 
@@ -260,6 +277,7 @@ git commit -m "chore: enable mypy, ty, pre-commit-hooks in trunk as sole linting
 ### Task 3: Update Makefile
 
 **Files:**
+
 - Modify: `Makefile:57-68`
 
 **Step 1: Update `make setup` to remove pre-commit install**
@@ -284,8 +302,7 @@ check: ## Run code quality checks on all files
 
 **Step 3: Verify make check works**
 
-Run: `make check`
-Expected: All trunk linters pass
+Run: `make check` Expected: All trunk linters pass
 
 **Step 4: Commit**
 
@@ -299,11 +316,13 @@ git commit -m "chore: update Makefile to use trunk check instead of pre-commit"
 ### Task 4: Update CI code-quality workflow
 
 **Files:**
+
 - Modify: `.github/workflows/ci-pydgraph-code-quality.yml`
 
 **Step 1: Simplify the code-quality workflow**
 
-Replace the current workflow steps. Remove `make setup` (which installed pre-commit hooks) and `make check` (which ran pre-commit). Instead run trunk directly:
+Replace the current workflow steps. Remove `make setup` (which installed pre-commit hooks) and
+`make check` (which ran pre-commit). Instead run trunk directly:
 
 ```yaml
 jobs:
@@ -330,7 +349,8 @@ jobs:
         run: trunk check --all --ci
 ```
 
-Note: `make setup` is no longer needed because trunk is installed by the action and `make sync` handles the venv. The `SKIP=...` env var is gone since there's no pre-commit to skip hooks in.
+Note: `make setup` is no longer needed because trunk is installed by the action and `make sync`
+handles the venv. The `SKIP=...` env var is gone since there's no pre-commit to skip hooks in.
 
 **Step 2: Commit**
 
@@ -344,15 +364,22 @@ git commit -m "ci: use trunk check directly in code-quality workflow"
 ### Task 5: Evaluate and update CI trunk workflow
 
 **Files:**
+
 - Modify: `.github/workflows/ci-pydgraph-trunk.yml`
 
 **Step 1: Decide whether to keep the trunk workflow**
 
-The `ci-pydgraph-trunk.yml` calls a shared org workflow `dgraph-io/.github/.github/workflows/trunk.yml@main`. This runs Trunk's own CI check (using `trunk-io/trunk-action`), which provides inline PR annotations.
+The `ci-pydgraph-trunk.yml` calls a shared org workflow
+`dgraph-io/.github/.github/workflows/trunk.yml@main`. This runs Trunk's own CI check (using
+`trunk-io/trunk-action`), which provides inline PR annotations.
 
-The code-quality workflow now also runs `trunk check --all --ci`. However, the trunk action provides GitHub Check annotations (via `permissions: checks: write`) which are useful for inline PR comments on specific lines.
+The code-quality workflow now also runs `trunk check --all --ci`. However, the trunk action provides
+GitHub Check annotations (via `permissions: checks: write`) which are useful for inline PR comments
+on specific lines.
 
-**Decision:** Keep `ci-pydgraph-trunk.yml` as-is. It's a shared org standard and provides PR annotation features that plain `trunk check --ci` output doesn't. The code-quality workflow provides the gate; the trunk workflow provides the annotations.
+**Decision:** Keep `ci-pydgraph-trunk.yml` as-is. It's a shared org standard and provides PR
+annotation features that plain `trunk check --ci` output doesn't. The code-quality workflow provides
+the gate; the trunk workflow provides the annotations.
 
 No changes needed to this file.
 
@@ -361,6 +388,7 @@ No changes needed to this file.
 ### Task 6: Remove pre-commit
 
 **Files:**
+
 - Delete: `.pre-commit-config.yaml`
 - Modify: `pyproject.toml:37` (remove `pre-commit` from dev dependencies)
 
@@ -376,12 +404,13 @@ In `pyproject.toml`, remove `"pre-commit>=3.5.0"` from the `[dependency-groups] 
 
 **Step 3: Remove shellcheck-py from dev dependencies**
 
-`shellcheck-py` was only needed by pre-commit. Trunk manages its own shellcheck binary. Remove `"shellcheck-py>=0.10.0.1"` from the dev dependency group.
+`shellcheck-py` was only needed by pre-commit. Trunk manages its own shellcheck binary. Remove
+`"shellcheck-py>=0.10.0.1"` from the dev dependency group.
 
 **Step 4: Sync the lockfile**
 
-Run: `uv sync --group dev --extra dev`
-Expected: Lockfile updates, pre-commit and shellcheck-py removed
+Run: `uv sync --group dev --extra dev` Expected: Lockfile updates, pre-commit and shellcheck-py
+removed
 
 **Step 5: Commit**
 
@@ -396,8 +425,7 @@ git commit -m "chore: remove pre-commit framework, trunk is now the sole linting
 
 **Step 1: Run `make check` and verify all linters pass**
 
-Run: `make check`
-Expected: trunk check runs all linters including mypy, ty, ruff, etc.
+Run: `make check` Expected: trunk check runs all linters including mypy, ty, ruff, etc.
 
 **Step 2: Test git commit hook**
 
@@ -409,12 +437,13 @@ git add README.md
 git commit -m "test: verify trunk hooks"
 ```
 
-Expected: Trunk fmt runs and either commits cleanly or fixes whitespace. Then `git reset HEAD~1` to undo.
+Expected: Trunk fmt runs and either commits cleanly or fixes whitespace. Then `git reset HEAD~1` to
+undo.
 
 **Step 3: Verify no pre-commit artifacts remain**
 
-Run: `grep -r "pre-commit" Makefile .github pyproject.toml`
-Expected: No references to pre-commit except possibly in comments or changelog.
+Run: `grep -r "pre-commit" Makefile .github pyproject.toml` Expected: No references to pre-commit
+except possibly in comments or changelog.
 
 **Step 4: Final commit if any fixes were needed**
 
