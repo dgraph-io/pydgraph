@@ -46,8 +46,12 @@ lint:
     - trufflehog@3.92.3
     - yamllint@1.37.1
 actions:
+  disabled:
+    # Trunk fmt/check are already integrated as hooks in .pre-commit-config.yaml.
+    # Enabling these Trunk actions would hijack the git hook slot and bypass
+    # the pre-commit framework (skipping mypy, ruff, shellcheck, etc.).
+    - trunk-fmt-pre-commit
+    - trunk-check-pre-push
   enabled:
     - trunk-announce
-    - trunk-check-pre-push
-    - trunk-fmt-pre-commit
     - trunk-upgrade-available
