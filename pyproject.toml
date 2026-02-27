@@ -95,6 +95,7 @@ select = [
   "ICN",   # flake8-import-conventions
   "N",     # pep8-naming
   "PERF",  # perflint (performance)
+  "PGH",   # pygrep-hooks (blanket noqa, blanket type-ignore)
   "PIE",   # flake8-pie (misc lints)
   "PT",    # flake8-pytest-style
   "PTH",   # flake8-use-pathlib
