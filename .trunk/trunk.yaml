@@ -28,6 +28,9 @@ lint:
     - linters: [mypy]
       paths:
         - examples/**
+    - linters: [markdownlint]
+      paths:
+        - docs/plans/**
     - linters: [bandit]
       paths:
         - tests/**
