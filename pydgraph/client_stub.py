@@ -23,6 +23,20 @@ __version__ = VERSION
 __status__ = "development"
 
 
+class _AuthPlugin(grpc.AuthMetadataPlugin):
+    """Metadata plugin that injects an authorization header."""
+
+    def __init__(self, header_value: str) -> None:
+        self._metadata = (("authorization", header_value),)
+
+    def __call__(
+        self,
+        context: grpc.AuthMetadataContext,
+        callback: grpc.AuthMetadataPluginCallback,
+    ) -> None:
+        callback(self._metadata, None)
+
+
 class DgraphClientStub:
     """Stub for the Dgraph grpc client."""
 
@@ -51,7 +65,7 @@ class DgraphClientStub:
         self,
         login_req: api.LoginRequest,
         timeout: float | None = None,
-        metadata: list[tuple[str, str]] | None = None,
+        metadata: tuple[tuple[str, str | bytes], ...] | None = None,
         credentials: grpc.CallCredentials | None = None,
     ) -> api.Response:
         return self.stub.Login(
@@ -62,7 +76,7 @@ class DgraphClientStub:
         self,
         operation: api.Operation,
         timeout: float | None = None,
-        metadata: list[tuple[str, str]] | None = None,
+        metadata: tuple[tuple[str, str | bytes], ...] | None = None,
         credentials: grpc.CallCredentials | None = None,
     ) -> api.Payload:
         """Runs alter operation."""
@@ -74,7 +88,7 @@ class DgraphClientStub:
         self,
         operation: api.Operation,
         timeout: float | None = None,
-        metadata: list[tuple[str, str]] | None = None,
+        metadata: tuple[tuple[str, str | bytes], ...] | None = None,
         credentials: grpc.CallCredentials | None = None,
     ) -> grpc.Future:
         """Async version of alter."""
@@ -86,7 +100,7 @@ class DgraphClientStub:
         self,
         req: api.Request,
         timeout: float | None = None,
-        metadata: list[tuple[str, str]] | None = None,
+        metadata: tuple[tuple[str, str | bytes], ...] | None = None,
         credentials: grpc.CallCredentials | None = None,
     ) -> api.Response:
         """Runs query or mutate operation."""
@@ -98,7 +112,7 @@ class DgraphClientStub:
         self,
         req: api.Request,
         timeout: float | None = None,
-        metadata: list[tuple[str, str]] | None = None,
+        metadata: tuple[tuple[str, str | bytes], ...] | None = None,
         credentials: grpc.CallCredentials | None = None,
     ) -> grpc.Future:
         """Async version of query."""
@@ -110,7 +124,7 @@ class DgraphClientStub:
         self,
         ctx: api.TxnContext,
         timeout: float | None = None,
-        metadata: list[tuple[str, str]] | None = None,
+        metadata: tuple[tuple[str, str | bytes], ...] | None = None,
         credentials: grpc.CallCredentials | None = None,
     ) -> api.TxnContext:
         """Runs commit or abort operation."""
@@ -122,7 +136,7 @@ class DgraphClientStub:
         self,
         check: api.Check,
         timeout: float | None = None,
-        metadata: list[tuple[str, str]] | None = None,
+        metadata: tuple[tuple[str, str | bytes], ...] | None = None,
         credentials: grpc.CallCredentials | None = None,
     ) -> api.Version:
         """Returns the version of the Dgraph instance."""
@@ -134,7 +148,7 @@ class DgraphClientStub:
         self,
         req: api.RunDQLRequest,
         timeout: float | None = None,
-        metadata: list[tuple[str, str]] | None = None,
+        metadata: tuple[tuple[str, str | bytes], ...] | None = None,
         credentials: grpc.CallCredentials | None = None,
     ) -> api.Response:
         return self.stub.RunDQL(
@@ -145,7 +159,7 @@ class DgraphClientStub:
         self,
         req: api.AllocateIDsRequest,
         timeout: float | None = None,
-        metadata: list[tuple[str, str]] | None = None,
+        metadata: tuple[tuple[str, str | bytes], ...] | None = None,
         credentials: grpc.CallCredentials | None = None,
     ) -> api.AllocateIDsResponse:
         """Allocates IDs (UIDs, timestamps, or namespaces)."""
@@ -157,7 +171,7 @@ class DgraphClientStub:
         self,
         req: api.CreateNamespaceRequest,
         timeout: float | None = None,
-        metadata: list[tuple[str, str]] | None = None,
+        metadata: tuple[tuple[str, str | bytes], ...] | None = None,
         credentials: grpc.CallCredentials | None = None,
     ) -> api.CreateNamespaceResponse:
         """Creates a new namespace."""
@@ -169,7 +183,7 @@ class DgraphClientStub:
         self,
         req: api.DropNamespaceRequest,
         timeout: float | None = None,
-        metadata: list[tuple[str, str]] | None = None,
+        metadata: tuple[tuple[str, str | bytes], ...] | None = None,
         credentials: grpc.CallCredentials | None = None,
     ) -> Any:
         """Drops a namespace."""
@@ -181,7 +195,7 @@ class DgraphClientStub:
         self,
         req: api.ListNamespacesRequest,
         timeout: float | None = None,
-        metadata: list[tuple[str, str]] | None = None,
+        metadata: tuple[tuple[str, str | bytes], ...] | None = None,
         credentials: grpc.CallCredentials | None = None,
     ) -> api.ListNamespacesResponse:
         """Lists all namespaces."""
@@ -251,9 +265,7 @@ class DgraphClientStub:
 
         host = DgraphClientStub.parse_host(cloud_endpoint)
         creds = grpc.ssl_channel_credentials()
-        call_credentials = grpc.metadata_call_credentials(
-            lambda _context, callback: callback((("authorization", api_key),), None)
-        )
+        call_credentials = grpc.metadata_call_credentials(_AuthPlugin(api_key))
         composite_credentials = grpc.composite_channel_credentials(
             creds, call_credentials
         )

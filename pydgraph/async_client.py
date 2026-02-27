@@ -23,6 +23,20 @@ __version__ = VERSION
 __status__ = "development"
 
 
+class _AuthPlugin(grpc.AuthMetadataPlugin):
+    """Metadata plugin that injects an authorization header."""
+
+    def __init__(self, header_value: str) -> None:
+        self._metadata = (("authorization", header_value),)
+
+    def __call__(
+        self,
+        context: grpc.AuthMetadataContext,
+        callback: grpc.AuthMetadataPluginCallback,
+    ) -> None:
+        callback(self._metadata, None)
+
+
 class AsyncDgraphClient:
     """Creates a new async Client for interacting with Dgraph using asyncio.
 
@@ -49,13 +63,13 @@ class AsyncDgraphClient:
 
         self._clients = clients[:]
         self._jwt = api.Jwt()
-        self._login_metadata: list[tuple[str, str]] = []
+        self._login_metadata: list[tuple[str, str | bytes]] = []
         self._refresh_lock = asyncio.Lock()  # Prevent concurrent JWT refresh
 
     async def check_version(
         self,
         timeout: float | None = None,
-        metadata: list[tuple[str, str]] | None = None,
+        metadata: tuple[tuple[str, str | bytes], ...] | None = None,
         credentials: grpc.CallCredentials | None = None,
     ) -> str:
         """Returns the version of Dgraph if server is ready to accept requests.
@@ -100,7 +114,7 @@ class AsyncDgraphClient:
         userid: str,
         password: str,
         timeout: float | None = None,
-        metadata: list[tuple[str, str]] | None = None,
+        metadata: tuple[tuple[str, str | bytes], ...] | None = None,
         credentials: grpc.CallCredentials | None = None,
     ) -> None:
         """Login to Dgraph with credentials.
@@ -133,7 +147,7 @@ class AsyncDgraphClient:
         password: str,
         namespace: int,
         timeout: float | None = None,
-        metadata: list[tuple[str, str]] | None = None,
+        metadata: tuple[tuple[str, str | bytes], ...] | None = None,
         credentials: grpc.CallCredentials | None = None,
     ) -> None:
         """Login to specific Dgraph namespace.
@@ -164,7 +178,7 @@ class AsyncDgraphClient:
     async def retry_login(
         self,
         timeout: float | None = None,
-        metadata: list[tuple[str, str]] | None = None,
+        metadata: tuple[tuple[str, str | bytes], ...] | None = None,
         credentials: grpc.CallCredentials | None = None,
     ) -> None:
         """Refresh JWT token using refresh token.
@@ -210,7 +224,7 @@ class AsyncDgraphClient:
         self,
         operation: api.Operation,
         timeout: float | None = None,
-        metadata: list[tuple[str, str]] | None = None,
+        metadata: tuple[tuple[str, str | bytes], ...] | None = None,
         credentials: grpc.CallCredentials | None = None,
     ) -> api.Payload:
         """Runs a schema modification via this client.
@@ -277,7 +291,7 @@ class AsyncDgraphClient:
     async def drop_all(
         self,
         timeout: float | None = None,
-        metadata: list[tuple[str, str]] | None = None,
+        metadata: tuple[tuple[str, str | bytes], ...] | None = None,
         credentials: grpc.CallCredentials | None = None,
     ) -> api.Payload:
         """Drops all data and schema from the Dgraph instance.
@@ -301,7 +315,7 @@ class AsyncDgraphClient:
     async def drop_data(
         self,
         timeout: float | None = None,
-        metadata: list[tuple[str, str]] | None = None,
+        metadata: tuple[tuple[str, str | bytes], ...] | None = None,
         credentials: grpc.CallCredentials | None = None,
     ) -> api.Payload:
         """Drops all data from the Dgraph instance while preserving the schema.
@@ -326,7 +340,7 @@ class AsyncDgraphClient:
         self,
         predicate: str,
         timeout: float | None = None,
-        metadata: list[tuple[str, str]] | None = None,
+        metadata: tuple[tuple[str, str | bytes], ...] | None = None,
         credentials: grpc.CallCredentials | None = None,
     ) -> api.Payload:
         """Drops a predicate and its associated data from the Dgraph instance.
@@ -356,7 +370,7 @@ class AsyncDgraphClient:
         self,
         type_name: str,
         timeout: float | None = None,
-        metadata: list[tuple[str, str]] | None = None,
+        metadata: tuple[tuple[str, str | bytes], ...] | None = None,
         credentials: grpc.CallCredentials | None = None,
     ) -> api.Payload:
         """Drops a type definition from the DQL schema.
@@ -390,7 +404,7 @@ class AsyncDgraphClient:
         self,
         schema: str,
         timeout: float | None = None,
-        metadata: list[tuple[str, str]] | None = None,
+        metadata: tuple[tuple[str, str | bytes], ...] | None = None,
         credentials: grpc.CallCredentials | None = None,
     ) -> api.Payload:
         """Sets the DQL schema for the Dgraph instance.
@@ -422,7 +436,7 @@ class AsyncDgraphClient:
         best_effort: bool = False,
         resp_format: str = "JSON",
         timeout: float | None = None,
-        metadata: list[tuple[str, str]] | None = None,
+        metadata: tuple[tuple[str, str | bytes], ...] | None = None,
         credentials: grpc.CallCredentials | None = None,
     ) -> api.Response:
         """Runs a DQL query or mutation via this client.
@@ -442,7 +456,9 @@ class AsyncDgraphClient:
 
         This is only supported on Dgraph v25.0.0 and above.
         """
-        new_metadata = self.add_login_metadata(metadata)
+        metadata_list: list[tuple[str, str | bytes]] = list(
+            self.add_login_metadata(metadata)
+        )
 
         # Add explicit namespace metadata for RunDQL
         # Extract namespace from JWT token if available
@@ -458,10 +474,12 @@ class AsyncDgraphClient:
                 payload_part += "=" * (4 - len(payload_part) % 4)
                 payload = json.loads(base64.b64decode(payload_part))
                 namespace = payload.get("namespace", 0)
-                new_metadata.append(("namespace", str(namespace)))
+                metadata_list.append(("namespace", str(namespace)))
             except Exception:
                 # If JWT decoding fails, use default namespace
-                new_metadata.append(("namespace", "0"))
+                metadata_list.append(("namespace", "0"))
+
+        new_metadata = tuple(metadata_list)
 
         # Convert string format to enum if needed
         format_value: int
@@ -510,7 +528,7 @@ class AsyncDgraphClient:
         best_effort: bool = False,
         resp_format: str = "JSON",
         timeout: float | None = None,
-        metadata: list[tuple[str, str]] | None = None,
+        metadata: tuple[tuple[str, str | bytes], ...] | None = None,
         credentials: grpc.CallCredentials | None = None,
     ) -> api.Response:
         """Runs a DQL query or mutation with variables via this client.
@@ -550,7 +568,7 @@ class AsyncDgraphClient:
         self,
         how_many: int,
         timeout: float | None = None,
-        metadata: list[tuple[str, str]] | None = None,
+        metadata: tuple[tuple[str, str | bytes], ...] | None = None,
         credentials: grpc.CallCredentials | None = None,
     ) -> tuple[int, int]:
         """AllocateUIDs allocates a given number of Node UIDs in the Graph and returns a start and end UIDs,
@@ -578,7 +596,7 @@ class AsyncDgraphClient:
         self,
         how_many: int,
         timeout: float | None = None,
-        metadata: list[tuple[str, str]] | None = None,
+        metadata: tuple[tuple[str, str | bytes], ...] | None = None,
         credentials: grpc.CallCredentials | None = None,
     ) -> tuple[int, int]:
         """AllocateTimestamps gets a sequence of timestamps allocated from Dgraph. These timestamps can be
@@ -603,7 +621,7 @@ class AsyncDgraphClient:
         self,
         how_many: int,
         timeout: float | None = None,
-        metadata: list[tuple[str, str]] | None = None,
+        metadata: tuple[tuple[str, str | bytes], ...] | None = None,
         credentials: grpc.CallCredentials | None = None,
     ) -> tuple[int, int]:
         """AllocateNamespaces allocates a given number of namespaces in the Graph and returns a start and end
@@ -631,7 +649,7 @@ class AsyncDgraphClient:
         how_many: int,
         lease_type: api.LeaseType.ValueType,
         timeout: float | None = None,
-        metadata: list[tuple[str, str]] | None = None,
+        metadata: tuple[tuple[str, str | bytes], ...] | None = None,
         credentials: grpc.CallCredentials | None = None,
     ) -> tuple[int, int]:
         """Helper method to allocate IDs of different types (UIDs, timestamps, namespaces).
@@ -674,7 +692,7 @@ class AsyncDgraphClient:
     async def create_namespace(
         self,
         timeout: float | None = None,
-        metadata: list[tuple[str, str]] | None = None,
+        metadata: tuple[tuple[str, str | bytes], ...] | None = None,
         credentials: grpc.CallCredentials | None = None,
     ) -> int:
         """Creates a new namespace and returns its ID.
@@ -719,7 +737,7 @@ class AsyncDgraphClient:
         self,
         namespace: int,
         timeout: float | None = None,
-        metadata: list[tuple[str, str]] | None = None,
+        metadata: tuple[tuple[str, str | bytes], ...] | None = None,
         credentials: grpc.CallCredentials | None = None,
     ) -> Any:
         """Drops the specified namespace. If the namespace does not exist, the request will still
@@ -763,7 +781,7 @@ class AsyncDgraphClient:
     async def list_namespaces(
         self,
         timeout: float | None = None,
-        metadata: list[tuple[str, str]] | None = None,
+        metadata: tuple[tuple[str, str | bytes], ...] | None = None,
         credentials: grpc.CallCredentials | None = None,
     ) -> dict[int, Any]:
         """Lists all namespaces.
@@ -827,29 +845,29 @@ class AsyncDgraphClient:
         return secrets.choice(self._clients)
 
     def add_login_metadata(
-        self, metadata: list[tuple[str, str]] | None
-    ) -> list[tuple[str, str]]:
+        self, metadata: tuple[tuple[str, str | bytes], ...] | None
+    ) -> tuple[tuple[str, str | bytes], ...]:
         """Adds JWT metadata to request metadata.
 
         Prevents caller from overriding authentication by filtering out
         any existing "accessjwt" keys from caller metadata.
 
         Args:
-            metadata: Existing metadata list or None
+            metadata: Existing metadata tuple or None
 
         Returns:
-            List with JWT metadata, caller metadata filtered
+            Tuple with JWT metadata, caller metadata filtered
         """
-        new_metadata = list(self._login_metadata)
+        new_metadata: list[tuple[str, str | bytes]] = list(self._login_metadata)
         if not metadata:
-            return new_metadata
+            return tuple(new_metadata)
 
         # Filter out any "accessjwt" from caller metadata to prevent override
         for key, value in metadata:
             if key.lower() != "accessjwt":
                 new_metadata.append((key, value))
 
-        return new_metadata
+        return tuple(new_metadata)
 
     async def close(self) -> None:
         """Close all client connections."""
@@ -990,9 +1008,7 @@ async def async_open(connection_string: str) -> AsyncDgraphClient:
 
     if auth_header:
         options = [("grpc.enable_http_proxy", 0)]
-        call_credentials = grpc.metadata_call_credentials(
-            lambda _context, callback: callback((("authorization", auth_header),), None)
-        )
+        call_credentials = grpc.metadata_call_credentials(_AuthPlugin(auth_header))
         credentials = grpc.composite_channel_credentials(
             grpc.ssl_channel_credentials(), call_credentials
         )

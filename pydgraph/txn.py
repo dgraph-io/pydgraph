@@ -46,7 +46,7 @@ class Txn:
         read_only: bool = False,
         best_effort: bool = False,
         timeout: float | None = None,
-        metadata: list[tuple[str, str]] | None = None,
+        metadata: tuple[tuple[str, str | bytes], ...] | None = None,
         credentials: grpc.CallCredentials | None = None,
     ) -> None:
         if not read_only and best_effort:
@@ -88,7 +88,7 @@ class Txn:
         query: str,
         variables: dict[str, str] | None = None,
         timeout: float | None = None,
-        metadata: list[tuple[str, str]] | None = None,
+        metadata: tuple[tuple[str, str | bytes], ...] | None = None,
         credentials: grpc.CallCredentials | None = None,
         resp_format: str = "JSON",
     ) -> api.Response:
@@ -105,7 +105,7 @@ class Txn:
         query: str,
         variables: dict[str, str] | None = None,
         timeout: float | None = None,
-        metadata: list[tuple[str, str]] | None = None,
+        metadata: tuple[tuple[str, str | bytes], ...] | None = None,
         credentials: grpc.CallCredentials | None = None,
         resp_format: str = "JSON",
     ) -> grpc.Future:
@@ -127,7 +127,7 @@ class Txn:
         cond: str | None = None,
         commit_now: bool | None = None,
         timeout: float | None = None,
-        metadata: list[tuple[str, str]] | None = None,
+        metadata: tuple[tuple[str, str | bytes], ...] | None = None,
         credentials: grpc.CallCredentials | None = None,
     ) -> api.Response:
         """Executes a mutate operation."""
@@ -150,7 +150,7 @@ class Txn:
         cond: str | None = None,
         commit_now: bool | None = None,
         timeout: float | None = None,
-        metadata: list[tuple[str, str]] | None = None,
+        metadata: tuple[tuple[str, str | bytes], ...] | None = None,
         credentials: grpc.CallCredentials | None = None,
     ) -> grpc.Future:
         """Async version of mutate."""
@@ -167,7 +167,7 @@ class Txn:
         self,
         request: api.Request,
         timeout: float | None = None,
-        metadata: list[tuple[str, str]] | None = None,
+        metadata: tuple[tuple[str, str | bytes], ...] | None = None,
         credentials: grpc.CallCredentials | None = None,
     ) -> api.Response:
         """Executes a query/mutate operation on the server."""
@@ -225,7 +225,7 @@ class Txn:
         self,
         request: api.Request,
         timeout: float | None = None,
-        metadata: list[tuple[str, str]] | None = None,
+        metadata: tuple[tuple[str, str | bytes], ...] | None = None,
         credentials: grpc.CallCredentials | None = None,
     ) -> grpc.Future:
         """Async version of do_request."""
@@ -352,7 +352,7 @@ class Txn:
     def commit(
         self,
         timeout: float | None = None,
-        metadata: list[tuple[str, str]] | None = None,
+        metadata: tuple[tuple[str, str | bytes], ...] | None = None,
         credentials: grpc.CallCredentials | None = None,
     ) -> api.TxnContext | None:
         """Commits the transaction."""
@@ -406,7 +406,7 @@ class Txn:
     def discard(
         self,
         timeout: float | None = None,
-        metadata: list[tuple[str, str]] | None = None,
+        metadata: tuple[tuple[str, str | bytes], ...] | None = None,
         credentials: grpc.CallCredentials | None = None,
     ) -> None:
         """Discards the transaction."""
