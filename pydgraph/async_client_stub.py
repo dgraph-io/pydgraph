@@ -26,7 +26,7 @@ class _AuthPlugin(grpc.AuthMetadataPlugin):
 
     def __call__(
         self,
-        context: grpc.AuthMetadataContext,
+        context: grpc.AuthMetadataContext,  # noqa: ARG002
         callback: grpc.AuthMetadataPluginCallback,
     ) -> None:
         callback(self._metadata, None)
