@@ -328,6 +328,412 @@ class TestAsyncConcurrent:
         assert len(result["me"]) == 5
 
 
+async def _skip_if_below_v25(client: AsyncDgraphClient) -> None:
+    """Skip test if Dgraph version is below 25.0.0.
+
+    The v25 API methods (run_dql, allocations, namespaces, convenience methods)
+    require Dgraph v25.0.0 or above. This helper checks the server version and
+    skips with a clear message if the server is too old.
+    """
+    try:
+        version_str = await client.check_version()
+        parts = version_str.lstrip("v").split(".")
+        major = int(parts[0])
+        if major < 25:
+            pytest.skip(f"Dgraph v25+ required, got {version_str}")
+    except Exception:
+        pytest.skip("Could not determine Dgraph version")
+
+
+async def _wait_for_namespace_deletion_async(
+    client: AsyncDgraphClient,
+    namespace_id: int,
+    max_retries: int = 5,
+    initial_delay: float = 0.1,
+) -> None:
+    """Wait for namespace deletion to propagate (eventual consistency).
+
+    Args:
+        client: Async Dgraph client
+        namespace_id: The namespace ID to check for deletion
+        max_retries: Maximum number of retry attempts
+        initial_delay: Initial delay in seconds (doubles each retry)
+    """
+    delay = initial_delay
+    for attempt in range(max_retries):
+        namespaces = await client.list_namespaces()
+        if namespace_id not in namespaces:
+            return
+        if attempt < max_retries - 1:
+            await asyncio.sleep(delay)
+            delay *= 2
+
+    namespaces = await client.list_namespaces()
+    assert namespace_id not in namespaces, (
+        f"Namespace {namespace_id} still exists after {max_retries} retries"
+    )
+
+
+class TestAsyncConvenienceMethods:
+    """Test suite for async convenience methods (drop_all, drop_data, etc.)."""
+
+    @pytest.mark.asyncio
+    async def test_drop_all(self, async_client: AsyncDgraphClient) -> None:
+        """Test async drop_all drops all data and schema."""
+        await _skip_if_below_v25(async_client)
+
+        # Set schema and add data
+        await async_client.drop_all()
+        await async_client.set_schema("name: string @index(term) .")
+        txn = async_client.txn()
+        await txn.mutate(set_obj={"name": "DropAllTest"}, commit_now=True)
+
+        # Drop all
+        response = await async_client.drop_all()
+        assert response is not None
+
+        # Verify data is gone by re-applying schema and querying
+        await async_client.set_schema("name: string @index(term) .")
+        txn = async_client.txn(read_only=True)
+        result = await txn.query('{ me(func: anyofterms(name, "DropAllTest")) { name } }')
+        data = json.loads(result.json)
+        assert len(data.get("me", [])) == 0
+
+    @pytest.mark.asyncio
+    async def test_drop_data(self, async_client: AsyncDgraphClient) -> None:
+        """Test async drop_data drops data but preserves schema."""
+        await _skip_if_below_v25(async_client)
+
+        await async_client.drop_all()
+        await async_client.set_schema("name: string @index(term) .")
+
+        txn = async_client.txn()
+        await txn.mutate(set_obj={"name": "DropDataTest"}, commit_now=True)
+
+        # Drop data only
+        response = await async_client.drop_data()
+        assert response is not None
+
+        # Verify data is gone but schema still works
+        txn = async_client.txn()
+        await txn.mutate(set_obj={"name": "AfterDropData"}, commit_now=True)
+
+        txn = async_client.txn(read_only=True)
+        result = await txn.query('{ me(func: anyofterms(name, "AfterDropData")) { name } }')
+        data = json.loads(result.json)
+        assert len(data["me"]) == 1
+
+    @pytest.mark.asyncio
+    async def test_drop_predicate(self, async_client: AsyncDgraphClient) -> None:
+        """Test async drop_predicate drops a specific predicate."""
+        await _skip_if_below_v25(async_client)
+
+        await async_client.drop_all()
+        await async_client.set_schema("name: string @index(term) .\nage: int .")
+
+        txn = async_client.txn()
+        await txn.mutate(set_obj={"name": "PredicateTest", "age": 30}, commit_now=True)
+
+        # Drop the age predicate
+        await async_client.drop_predicate("age")
+
+        # Verify name still exists but age is gone
+        txn = async_client.txn(read_only=True)
+        result = await txn.query(
+            '{ me(func: anyofterms(name, "PredicateTest")) { name age } }'
+        )
+        data = json.loads(result.json)
+        assert len(data["me"]) == 1
+        assert data["me"][0]["name"] == "PredicateTest"
+        assert "age" not in data["me"][0]
+
+    @pytest.mark.asyncio
+    async def test_drop_predicate_empty_raises(self, async_client: AsyncDgraphClient) -> None:
+        """Test that drop_predicate with empty string raises ValueError."""
+        with pytest.raises(ValueError, match="predicate cannot be empty"):
+            await async_client.drop_predicate("")
+
+    @pytest.mark.asyncio
+    async def test_drop_type(self, async_client: AsyncDgraphClient) -> None:
+        """Test async drop_type drops a type definition."""
+        await _skip_if_below_v25(async_client)
+
+        await async_client.drop_all()
+        schema = """
+            name: string @index(term) .
+            type Person {
+                name
+            }
+        """
+        await async_client.set_schema(schema)
+
+        # Drop the Person type
+        response = await async_client.drop_type("Person")
+        assert response is not None
+
+    @pytest.mark.asyncio
+    async def test_drop_type_empty_raises(self, async_client: AsyncDgraphClient) -> None:
+        """Test that drop_type with empty string raises ValueError."""
+        with pytest.raises(ValueError, match="type_name cannot be empty"):
+            await async_client.drop_type("")
+
+    @pytest.mark.asyncio
+    async def test_set_schema(self, async_client: AsyncDgraphClient) -> None:
+        """Test async set_schema sets the DQL schema."""
+        await _skip_if_below_v25(async_client)
+
+        await async_client.drop_all()
+        response = await async_client.set_schema("name: string @index(term) .")
+        assert response is not None
+
+        # Verify schema was set by inserting and querying data
+        txn = async_client.txn()
+        await txn.mutate(set_obj={"name": "SchemaTest"}, commit_now=True)
+
+        txn = async_client.txn(read_only=True)
+        result = await txn.query('{ me(func: anyofterms(name, "SchemaTest")) { name } }')
+        data = json.loads(result.json)
+        assert len(data["me"]) == 1
+
+    @pytest.mark.asyncio
+    async def test_set_schema_empty_raises(self, async_client: AsyncDgraphClient) -> None:
+        """Test that set_schema with empty string raises ValueError."""
+        with pytest.raises(ValueError, match="schema cannot be empty"):
+            await async_client.set_schema("")
+
+
+class TestAsyncDQL:
+    """Test suite for async run_dql and run_dql_with_vars."""
+
+    @pytest.mark.asyncio
+    async def test_run_dql_query(self, async_client: AsyncDgraphClient) -> None:
+        """Test async run_dql with a query."""
+        await _skip_if_below_v25(async_client)
+
+        await async_client.drop_all()
+        await async_client.set_schema("name: string @index(term) .")
+
+        txn = async_client.txn()
+        await txn.mutate(set_obj={"name": "DQLTest"}, commit_now=True)
+
+        response = await async_client.run_dql(
+            '{ me(func: anyofterms(name, "DQLTest")) { name } }',
+            read_only=True,
+        )
+        assert response is not None
+        data = json.loads(response.json)
+        assert len(data["me"]) == 1
+        assert data["me"][0]["name"] == "DQLTest"
+
+    @pytest.mark.asyncio
+    async def test_run_dql_mutation(self, async_client: AsyncDgraphClient) -> None:
+        """Test async run_dql with a mutation."""
+        await _skip_if_below_v25(async_client)
+
+        await async_client.drop_all()
+        await async_client.set_schema("name: string @index(term) .")
+
+        # Run a mutation via DQL (bare set block, no 'mutation' wrapper)
+        mutation_dql = """
+            {
+                set {
+                    _:new <name> "DQLMutationTest" .
+                }
+            }
+        """
+        response = await async_client.run_dql(mutation_dql)
+        assert response is not None
+
+        # Verify data was inserted
+        query_response = await async_client.run_dql(
+            '{ me(func: anyofterms(name, "DQLMutationTest")) { name } }',
+            read_only=True,
+        )
+        data = json.loads(query_response.json)
+        assert len(data["me"]) == 1
+
+    @pytest.mark.asyncio
+    async def test_run_dql_with_vars(self, async_client: AsyncDgraphClient) -> None:
+        """Test async run_dql_with_vars with query variables."""
+        await _skip_if_below_v25(async_client)
+
+        await async_client.drop_all()
+        await async_client.set_schema("name: string @index(term) .")
+
+        txn = async_client.txn()
+        await txn.mutate(set_obj={"name": "VarsTest"}, commit_now=True)
+
+        response = await async_client.run_dql_with_vars(
+            'query search($name: string) { me(func: anyofterms(name, $name)) { name } }',
+            vars={"$name": "VarsTest"},
+            read_only=True,
+        )
+        assert response is not None
+        data = json.loads(response.json)
+        assert len(data["me"]) == 1
+        assert data["me"][0]["name"] == "VarsTest"
+
+    @pytest.mark.asyncio
+    async def test_run_dql_with_vars_none_raises(
+        self, async_client: AsyncDgraphClient
+    ) -> None:
+        """Test that run_dql_with_vars with None vars raises ValueError."""
+        with pytest.raises(ValueError, match="vars parameter is required"):
+            await async_client.run_dql_with_vars("{ me(func: has(name)) { name } }", vars=None)  # type: ignore[arg-type]
+
+    @pytest.mark.asyncio
+    async def test_run_dql_resp_format(self, async_client: AsyncDgraphClient) -> None:
+        """Test async run_dql with different response formats."""
+        await _skip_if_below_v25(async_client)
+
+        await async_client.drop_all()
+        await async_client.set_schema("name: string @index(term) .")
+
+        txn = async_client.txn()
+        await txn.mutate(set_obj={"name": "FormatTest"}, commit_now=True)
+
+        # Test JSON format (default)
+        response = await async_client.run_dql(
+            '{ me(func: anyofterms(name, "FormatTest")) { name } }',
+            read_only=True,
+            resp_format="JSON",
+        )
+        assert response is not None
+        data = json.loads(response.json)
+        assert len(data["me"]) == 1
+
+    @pytest.mark.asyncio
+    async def test_run_dql_invalid_format_raises(
+        self, async_client: AsyncDgraphClient
+    ) -> None:
+        """Test that invalid resp_format raises ValueError."""
+        with pytest.raises(ValueError, match="Invalid resp_format"):
+            await async_client.run_dql("{ me(func: has(name)) { name } }", resp_format="XML")
+
+
+class TestAsyncAllocations:
+    """Test suite for async allocation methods."""
+
+    @pytest.mark.asyncio
+    async def test_allocate_uids(self, async_client: AsyncDgraphClient) -> None:
+        """Test async allocate_uids returns valid range."""
+        await _skip_if_below_v25(async_client)
+
+        how_many = 100
+        start, end = await async_client.allocate_uids(how_many)
+
+        assert isinstance(start, int)
+        assert isinstance(end, int)
+        assert start > 0
+        assert end > start
+        assert end - start == how_many
+
+        # Second allocation should be non-overlapping
+        start2, _end2 = await async_client.allocate_uids(how_many)
+        assert start2 >= end
+
+    @pytest.mark.asyncio
+    async def test_allocate_timestamps(self, async_client: AsyncDgraphClient) -> None:
+        """Test async allocate_timestamps returns valid range."""
+        await _skip_if_below_v25(async_client)
+
+        how_many = 50
+        start, end = await async_client.allocate_timestamps(how_many)
+
+        assert isinstance(start, int)
+        assert isinstance(end, int)
+        assert start > 0
+        assert end > start
+        assert end - start == how_many
+
+    @pytest.mark.asyncio
+    async def test_allocate_namespaces(self, async_client: AsyncDgraphClient) -> None:
+        """Test async allocate_namespaces returns valid range."""
+        await _skip_if_below_v25(async_client)
+
+        how_many = 10
+        start, end = await async_client.allocate_namespaces(how_many)
+
+        assert isinstance(start, int)
+        assert isinstance(end, int)
+        assert start > 0
+        assert end > start
+        assert end - start == how_many
+
+    @pytest.mark.asyncio
+    async def test_allocate_zero_raises(self, async_client: AsyncDgraphClient) -> None:
+        """Test allocating zero items raises ValueError."""
+        with pytest.raises(ValueError, match="how_many must be greater than 0"):
+            await async_client.allocate_uids(0)
+
+        with pytest.raises(ValueError, match="how_many must be greater than 0"):
+            await async_client.allocate_timestamps(-1)
+
+    @pytest.mark.asyncio
+    async def test_allocate_with_timeout(self, async_client: AsyncDgraphClient) -> None:
+        """Test allocation methods work with timeout parameter."""
+        await _skip_if_below_v25(async_client)
+
+        start, end = await async_client.allocate_uids(10, timeout=30)
+        assert end - start == 10
+
+
+class TestAsyncNamespaces:
+    """Test suite for async namespace management methods."""
+
+    @pytest.mark.asyncio
+    async def test_create_namespace(self, async_client: AsyncDgraphClient) -> None:
+        """Test async create_namespace returns valid namespace ID."""
+        await _skip_if_below_v25(async_client)
+
+        namespace_id = await async_client.create_namespace()
+        assert isinstance(namespace_id, int)
+        assert namespace_id > 0
+
+        # Creating another namespace gives a different ID
+        namespace_id2 = await async_client.create_namespace()
+        assert namespace_id2 > 0
+        assert namespace_id != namespace_id2
+
+    @pytest.mark.asyncio
+    async def test_list_namespaces(self, async_client: AsyncDgraphClient) -> None:
+        """Test async list_namespaces returns a dictionary."""
+        await _skip_if_below_v25(async_client)
+
+        namespace_id = await async_client.create_namespace()
+
+        namespaces = await async_client.list_namespaces()
+        assert isinstance(namespaces, dict)
+        assert namespace_id in namespaces
+
+    @pytest.mark.asyncio
+    async def test_drop_namespace(self, async_client: AsyncDgraphClient) -> None:
+        """Test async drop_namespace removes a namespace."""
+        await _skip_if_below_v25(async_client)
+
+        namespace_id = await async_client.create_namespace()
+
+        # Verify it exists
+        namespaces = await async_client.list_namespaces()
+        assert namespace_id in namespaces
+
+        # Drop it
+        if namespace_id != 0:
+            await async_client.drop_namespace(namespace_id)
+            await _wait_for_namespace_deletion_async(async_client, namespace_id)
+
+    @pytest.mark.asyncio
+    async def test_cannot_drop_namespace_zero(self, async_client: AsyncDgraphClient) -> None:
+        """Test that namespace 0 cannot be dropped."""
+        await _skip_if_below_v25(async_client)
+
+        import grpc
+
+        with pytest.raises(grpc.RpcError) as cm:
+            await async_client.drop_namespace(0)
+        assert "cannot be deleted" in str(cm.value)
+
+
 class TestAsyncConnectionString:
     """Test suite for async_open connection string parsing."""
 
