@@ -27,6 +27,20 @@ __version__ = VERSION
 __status__ = "development"
 
 
+class _AuthPlugin(grpc.AuthMetadataPlugin):
+    """Metadata plugin that injects an authorization header."""
+
+    def __init__(self, header_value: str) -> None:
+        self._metadata = (("authorization", header_value),)
+
+    def __call__(
+        self,
+        context: grpc.AuthMetadataContext,
+        callback: grpc.AuthMetadataPluginCallback,
+    ) -> None:
+        callback(self._metadata, None)
+
+
 class DgraphClient:
     """Creates a new Client for interacting with Dgraph.
 
@@ -40,12 +54,12 @@ class DgraphClient:
 
         self._clients = clients[:]
         self._jwt = api.Jwt()
-        self._login_metadata: list[tuple[str, str]] = []
+        self._login_metadata: list[tuple[str, str | bytes]] = []
 
     def check_version(
         self,
         timeout: float | None = None,
-        metadata: list[tuple[str, str]] | None = None,
+        metadata: tuple[tuple[str, str | bytes], ...] | None = None,
         credentials: grpc.CallCredentials | None = None,
     ) -> str:
         """Returns the version of Dgraph if the server is ready to accept requests."""
@@ -80,7 +94,7 @@ class DgraphClient:
         userid: str,
         password: str,
         timeout: float | None = None,
-        metadata: list[tuple[str, str]] | None = None,
+        metadata: tuple[tuple[str, str | bytes], ...] | None = None,
         credentials: grpc.CallCredentials | None = None,
     ) -> None:
         """Attempts a login via this client."""
@@ -100,7 +114,7 @@ class DgraphClient:
         password: str,
         namespace: int,
         timeout: float | None = None,
-        metadata: list[tuple[str, str]] | None = None,
+        metadata: tuple[tuple[str, str | bytes], ...] | None = None,
         credentials: grpc.CallCredentials | None = None,
     ) -> None:
         """Attempts a login into a namespace via this client."""
@@ -120,7 +134,7 @@ class DgraphClient:
     def retry_login(
         self,
         timeout: float | None = None,
-        metadata: list[tuple[str, str]] | None = None,
+        metadata: tuple[tuple[str, str | bytes], ...] | None = None,
         credentials: grpc.CallCredentials | None = None,
     ) -> None:
         """Attempts a retry login via this client."""
@@ -142,7 +156,7 @@ class DgraphClient:
         self,
         operation: api.Operation,
         timeout: float | None = None,
-        metadata: list[tuple[str, str]] | None = None,
+        metadata: tuple[tuple[str, str | bytes], ...] | None = None,
         credentials: grpc.CallCredentials | None = None,
     ) -> api.Payload:
         """Runs a modification via this client."""
@@ -188,7 +202,7 @@ class DgraphClient:
         self,
         operation: api.Operation,
         timeout: float | None = None,
-        metadata: list[tuple[str, str]] | None = None,
+        metadata: tuple[tuple[str, str | bytes], ...] | None = None,
         credentials: grpc.CallCredentials | None = None,
     ) -> grpc.Future:
         """The async version of alter."""
@@ -209,7 +223,7 @@ class DgraphClient:
     def drop_all(
         self,
         timeout: float | None = None,
-        metadata: list[tuple[str, str]] | None = None,
+        metadata: tuple[tuple[str, str | bytes], ...] | None = None,
         credentials: grpc.CallCredentials | None = None,
     ) -> api.Payload:
         """Drops all data and schema from the Dgraph instance.
@@ -233,7 +247,7 @@ class DgraphClient:
     def drop_data(
         self,
         timeout: float | None = None,
-        metadata: list[tuple[str, str]] | None = None,
+        metadata: tuple[tuple[str, str | bytes], ...] | None = None,
         credentials: grpc.CallCredentials | None = None,
     ) -> api.Payload:
         """Drops all data from the Dgraph instance while preserving the schema.
@@ -258,7 +272,7 @@ class DgraphClient:
         self,
         predicate: str,
         timeout: float | None = None,
-        metadata: list[tuple[str, str]] | None = None,
+        metadata: tuple[tuple[str, str | bytes], ...] | None = None,
         credentials: grpc.CallCredentials | None = None,
     ) -> api.Payload:
         """Drops a predicate and its associated data from the Dgraph instance.
@@ -288,7 +302,7 @@ class DgraphClient:
         self,
         type_name: str,
         timeout: float | None = None,
-        metadata: list[tuple[str, str]] | None = None,
+        metadata: tuple[tuple[str, str | bytes], ...] | None = None,
         credentials: grpc.CallCredentials | None = None,
     ) -> api.Payload:
         """Drops a type definition from the DQL schema.
@@ -322,7 +336,7 @@ class DgraphClient:
         self,
         schema: str,
         timeout: float | None = None,
-        metadata: list[tuple[str, str]] | None = None,
+        metadata: tuple[tuple[str, str | bytes], ...] | None = None,
         credentials: grpc.CallCredentials | None = None,
     ) -> api.Payload:
         """Sets the DQL schema for the Dgraph instance.
@@ -362,7 +376,7 @@ class DgraphClient:
         best_effort: bool = False,
         resp_format: str = "JSON",
         timeout: float | None = None,
-        metadata: list[tuple[str, str]] | None = None,
+        metadata: tuple[tuple[str, str | bytes], ...] | None = None,
         credentials: grpc.CallCredentials | None = None,
     ) -> api.Response:
         """
@@ -384,7 +398,9 @@ class DgraphClient:
         This is only supported on Dgraph v25.0.0 and above.
         """
 
-        new_metadata = self.add_login_metadata(metadata)
+        metadata_list: list[tuple[str, str | bytes]] = list(
+            self.add_login_metadata(metadata)
+        )
 
         # Add explicit namespace metadata for RunDQL
         # Extract namespace from JWT token if available
@@ -400,10 +416,11 @@ class DgraphClient:
                 payload_part += "=" * (4 - len(payload_part) % 4)
                 payload = json.loads(base64.b64decode(payload_part))
                 namespace = payload.get("namespace", 0)
-                new_metadata.append(("namespace", str(namespace)))
+                metadata_list.append(("namespace", str(namespace)))
             except Exception:
                 # If JWT decoding fails, use default namespace
-                new_metadata.append(("namespace", "0"))
+                metadata_list.append(("namespace", "0"))
+        new_metadata = tuple(metadata_list)
 
         # Convert string format to enum if needed
         format_value: int
@@ -452,7 +469,7 @@ class DgraphClient:
         best_effort: bool = False,
         resp_format: str = "JSON",
         timeout: float | None = None,
-        metadata: list[tuple[str, str]] | None = None,
+        metadata: tuple[tuple[str, str | bytes], ...] | None = None,
         credentials: grpc.CallCredentials | None = None,
     ) -> api.Response:
         """
@@ -493,7 +510,7 @@ class DgraphClient:
         self,
         how_many: int,
         timeout: float | None = None,
-        metadata: list[tuple[str, str]] | None = None,
+        metadata: tuple[tuple[str, str | bytes], ...] | None = None,
         credentials: grpc.CallCredentials | None = None,
     ) -> tuple[int, int]:
         """
@@ -520,7 +537,7 @@ class DgraphClient:
         self,
         how_many: int,
         timeout: float | None = None,
-        metadata: list[tuple[str, str]] | None = None,
+        metadata: tuple[tuple[str, str | bytes], ...] | None = None,
         credentials: grpc.CallCredentials | None = None,
     ) -> tuple[int, int]:
         """
@@ -544,7 +561,7 @@ class DgraphClient:
         self,
         how_many: int,
         timeout: float | None = None,
-        metadata: list[tuple[str, str]] | None = None,
+        metadata: tuple[tuple[str, str | bytes], ...] | None = None,
         credentials: grpc.CallCredentials | None = None,
     ) -> tuple[int, int]:
         """
@@ -571,7 +588,7 @@ class DgraphClient:
         how_many: int,
         lease_type: api.LeaseType.ValueType,
         timeout: float | None = None,
-        metadata: list[tuple[str, str]] | None = None,
+        metadata: tuple[tuple[str, str | bytes], ...] | None = None,
         credentials: grpc.CallCredentials | None = None,
     ) -> tuple[int, int]:
         """
@@ -615,7 +632,7 @@ class DgraphClient:
     def create_namespace(
         self,
         timeout: float | None = None,
-        metadata: list[tuple[str, str]] | None = None,
+        metadata: tuple[tuple[str, str | bytes], ...] | None = None,
         credentials: grpc.CallCredentials | None = None,
     ) -> int:
         """Creates a new namespace and returns its ID.
@@ -661,7 +678,7 @@ class DgraphClient:
         self,
         namespace: int,
         timeout: float | None = None,
-        metadata: list[tuple[str, str]] | None = None,
+        metadata: tuple[tuple[str, str | bytes], ...] | None = None,
         credentials: grpc.CallCredentials | None = None,
     ) -> Any:
         """Drops the specified namespace. If the namespace does not exist, the request will still
@@ -706,7 +723,7 @@ class DgraphClient:
     def list_namespaces(
         self,
         timeout: float | None = None,
-        metadata: list[tuple[str, str]] | None = None,
+        metadata: tuple[tuple[str, str | bytes], ...] | None = None,
         credentials: grpc.CallCredentials | None = None,
     ) -> dict[int, Any]:
         """Lists all namespaces.
@@ -753,13 +770,13 @@ class DgraphClient:
         return secrets.choice(self._clients)
 
     def add_login_metadata(
-        self, metadata: list[tuple[str, str]] | None
-    ) -> list[tuple[str, str]]:
-        new_metadata = list(self._login_metadata)
+        self, metadata: tuple[tuple[str, str | bytes], ...] | None
+    ) -> tuple[tuple[str, str | bytes], ...]:
+        new_metadata: list[tuple[str, str | bytes]] = list(self._login_metadata)
         if not metadata:
-            return new_metadata
+            return tuple(new_metadata)
         new_metadata.extend(metadata)
-        return new_metadata
+        return tuple(new_metadata)
 
     def close(self) -> None:
         for client in self._clients:
@@ -771,7 +788,7 @@ class DgraphClient:
         read_only: bool = False,
         best_effort: bool = False,
         timeout: float | None = None,
-        metadata: list[tuple[str, str]] | None = None,
+        metadata: tuple[tuple[str, str | bytes], ...] | None = None,
         credentials: grpc.CallCredentials | None = None,
     ) -> Iterator[Txn]:
         """Start a managed transaction.
@@ -865,9 +882,7 @@ def open(connection_string: str) -> DgraphClient:  # noqa: A001, C901
 
     if auth_header:
         options = [("grpc.enable_http_proxy", 0)]
-        call_credentials = grpc.metadata_call_credentials(
-            lambda _context, callback: callback((("authorization", auth_header),), None)
-        )
+        call_credentials = grpc.metadata_call_credentials(_AuthPlugin(auth_header))
         credentials = grpc.composite_channel_credentials(
             grpc.ssl_channel_credentials(), call_credentials
         )

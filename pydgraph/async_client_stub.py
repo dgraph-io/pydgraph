@@ -17,6 +17,21 @@ from pydgraph.meta import VERSION
 from pydgraph.proto import api_pb2 as api
 from pydgraph.proto import api_pb2_grpc as api_grpc
 
+
+class _AuthPlugin(grpc.AuthMetadataPlugin):
+    """Metadata plugin that injects an authorization header."""
+
+    def __init__(self, header_value: str) -> None:
+        self._metadata = (("authorization", header_value),)
+
+    def __call__(
+        self,
+        context: grpc.AuthMetadataContext,
+        callback: grpc.AuthMetadataPluginCallback,
+    ) -> None:
+        callback(self._metadata, None)
+
+
 __author__ = "Istari Digital, Inc."
 __maintainer__ = "Istari Digital, Inc. <dgraph-admin@istaridigital.com>"
 __version__ = VERSION
@@ -44,13 +59,13 @@ class AsyncDgraphClientStub:
         else:
             self.channel = grpc.aio.secure_channel(addr, credentials, options)
 
-        self.stub = api_grpc.DgraphStub(self.channel)
+        self.stub: api_grpc.DgraphAsyncStub = api_grpc.DgraphStub(self.channel)  # type: ignore[assignment]
 
     async def login(
         self,
         login_req: api.LoginRequest,
         timeout: float | None = None,
-        metadata: list[tuple[str, str]] | None = None,
+        metadata: tuple[tuple[str, str | bytes], ...] | None = None,
         credentials: grpc.CallCredentials | None = None,
     ) -> api.Response:
         """Async login operation.
@@ -72,7 +87,7 @@ class AsyncDgraphClientStub:
         self,
         operation: api.Operation,
         timeout: float | None = None,
-        metadata: list[tuple[str, str]] | None = None,
+        metadata: tuple[tuple[str, str | bytes], ...] | None = None,
         credentials: grpc.CallCredentials | None = None,
     ) -> api.Payload:
         """Async alter operation for schema changes.
@@ -94,7 +109,7 @@ class AsyncDgraphClientStub:
         self,
         req: api.Request,
         timeout: float | None = None,
-        metadata: list[tuple[str, str]] | None = None,
+        metadata: tuple[tuple[str, str | bytes], ...] | None = None,
         credentials: grpc.CallCredentials | None = None,
     ) -> api.Response:
         """Async query or mutate operation.
@@ -116,7 +131,7 @@ class AsyncDgraphClientStub:
         self,
         ctx: api.TxnContext,
         timeout: float | None = None,
-        metadata: list[tuple[str, str]] | None = None,
+        metadata: tuple[tuple[str, str | bytes], ...] | None = None,
         credentials: grpc.CallCredentials | None = None,
     ) -> api.TxnContext:
         """Async commit or abort operation.
@@ -138,7 +153,7 @@ class AsyncDgraphClientStub:
         self,
         check: api.Check,
         timeout: float | None = None,
-        metadata: list[tuple[str, str]] | None = None,
+        metadata: tuple[tuple[str, str | bytes], ...] | None = None,
         credentials: grpc.CallCredentials | None = None,
     ) -> api.Version:
         """Async version check operation.
@@ -160,7 +175,7 @@ class AsyncDgraphClientStub:
         self,
         req: api.RunDQLRequest,
         timeout: float | None = None,
-        metadata: list[tuple[str, str]] | None = None,
+        metadata: tuple[tuple[str, str | bytes], ...] | None = None,
         credentials: grpc.CallCredentials | None = None,
     ) -> api.Response:
         """Async RunDQL operation.
@@ -182,7 +197,7 @@ class AsyncDgraphClientStub:
         self,
         req: api.AllocateIDsRequest,
         timeout: float | None = None,
-        metadata: list[tuple[str, str]] | None = None,
+        metadata: tuple[tuple[str, str | bytes], ...] | None = None,
         credentials: grpc.CallCredentials | None = None,
     ) -> api.AllocateIDsResponse:
         """Async allocate IDs (UIDs, timestamps, or namespaces).
@@ -204,7 +219,7 @@ class AsyncDgraphClientStub:
         self,
         req: api.CreateNamespaceRequest,
         timeout: float | None = None,
-        metadata: list[tuple[str, str]] | None = None,
+        metadata: tuple[tuple[str, str | bytes], ...] | None = None,
         credentials: grpc.CallCredentials | None = None,
     ) -> api.CreateNamespaceResponse:
         """Async create namespace operation.
@@ -226,7 +241,7 @@ class AsyncDgraphClientStub:
         self,
         req: api.DropNamespaceRequest,
         timeout: float | None = None,
-        metadata: list[tuple[str, str]] | None = None,
+        metadata: tuple[tuple[str, str | bytes], ...] | None = None,
         credentials: grpc.CallCredentials | None = None,
     ) -> Any:
         """Async drop namespace operation.
@@ -248,7 +263,7 @@ class AsyncDgraphClientStub:
         self,
         req: api.ListNamespacesRequest,
         timeout: float | None = None,
-        metadata: list[tuple[str, str]] | None = None,
+        metadata: tuple[tuple[str, str | bytes], ...] | None = None,
         credentials: grpc.CallCredentials | None = None,
     ) -> api.ListNamespacesResponse:
         """Async list namespaces operation.
@@ -341,9 +356,7 @@ class AsyncDgraphClientStub:
 
         host = AsyncDgraphClientStub.parse_host(cloud_endpoint)
         creds = grpc.ssl_channel_credentials()
-        call_credentials = grpc.metadata_call_credentials(
-            lambda _context, callback: callback((("authorization", api_key),), None)
-        )
+        call_credentials = grpc.metadata_call_credentials(_AuthPlugin(api_key))
         composite_credentials = grpc.composite_channel_credentials(
             creds, call_credentials
         )
@@ -361,4 +374,4 @@ class AsyncDgraphClientStub:
     async def close(self) -> None:
         """Close the async channel gracefully."""
         with contextlib.suppress(Exception):
-            await self.channel.close()
+            await self.channel.close(grace=None)
