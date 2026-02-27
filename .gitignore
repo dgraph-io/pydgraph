@@ -46,6 +46,9 @@ examples/notebook/RAG/.env
 # Git worktrees
 .worktrees/
 
+# Local design/plan documents
+docs/plans/
+
 # Benchmark outputs
 benchmark-results.json
 benchmark-histogram.svg

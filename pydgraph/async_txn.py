@@ -73,7 +73,7 @@ class AsyncTxn:
         query: str,
         variables: dict[str, str] | None = None,
         timeout: float | None = None,
-        metadata: list[tuple[str, str]] | None = None,
+        metadata: tuple[tuple[str, str | bytes], ...] | None = None,
         credentials: grpc.CallCredentials | None = None,
         resp_format: str = "JSON",
     ) -> api.Response:
@@ -111,7 +111,7 @@ class AsyncTxn:
         cond: str | None = None,
         commit_now: bool | None = None,
         timeout: float | None = None,
-        metadata: list[tuple[str, str]] | None = None,
+        metadata: tuple[tuple[str, str | bytes], ...] | None = None,
         credentials: grpc.CallCredentials | None = None,
     ) -> api.Response:
         """Executes a mutate operation.
@@ -148,7 +148,7 @@ class AsyncTxn:
         self,
         request: api.Request,
         timeout: float | None = None,
-        metadata: list[tuple[str, str]] | None = None,
+        metadata: tuple[tuple[str, str | bytes], ...] | None = None,
         credentials: grpc.CallCredentials | None = None,
     ) -> api.Response:
         """Executes a query/mutate operation on the server.
@@ -270,7 +270,7 @@ class AsyncTxn:
         if del_nquads:
             mutation.del_nquads = del_nquads.encode("utf8")
         if cond:
-            mutation.cond = cond.encode("utf8")  # type: ignore[assignment]
+            mutation.cond = cond.encode("utf8")
         return mutation
 
     def create_request(
@@ -322,7 +322,7 @@ class AsyncTxn:
                         "Values and keys in variable map must be strings"
                     )
         if query:
-            request.query = query.encode("utf8")  # type: ignore[assignment]
+            request.query = query.encode("utf8")
         if mutations:
             request.mutations.extend(mutations)
         return request
@@ -354,7 +354,7 @@ class AsyncTxn:
     async def commit(
         self,
         timeout: float | None = None,
-        metadata: list[tuple[str, str]] | None = None,
+        metadata: tuple[tuple[str, str | bytes], ...] | None = None,
         credentials: grpc.CallCredentials | None = None,
     ) -> api.TxnContext | None:
         """Commits the transaction.
@@ -444,7 +444,7 @@ class AsyncTxn:
     async def discard(
         self,
         timeout: float | None = None,
-        metadata: list[tuple[str, str]] | None = None,
+        metadata: tuple[tuple[str, str | bytes], ...] | None = None,
         credentials: grpc.CallCredentials | None = None,
     ) -> None:
         """Discards the transaction.
@@ -467,7 +467,7 @@ class AsyncTxn:
     async def _locked_discard(
         self,
         timeout: float | None = None,
-        metadata: list[tuple[str, str]] | None = None,
+        metadata: tuple[tuple[str, str | bytes], ...] | None = None,
         credentials: grpc.CallCredentials | None = None,
     ) -> None:
         """Internal discard implementation that doesn't acquire the lock.

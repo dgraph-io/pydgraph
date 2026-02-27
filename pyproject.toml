@@ -34,10 +34,8 @@ dev = [
   "grpc-stubs>=1.53.0.6",
   "mypy>=1.14.1",
   "mypy-protobuf>=4.0.0",
-  "pre-commit>=3.5.0",
   "pydantic-settings>=2.8.1",
   "ruff>=0.8.4",
-  "shellcheck-py>=0.10.0.1",
   "ty>=0.0.8",
   "types-grpcio>=1.0.0.20251009",
   "types-protobuf>=6.32.1.20251210",
@@ -95,6 +93,7 @@ select = [
   "ICN",   # flake8-import-conventions
   "N",     # pep8-naming
   "PERF",  # perflint (performance)
+  "PGH",   # pygrep-hooks (blanket noqa, blanket type-ignore)
   "PIE",   # flake8-pie (misc lints)
   "PT",    # flake8-pytest-style
   "PTH",   # flake8-use-pathlib
@@ -158,6 +157,33 @@ known-first-party = ["pydgraph"]
   "PIE808", # unnecessary range(0, x) OK in examples
 ]
 
+[tool.ty.src]
+exclude = [
+  "pydgraph/proto/api_pb2.py",
+  "pydgraph/proto/api_pb2.pyi",
+  "pydgraph/proto/api_pb2_grpc.py",
+  "pydgraph/proto/api_pb2_grpc.pyi",
+]
+
+[[tool.ty.overrides]]
+include = ["pydgraph/async_client_stub.py"]
+[tool.ty.overrides.rules]
+# DgraphStub assigned as DgraphAsyncStub (runtime gRPC compatibility)
+invalid-assignment = "ignore"
+
+[[tool.ty.overrides]]
+include = ["pydgraph/async_txn.py"]
+[tool.ty.overrides.rules]
+# protobuf str fields accept bytes at runtime (.encode("utf8"))
+invalid-assignment = "ignore"
+
+[[tool.ty.overrides]]
+include = ["pydgraph/retry.py"]
+[tool.ty.overrides.rules]
+# BaseException→Exception narrowing in __exit__, functools.wraps return type
+invalid-assignment = "ignore"
+invalid-return-type = "ignore"
+
 [tool.mypy]
 python_version = "3.9"
 warn_unused_configs = true
@@ -204,6 +230,21 @@ ignore_missing_imports = true
 module = "pydgraph.client"
 # Disable arg-type: protobuf enum type mismatch with grpc-stubs; ty handles this correctly
 disable_error_code = ["arg-type"]
+
+[[tool.mypy.overrides]]
+module = "pydgraph.async_client_stub"
+# DgraphStub is assigned as DgraphAsyncStub (runtime gRPC compatibility)
+disable_error_code = ["assignment"]
+
+[[tool.mypy.overrides]]
+module = "pydgraph.async_txn"
+# protobuf str fields accept bytes at runtime (.encode("utf8"))
+disable_error_code = ["assignment"]
+
+[[tool.mypy.overrides]]
+module = "pydgraph.retry"
+# BaseException→Exception narrowing in __exit__, functools.wraps return type
+disable_error_code = ["assignment", "return-value"]
 
 [[tool.mypy.overrides]]
 module = "google.*"
