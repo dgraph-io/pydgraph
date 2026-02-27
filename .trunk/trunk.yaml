@@ -52,7 +52,7 @@ lint:
           output: mypy
           run: mypy --config-file=pyproject.toml --show-column-numbers ${target}
           run_from: ${root_or_parent_with_any_config}
-          success_codes: [0, 1]
+          success_codes: [0]
           stdin: false
     - name: pre-commit-hooks
       commands:
