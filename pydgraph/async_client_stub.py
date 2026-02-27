@@ -59,7 +59,7 @@ class AsyncDgraphClientStub:
         else:
             self.channel = grpc.aio.secure_channel(addr, credentials, options)
 
-        self.stub: api_grpc.DgraphAsyncStub = api_grpc.DgraphStub(self.channel)  # type: ignore[assignment]
+        self.stub: api_grpc.DgraphAsyncStub = api_grpc.DgraphStub(self.channel)
 
     async def login(
         self,

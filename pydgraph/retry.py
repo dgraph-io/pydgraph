@@ -157,7 +157,7 @@ class RetryAttempt:
     ) -> bool:
         if exc_type is not None and _is_retriable(exc_val):
             self.failed = True
-            self.error = exc_val  # type: ignore[assignment]
+            self.error = exc_val
             return True  # Suppress the exception
         return False
 
@@ -187,7 +187,7 @@ class AsyncRetryAttempt:
     ) -> bool:
         if exc_type is not None and _is_retriable(exc_val):
             self.failed = True
-            self.error = exc_val  # type: ignore[assignment]
+            self.error = exc_val
             return True  # Suppress the exception
         return False
 
@@ -366,7 +366,7 @@ def with_retry(
             )
             raise last_error or errors.AbortedError()
 
-        return wrapper  # type: ignore[return-value]
+        return wrapper
 
     return decorator
 
@@ -435,7 +435,7 @@ def with_retry_async(
             )
             raise last_error or errors.AbortedError()
 
-        return wrapper  # type: ignore[return-value]
+        return wrapper
 
     return decorator
 
