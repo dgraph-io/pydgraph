@@ -29,6 +29,43 @@ lint:
       paths:
         - tests/**
         - examples/**
+  definitions:
+    - name: mypy
+      extra_packages:
+        - types-requests>=2.32.0
+        - pydantic-settings>=2.12.0
+        - mypy-protobuf>=4.0.0
+        - grpc-stubs>=1.53.0
+        - types-grpcio>=1.0.0
+        - types-protobuf>=6.32.0
+        - pytest>=8.3.3
+        - grpcio-tools>=1.66.2
+        - packaging>=24.0
+      commands:
+        - name: lint
+          output: mypy
+          run: mypy --config-file=pyproject.toml --show-column-numbers ${target}
+          run_from: ${root_or_parent_with_any_config}
+          success_codes: [0, 1]
+          stdin: false
+    - name: pre-commit-hooks
+      commands:
+        - name: check-added-large-files
+          enabled: true
+        - name: check-docstring-first
+          enabled: true
+        - name: check-merge-conflict
+          enabled: true
+    - name: ty-check
+      files: [python]
+      commands:
+        - name: lint
+          output: regex
+          parse_regex: "(?P<path>[^:]+):(?P<line>\\d+):(?P<col>\\d+): (?P<message>.+)"
+          read_output_from: stderr
+          batch: true
+          run: uvx ty check --output-format concise pydgraph tests
+          success_codes: [0]
   enabled:
     - trivy@0.68.2
     - trivy@0.58.2
@@ -38,20 +75,19 @@ lint:
     - checkov@3.2.495
     - git-diff-check
     - markdownlint@0.47.0
+    - mypy@1.18.2
+    - pre-commit-hooks@6.0.0
     - prettier@3.7.4
     - ruff@0.14.10
     - shellcheck@0.11.0
     - shfmt@3.6.0
     - taplo@0.10.0
     - trufflehog@3.92.3
+    - ty-check@SYSTEM
     - yamllint@1.37.1
 actions:
-  disabled:
-    # Trunk fmt/check are already integrated as hooks in .pre-commit-config.yaml.
-    # Enabling these Trunk actions would hijack the git hook slot and bypass
-    # the pre-commit framework (skipping mypy, ruff, shellcheck, etc.).
-    - trunk-fmt-pre-commit
-    - trunk-check-pre-push
   enabled:
     - trunk-announce
+    - trunk-fmt-pre-commit
+    - trunk-check-pre-push
     - trunk-upgrade-available

@@ -270,7 +270,7 @@ class AsyncTxn:
         if del_nquads:
             mutation.del_nquads = del_nquads.encode("utf8")
         if cond:
-            mutation.cond = cond.encode("utf8")  # type: ignore[assignment]
+            mutation.cond = cond.encode("utf8")
         return mutation
 
     def create_request(
@@ -322,7 +322,7 @@ class AsyncTxn:
                         "Values and keys in variable map must be strings"
                     )
         if query:
-            request.query = query.encode("utf8")  # type: ignore[assignment]
+            request.query = query.encode("utf8")
         if mutations:
             request.mutations.extend(mutations)
         return request
