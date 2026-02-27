@@ -64,7 +64,7 @@ lint:
           parse_regex: "(?P<path>[^:]+):(?P<line>\\d+):(?P<col>\\d+): (?P<message>.+)"
           read_output_from: stderr
           batch: true
-          run: uvx ty check --output-format concise pydgraph tests
+          run: uv run ty check --output-format concise pydgraph tests
           success_codes: [0]
   enabled:
     - trivy@0.68.2
