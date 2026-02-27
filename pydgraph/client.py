@@ -569,7 +569,7 @@ class DgraphClient:
     def _allocate_ids(
         self,
         how_many: int,
-        lease_type: int,
+        lease_type: api.LeaseType.ValueType,
         timeout: float | None = None,
         metadata: list[tuple[str, str]] | None = None,
         credentials: grpc.CallCredentials | None = None,

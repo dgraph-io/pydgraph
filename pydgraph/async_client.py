@@ -570,7 +570,9 @@ class AsyncDgraphClient:
 
         This is only supported on Dgraph v25.0.0 and above.
         """
-        return await self._allocate_ids(how_many, api.UID, timeout, metadata, credentials)
+        return await self._allocate_ids(
+            how_many, api.UID, timeout, metadata, credentials
+        )
 
     async def allocate_timestamps(
         self,
@@ -593,7 +595,9 @@ class AsyncDgraphClient:
 
         This is only supported on Dgraph v25.0.0 and above.
         """
-        return await self._allocate_ids(how_many, api.TS, timeout, metadata, credentials)
+        return await self._allocate_ids(
+            how_many, api.TS, timeout, metadata, credentials
+        )
 
     async def allocate_namespaces(
         self,
@@ -618,12 +622,14 @@ class AsyncDgraphClient:
 
         This is only supported on Dgraph v25.0.0 and above.
         """
-        return await self._allocate_ids(how_many, api.NS, timeout, metadata, credentials)
+        return await self._allocate_ids(
+            how_many, api.NS, timeout, metadata, credentials
+        )
 
     async def _allocate_ids(
         self,
         how_many: int,
-        lease_type: int,
+        lease_type: api.LeaseType.ValueType,
         timeout: float | None = None,
         metadata: list[tuple[str, str]] | None = None,
         credentials: grpc.CallCredentials | None = None,
