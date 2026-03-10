@@ -1,4 +1,4 @@
-# SPDX-FileCopyrightText: © 2025 Istari Digital, Inc.
+# SPDX-FileCopyrightText: © 2025-2026 Istari Digital, Inc.
 # SPDX-License-Identifier: Apache-2.0
 
 """Transaction retry utilities for handling Dgraph transaction conflicts.
@@ -47,7 +47,7 @@ from pydgraph import errors
 from pydgraph.meta import VERSION
 
 __author__ = "Istari Digital, Inc."
-__maintainer__ = "Istari Digital, Inc. <dgraph-admin@istaridigital.com>"
+__maintainer__ = "Istari Digital, Inc."
 __version__ = VERSION
 __status__ = "development"
 

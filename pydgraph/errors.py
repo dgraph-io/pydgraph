@@ -8,7 +8,7 @@ from __future__ import annotations
 from pydgraph.meta import VERSION
 
 __author__ = "Garvit Pahal"
-__maintainer__ = "Istari Digital, Inc. <dgraph-admin@istaridigital.com>"
+__maintainer__ = "Istari Digital, Inc."
 __version__ = VERSION
 __status__ = "development"
 

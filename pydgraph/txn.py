@@ -20,7 +20,7 @@ if TYPE_CHECKING:
     from pydgraph.client_stub import DgraphClientStub
 
 __author__ = "Shailesh Kochhar <shailesh.kochhar@gmail.com>"
-__maintainer__ = "Istari Digital, Inc. <dgraph-admin@istaridigital.com>"
+__maintainer__ = "Istari Digital, Inc."
 __version__ = VERSION
 __status__ = "development"
 

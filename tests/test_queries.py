@@ -17,7 +17,7 @@ from pydgraph import open
 from tests import helper
 
 __author__ = "Mohit Ranka <mohitranka@gmail.com>"
-__maintainer__ = "Istari Digital, Inc. <dgraph-admin@istaridigital.com>"
+__maintainer__ = "Istari Digital, Inc."
 
 
 class TestQueries(helper.ClientIntegrationTestCase):

@@ -18,7 +18,7 @@ from pydgraph.proto import api_pb2 as api
 from pydgraph.proto import api_pb2_grpc as api_grpc
 
 __author__ = "Garvit Pahal"
-__maintainer__ = "Istari Digital, Inc. <dgraph-admin@istaridigital.com>"
+__maintainer__ = "Istari Digital, Inc."
 __version__ = VERSION
 __status__ = "development"
 

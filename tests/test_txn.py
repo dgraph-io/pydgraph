@@ -4,7 +4,7 @@
 from __future__ import annotations
 
 __author__ = "Garvit Pahal"
-__maintainer__ = "Istari Digital, Inc. <dgraph-admin@istaridigital.com>"
+__maintainer__ = "Istari Digital, Inc."
 
 import json
 import logging

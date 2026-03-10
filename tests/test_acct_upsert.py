@@ -8,7 +8,7 @@ from __future__ import annotations
 from collections.abc import Callable
 
 __author__ = "Shailesh Kochhar <shailesh.kochhar@gmail.com>"
-__maintainer__ = "Istari Digital, Inc. <dgraph-admin@istaridigital.com>"
+__maintainer__ = "Istari Digital, Inc."
 
 import json
 import logging

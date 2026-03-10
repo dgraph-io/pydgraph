@@ -1,4 +1,4 @@
-# SPDX-FileCopyrightText: © 2025 Istari Digital, Inc.
+# SPDX-FileCopyrightText: © 2025-2026 Istari Digital, Inc.
 # SPDX-License-Identifier: Apache-2.0
 
 """Tests for transaction retry utilities."""
@@ -24,7 +24,7 @@ from pydgraph.retry import (
 )
 
 __author__ = "Istari Digital, Inc."
-__maintainer__ = "Istari Digital, Inc. <dgraph-admin@istaridigital.com>"
+__maintainer__ = "Istari Digital, Inc."
 
 
 class TestCalculateDelay(unittest.TestCase):
