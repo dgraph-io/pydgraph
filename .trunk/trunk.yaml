@@ -63,8 +63,7 @@ lint:
         - name: check-merge-conflict
           enabled: true
   enabled:
-    - trivy@0.68.2
-    - trivy@0.58.2
+    - trivy@0.69.3
     - renovate@42.64.0
     - actionlint@1.7.9
     - bandit@1.9.2
