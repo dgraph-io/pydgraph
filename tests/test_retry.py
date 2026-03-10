@@ -24,7 +24,7 @@ from pydgraph.retry import (
 )
 
 __author__ = "Istari Digital, Inc."
-__maintainer__ = "Istari Digital, Inc."
+__maintainer__ = "Istari Digital, Inc. <dgraph-admin@istaridigital.com>"
 
 
 class TestCalculateDelay(unittest.TestCase):

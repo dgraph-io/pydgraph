@@ -13,7 +13,7 @@ import grpc.aio
 from pydgraph.meta import VERSION
 
 __author__ = "Shailesh Kochhar <shailesh.kochhar@gmail.com>"
-__maintainer__ = "Istari Digital, Inc."
+__maintainer__ = "Istari Digital, Inc. <dgraph-admin@istaridigital.com>"
 __version__ = VERSION
 __status__ = "development"
 

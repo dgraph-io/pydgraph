@@ -16,7 +16,7 @@ from pydgraph.meta import VERSION
 from pydgraph.proto import api_pb2 as api
 
 __author__ = "Istari Digital, Inc."
-__maintainer__ = "Istari Digital, Inc."
+__maintainer__ = "Istari Digital, Inc. <dgraph-admin@istaridigital.com>"
 __version__ = VERSION
 __status__ = "development"
 

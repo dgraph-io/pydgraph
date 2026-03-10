@@ -22,7 +22,7 @@ if TYPE_CHECKING:
     from pydgraph.txn import Txn
 
 __author__ = "Mohit Ranka <mohitranka@gmail.com>"
-__maintainer__ = "Istari Digital, Inc."
+__maintainer__ = "Istari Digital, Inc. <dgraph-admin@istaridigital.com>"
 __version__ = VERSION
 __status__ = "development"
 

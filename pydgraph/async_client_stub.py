@@ -33,7 +33,7 @@ class _AuthPlugin(grpc.AuthMetadataPlugin):
 
 
 __author__ = "Istari Digital, Inc."
-__maintainer__ = "Istari Digital, Inc."
+__maintainer__ = "Istari Digital, Inc. <dgraph-admin@istaridigital.com>"
 __version__ = VERSION
 __status__ = "development"
 

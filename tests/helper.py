@@ -17,7 +17,7 @@ import pydgraph
 import pydgraph.proto.api_pb2
 
 __author__ = "Garvit Pahal"
-__maintainer__ = "Istari Digital, Inc."
+__maintainer__ = "Istari Digital, Inc. <dgraph-admin@istaridigital.com>"
 
 SERVER_ADDR = "localhost:9180"
 

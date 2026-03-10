@@ -12,7 +12,7 @@ import unittest
 from tests import helper
 
 __author__ = "Animesh Pathak <animesh@dgrpah.io>"
-__maintainer__ = "Istari Digital <contact@istaridigital.com>"
+__maintainer__ = "Istari Digital, Inc. <dgraph-admin@istaridigital.com>"
 
 
 class TestTypeSystem(helper.ClientIntegrationTestCase):
