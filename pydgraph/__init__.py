@@ -13,6 +13,7 @@ from pydgraph.client import DgraphClient, open  # noqa: A004
 from pydgraph.client_stub import DgraphClientStub, client_stub
 from pydgraph.errors import (
     AbortedError,
+    AbortReason,
     ConnectionError,  # noqa: A004
     RetriableError,
     TransactionError,
@@ -44,6 +45,7 @@ from pydgraph.retry import (
 from pydgraph.txn import Txn
 
 __all__ = [
+    "AbortReason",
     "AbortedError",
     "AsyncDgraphClient",
     "AsyncDgraphClientStub",

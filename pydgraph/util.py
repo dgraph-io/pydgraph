@@ -46,6 +46,20 @@ def is_aborted_error(error: Any) -> bool:
     return False
 
 
+def abort_error_message(error: Any) -> str:
+    """Returns the server-supplied message from a gRPC error.
+
+    Prefers ``error.details()`` (the status description, which carries the abort
+    reason prefix), falling back to ``str(error)``. Used to surface the categorized
+    abort reason on AbortedError.
+    """
+    if hasattr(error, "details") and callable(error.details):
+        details = error.details()
+        if details:
+            return details
+    return str(error)
+
+
 def is_retriable_error(error: Exception) -> bool:
     """Returns true if the error is retriable (e.g server is not ready yet)."""
     msg = str(error)
