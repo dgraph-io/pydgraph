@@ -339,7 +339,7 @@ class Txn:
     @staticmethod
     def _common_except_mutate(error: Exception) -> None:
         if util.is_aborted_error(error):
-            raise errors.AbortedError
+            raise errors.AbortedError(util.abort_error_message(error))
 
         if util.is_retriable_error(error):
             raise errors.RetriableError(error)
@@ -399,7 +399,7 @@ class Txn:
     @staticmethod
     def _common_except_commit(error: Exception) -> None:
         if util.is_aborted_error(error):
-            raise errors.AbortedError
+            raise errors.AbortedError(util.abort_error_message(error))
 
         raise error
 

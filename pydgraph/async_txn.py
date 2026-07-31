@@ -341,7 +341,7 @@ class AsyncTxn:
             The original error otherwise
         """
         if util.is_aborted_error(error):
-            raise errors.AbortedError
+            raise errors.AbortedError(util.abort_error_message(error))
 
         if util.is_retriable_error(error):
             raise errors.RetriableError(error)
@@ -437,7 +437,7 @@ class AsyncTxn:
             The original error otherwise
         """
         if util.is_aborted_error(error):
-            raise errors.AbortedError
+            raise errors.AbortedError(util.abort_error_message(error))
 
         raise error
 
