@@ -23,13 +23,29 @@ class AbortReason(enum.Enum):
     these values.
 
     - ``CONFLICT`` — a write-write conflict with another concurrent transaction;
-      retrying with a fresh transaction is the expected response.
+      retrying with a fresh transaction is the expected response. The server cannot
+      say *which* key collided: conflict keys are one-way fingerprints by the time
+      they are compared, so the culprit may be the data key written directly, or an
+      index or count key derived from it. On an ``@upsert`` predicate the uid is
+      excluded from the comparison, so any two transactions writing the same value
+      conflict.
     - ``PREDICATE_MOVE`` — a predicate is being moved between groups and commits on
-      it are temporarily blocked; back off and retry once the move completes.
-    - ``STALE_STARTTS`` — the transaction's start timestamp predates the current Zero
-      leader (a leader change); retry with a fresh transaction.
-    - ``UNKNOWN`` — no reason was reported. Returned for aborts from older servers
-      that do not yet categorize the reason, so callers degrade gracefully.
+      it are blocked, or it finished moving while the transaction was open; back off
+      and retry once the move completes.
+    - ``STALE_STARTTS`` — the transaction's start timestamp is older than the oldest
+      timestamp the server can still validate against. That happens after a Zero
+      leader change, and also when Zero trims its conflict map at a snapshot, which
+      is not a leader change at all. Retry with a fresh transaction.
+    - ``UNKNOWN`` — no category was reported. This covers aborts from older servers,
+      which do not categorize at all, and aborts a current server declines to
+      categorize because no published category fits — for example a transaction
+      already aborted out of band by a schema change or the idle-transaction reaper,
+      a cancelled request, or a predicate no group currently serves. The message
+      still explains what happened; only the machine-readable category is absent.
+
+    Categories are matched on the message prefix, and an unrecognized prefix degrades
+    to ``UNKNOWN``. A newer server may therefore introduce categories this enum does
+    not name without breaking this client.
     """
 
     CONFLICT = "conflict"
@@ -42,8 +58,12 @@ def parse_abort_reason(message: str | None) -> AbortReason:
     """Parses the abort category from a server abort message.
 
     The reason is the ``"<code>: <detail>"`` prefix; matching is case-insensitive and
-    tolerant of surrounding whitespace. A message with no recognized prefix (e.g. from
-    a pre-feature server) returns :attr:`AbortReason.UNKNOWN`.
+    tolerant of surrounding whitespace. Only the *first* colon delimits the category —
+    several server messages contain colons of their own in the detail that follows.
+
+    A message with no recognized prefix returns :attr:`AbortReason.UNKNOWN`. That is
+    the expected result both for a pre-feature server and for causes a current server
+    deliberately leaves uncategorized rather than implying the wrong remedy.
     """
     if not message:
         return AbortReason.UNKNOWN
